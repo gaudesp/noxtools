@@ -13,6 +13,13 @@ Before starting, ensure your environment matches these versions.
 - **npm** : *11.x* ➜ `npm -v`
 - **nvm** : *0.39.x* ➜ `nvm -v`
 
+Then, install the necessary dependencies.
+
+```bash
+sudo apt update
+sudo apt install ffmpeg
+```
+
 ## Getting Started
 
 ### Backend (FastAPI)
