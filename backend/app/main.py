@@ -18,5 +18,5 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-app.include_router(noxsongizer.router, prefix="/api/noxsongizer", tags=["noxsongizer"])
-app.include_router(noxelizer.router, prefix="/api/noxelizer", tags=["noxelizer"])
+app.include_router(noxsongizer.router)
+app.include_router(noxelizer.router)
