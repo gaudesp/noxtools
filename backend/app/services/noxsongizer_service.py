@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import shutil
 import subprocess
 import threading
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 from fastapi import UploadFile
 
 
@@ -9,16 +13,17 @@ class NoxsongizerService:
   BASE_UPLOAD = Path("media/uploads")
   BASE_OUTPUT = Path("media/outputs")
 
-  jobs = {}  # simple in-memory job registry
+  # Very simple in-memory job registry
+  jobs: Dict[str, Dict[str, Any]] = {}
 
-  def __init__(self):
+  def __init__(self) -> None:
     self.BASE_UPLOAD.mkdir(parents=True, exist_ok=True)
     self.BASE_OUTPUT.mkdir(parents=True, exist_ok=True)
 
   # -----------------------------
-  # Save uploaded file
+  # Public API
   # -----------------------------
-  def save_uploaded_file(self, job_id: str, file: UploadFile):
+  def save_uploaded_file(self, job_id: str, file: UploadFile) -> None:
     upload_dir = self.BASE_UPLOAD / job_id
     upload_dir.mkdir(parents=True, exist_ok=True)
 
@@ -27,102 +32,105 @@ class NoxsongizerService:
     with dest.open("wb") as buffer:
       shutil.copyfileobj(file.file, buffer)
 
-    # initialize job
+    # init job
     self.jobs[job_id] = {
       "status": "pending",
-      "filename": file.filename
+      "filename": file.filename,
+      "stems": [],
+      "error": None,
     }
 
-    # start demucs thread automatically
+    # start Demucs in background
     thread = threading.Thread(
       target=self._run_demucs_job,
       args=(job_id, dest),
-      daemon=True
+      daemon=True,
     )
     thread.start()
 
+  def get_job(self, job_id: str) -> Optional[Dict[str, Any]]:
+    return self.jobs.get(job_id)
+
+  def get_stem_path(self, job_id: str, stem: str) -> Path:
+    return self.BASE_OUTPUT / job_id / stem
+
   # -----------------------------
-  # Run Demucs job in background
+  # Internal helpers
   # -----------------------------
-  def _run_demucs_job(self, job_id: str, input_file: Path):
+  def _run_demucs_job(self, job_id: str, input_file: Path) -> None:
     try:
-      self.jobs[job_id]["status"] = "processing"
+      job = self.jobs.get(job_id)
+      if not job:
+        return
+
+      job["status"] = "processing"
 
       output_dir = self.BASE_OUTPUT / job_id
       output_dir.mkdir(parents=True, exist_ok=True)
 
-      # Run Demucs
       cmd = [
         "demucs",
-        "-n", "htdemucs_ft",
-        str(input_file)
+        "-n",
+        "htdemucs_ft",
+        str(input_file),
       ]
 
       process = subprocess.run(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True
+        text=True,
       )
 
-      # If Demucs failed
       if process.returncode != 0:
-        self.jobs[job_id]["status"] = "error"
-        self.jobs[job_id]["error"] = process.stderr
+        job["status"] = "error"
+        job["error"] = process.stderr
         return
 
-      # Move stems
       demucs_output_folder = self._find_demucs_output_folder(input_file)
       if not demucs_output_folder:
-        self.jobs[job_id]["status"] = "error"
-        self.jobs[job_id]["error"] = "Demucs output folder not found"
+        job["status"] = "error"
+        job["error"] = "Demucs output folder not found."
         return
 
-      for stem in demucs_output_folder.iterdir():
-        shutil.move(str(stem), str(output_dir / stem.name))
+      stems: List[str] = []
 
-      self.jobs[job_id]["status"] = "done"
+      for stem_path in demucs_output_folder.iterdir():
+        if stem_path.is_file():
+          target = output_dir / stem_path.name
+          shutil.move(str(stem_path), str(target))
+          stems.append(stem_path.name)
 
-    except Exception as e:
-      self.jobs[job_id]["status"] = "error"
-      self.jobs[job_id]["error"] = str(e)
+      # optional cleanup of Demucs temp folder
+      try:
+        shutil.rmtree(demucs_output_folder)
+      except OSError:
+        pass
 
-  # -----------------------------
-  # Locate Demucs' output folder
-  # -----------------------------
-  def _find_demucs_output_folder(self, input_file: Path) -> Path | None:
+      job["stems"] = stems
+      job["status"] = "done"
+
+    except Exception as exc:  # noqa: BLE001
+      job = self.jobs.get(job_id)
+      if job is not None:
+        job["status"] = "error"
+        job["error"] = str(exc)
+
+  def _find_demucs_output_folder(self, input_file: Path) -> Optional[Path]:
+    """
+    Demucs usually outputs to separated/htdemucs_ft/<file_stem>/
+    """
     demucs_base = Path("separated/htdemucs_ft")
     if not demucs_base.exists():
       return None
 
-    # Demucs outputs: separated/htdemucs_ft/<filename>/
-    folder_name = input_file.stem
-    folder = demucs_base / folder_name
+    stem_name = input_file.stem
+    candidate = demucs_base / stem_name
+    if candidate.exists():
+      return candidate
 
-    if folder.exists():
-      return folder
+    matches = list(demucs_base.glob(f"{stem_name}*"))
+    if matches:
+      return matches[0]
 
-    # Sometimes Demucs adds suffixes — list possible dirs
-    matches = list(demucs_base.glob(f"{folder_name}*"))
-    return matches[0] if matches else None
-
-  # -----------------------------
-  # Job status
-  # -----------------------------
-  def get_job_status(self, job_id: str) -> str:
-    job = self.jobs.get(job_id)
-    if not job:
-      return "unknown"
-
-    if job["status"] == "error":
-      print("\n=== DEMUCS ERROR ===")
-      print(job.get("error"))
-      print("====================\n")
-
-    return job["status"]
-
-  # -----------------------------
-  # Stem download
-  # -----------------------------
-  def get_stem_path(self, job_id: str, stem: str) -> Path:
-    return (self.BASE_OUTPUT / job_id / stem)
+    return None
