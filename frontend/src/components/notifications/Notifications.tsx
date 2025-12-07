@@ -57,7 +57,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   return (
     <NotificationsContext.Provider value={value}>
       {children}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+      <div className="fixed top-4 right-4 z-50 space-y-4">
         {items.map((n) => (
           <div
             key={n.id}
@@ -74,7 +74,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
               <div className="text-sm leading-snug">{n.message}</div>
               <button
                 type="button"
-                className="text-sm text-slate-200 hover:text-white px-1"
+                className="text-lg text-slate-200 hover:text-white px-1 leading-none"
                 aria-label="Close notification"
                 onClick={() => remove(n.id)}
               >
