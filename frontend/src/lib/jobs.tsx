@@ -1,150 +1,146 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
-  getJob,
+  API_BASE_URL,
+  deleteJob as deleteJobApi,
   listJobs,
   type Job,
-  type JobStatus,
   type JobTool,
-  type PaginatedJobs,
 } from "./api"
 
-const POLL_MS = 2000
-
-type UseJobsParams = {
+type UseJobStreamParams = {
   tool?: JobTool
-  status?: JobStatus
-  limit?: number
-  offset?: number
-  polling?: boolean
 }
 
-type UseJobsResult = {
+type UseJobStreamResult = {
   jobs: Job[]
   total: number
   loading: boolean
   error: string | null
-  refresh: () => Promise<void>
+  deleteJob: (jobId: string) => Promise<void>
+  getJobById: (id: string | null) => Job | null
 }
 
-export function useJobs(params: UseJobsParams = {}): UseJobsResult {
-  const { tool, status, limit = 200, offset = 0, polling = true } = params
-  const [jobs, setJobs] = useState<Job[]>([])
-  const [total, setTotal] = useState<number>(0)
+export function useJobStream(params: UseJobStreamParams = {}): UseJobStreamResult {
+  const { tool } = params
+  const [jobsMap, setJobsMap] = useState<Record<string, Job>>({})
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const initialLoadRef = useRef<boolean>(true)
+  const eventSourceRef = useRef<EventSource | null>(null)
+  const initialLoadedRef = useRef<string | null>(null)
+  const loadCompleteRef = useRef<boolean>(false)
 
-  const fetchJobs = useCallback(
-    async (showLoading: boolean = false) => {
-      if (showLoading || initialLoadRef.current) {
-        setLoading(true)
-      }
+  useEffect(() => {
+    if (initialLoadedRef.current === tool) return
+    initialLoadedRef.current = tool ?? "__all__"
+    let cancelled = false
+    async function loadInitial() {
+      setLoading(true)
       setError(null)
       try {
-        const res: PaginatedJobs = await listJobs({ tool, status, limit, offset })
-        setJobs(res.items)
-        setTotal(res.total)
+        const res = await listJobs({ tool, limit: 200, offset: 0 })
+        if (cancelled) return
+        const next: Record<string, Job> = {}
+        res.items.forEach((job) => {
+          next[job.id] = job
+        })
+        setJobsMap(next)
+        loadCompleteRef.current = true
       } catch (err) {
         console.error(err)
-        setError(err instanceof Error ? err.message : "Failed to load jobs")
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load jobs")
+        }
       } finally {
-        setLoading(false)
-        initialLoadRef.current = false
+        if (!cancelled) setLoading(false)
       }
-    },
-    [tool, status, limit, offset],
-  )
-
-  useEffect(() => {
-    fetchJobs(true)
-  }, [fetchJobs])
-
-  useEffect(() => {
-    if (!polling) return
-    timerRef.current = setInterval(() => fetchJobs(false), POLL_MS)
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [fetchJobs, polling])
+    loadInitial()
+    return () => {
+      cancelled = true
+      if (!loadCompleteRef.current) {
+        initialLoadedRef.current = null
+      }
+    }
+  }, [tool])
+
+  useEffect(() => {
+    // avoid duplicate connections (e.g., React StrictMode)
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close()
+      eventSourceRef.current = null
+    }
+
+    const es = new EventSource(`${API_BASE_URL}/jobs/stream`)
+    eventSourceRef.current = es
+
+    es.addEventListener("job_created", (event) => {
+      try {
+        const data = JSON.parse((event as MessageEvent).data) as { job: Job }
+        if (tool && data.job.tool !== tool) return
+        setJobsMap((prev) => ({ ...prev, [data.job.id]: data.job }))
+      } catch (err) {
+        console.error("Failed to parse job_created event", err)
+      }
+    })
+
+    es.addEventListener("job_updated", (event) => {
+      try {
+        const data = JSON.parse((event as MessageEvent).data) as { job: Job }
+        if (tool && data.job.tool !== tool) return
+        setJobsMap((prev) => ({ ...prev, [data.job.id]: data.job }))
+      } catch (err) {
+        console.error("Failed to parse job_updated event", err)
+      }
+    })
+
+    es.addEventListener("job_deleted", (event) => {
+      try {
+        const data = JSON.parse((event as MessageEvent).data) as { job_id: string }
+        setJobsMap((prev) => {
+          const next = { ...prev }
+          delete next[data.job_id]
+          return next
+        })
+      } catch (err) {
+        console.error("Failed to parse job_deleted event", err)
+      }
+    })
+
+    es.onerror = (err) => {
+      console.error("SSE connection error", err)
+      setError("Live updates unavailable. SSE connection failed.")
+    }
+
+    return () => {
+      es.close()
+      eventSourceRef.current = null
+    }
+  }, [tool])
+
+  const jobs = useMemo(() => {
+    const list = Object.values(jobsMap)
+    return list.sort((a, b) => {
+      const aDate = a.created_at || ""
+      const bDate = b.created_at || ""
+      return bDate.localeCompare(aDate)
+    })
+  }, [jobsMap])
+
+  async function deleteJob(jobId: string) {
+    await deleteJobApi(jobId)
+  }
+
+  const getJobById = (id: string | null) => {
+    if (!id) return null
+    return jobsMap[id] ?? null
+  }
 
   return {
     jobs,
-    total,
+    total: jobs.length,
     loading,
     error,
-    refresh: () => fetchJobs(true),
-  }
-}
-
-type UseJobResult = {
-  job: Job | null
-  loading: boolean
-  error: string | null
-  refresh: () => Promise<void>
-}
-
-type UseJobOptions = {
-  polling?: boolean
-}
-
-export function useJob(jobId: string | null, options: UseJobOptions = {}): UseJobResult {
-  const { polling = true } = options
-  const [job, setJob] = useState<Job | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const initialLoadRef = useRef<boolean>(true)
-
-  const refresh = useCallback(
-    async (showLoading: boolean = false) => {
-      if (!jobId) return
-      if (showLoading || initialLoadRef.current) {
-        setLoading(true)
-      }
-      setError(null)
-      try {
-        const res = await getJob(jobId)
-        setJob(res)
-        if (res.status === "done" || res.status === "error") {
-          if (timerRef.current) {
-            clearInterval(timerRef.current)
-          }
-        }
-      } catch (err) {
-        console.error(err)
-        setError(err instanceof Error ? err.message : "Failed to load job")
-      } finally {
-        setLoading(false)
-        initialLoadRef.current = false
-      }
-    },
-    [jobId],
-  )
-
-  useEffect(() => {
-    if (!jobId) {
-      setJob(null)
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-      }
-      return
-    }
-    refresh(true)
-  }, [jobId, refresh])
-
-  useEffect(() => {
-    if (!polling || !jobId) return
-    timerRef.current = setInterval(() => refresh(false), POLL_MS)
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [polling, jobId, refresh])
-
-  return {
-    job,
-    loading,
-    error,
-    refresh: () => refresh(true),
+    deleteJob,
+    getJobById,
   }
 }

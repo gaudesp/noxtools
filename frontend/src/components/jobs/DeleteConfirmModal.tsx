@@ -1,7 +1,9 @@
+import type { MouseEvent } from "react"
+
 type Props = {
   open: boolean
-  onCancel: (e?: React.MouseEvent) => void
-  onConfirm: (e?: React.MouseEvent) => void
+  onCancel: (e?: MouseEvent) => void
+  onConfirm: (e?: MouseEvent) => void
 }
 
 export default function DeleteConfirmModal({ open, onCancel, onConfirm }: Props) {

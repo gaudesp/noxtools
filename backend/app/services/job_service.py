@@ -5,6 +5,7 @@ from typing import Any, Optional
 from sqlmodel import Session
 
 from app.models.job import Job, JobCreate, JobStatus, JobTool, JobUpdate, _utcnow
+from app.events.job_events import job_event_bus
 from app.repositories.job_repository import JobRepository
 
 
@@ -37,7 +38,9 @@ class JobService:
       params=params or {},
       max_attempts=max_attempts,
     )
-    return self.repo.create(payload)
+    job = self.repo.create(payload)
+    job_event_bus.publish_sync({"type": "job_created", "job": job.model_dump(mode="json")})
+    return job
 
   def get_job(self, job_id: str) -> Optional[Job]:
     return self.repo.get(job_id)
@@ -77,7 +80,10 @@ class JobService:
       locked_by=worker_id,
       attempt=attempt,
     )
-    return self.repo.update(job_id, update)
+    job = self.repo.update(job_id, update)
+    if job:
+      job_event_bus.publish_sync({"type": "job_updated", "job": job.model_dump(mode="json")})
+    return job
 
   def mark_completed(
     self,
@@ -96,7 +102,10 @@ class JobService:
       locked_at=None,
       locked_by=None,
     )
-    return self.repo.update(job_id, update)
+    job = self.repo.update(job_id, update)
+    if job:
+      job_event_bus.publish_sync({"type": "job_updated", "job": job.model_dump(mode="json")})
+    return job
 
   def mark_error(self, job_id: str, message: str) -> Optional[Job]:
     update = JobUpdate(
@@ -106,7 +115,10 @@ class JobService:
       locked_at=None,
       locked_by=None,
     )
-    return self.repo.update(job_id, update)
+    job = self.repo.update(job_id, update)
+    if job:
+      job_event_bus.publish_sync({"type": "job_updated", "job": job.model_dump(mode="json")})
+    return job
 
   def update_outputs(
     self,
@@ -121,14 +133,26 @@ class JobService:
       output_files=output_files,
       result=result,
     )
-    return self.repo.update(job_id, update)
+    job = self.repo.update(job_id, update)
+    if job:
+      job_event_bus.publish_sync({"type": "job_updated", "job": job.model_dump(mode="json")})
+    return job
 
   def update_status(self, job_id: str, status: JobStatus) -> Optional[Job]:
     update = JobUpdate(status=status)
-    return self.repo.update(job_id, update)
+    job = self.repo.update(job_id, update)
+    if job:
+      job_event_bus.publish_sync({"type": "job_updated", "job": job.model_dump(mode="json")})
+    return job
 
   def update_job(self, job_id: str, payload: JobUpdate) -> Optional[Job]:
-    return self.repo.update(job_id, payload)
+    job = self.repo.update(job_id, payload)
+    if job:
+      job_event_bus.publish_sync({"type": "job_updated", "job": job.model_dump(mode="json")})
+    return job
 
   def delete_job(self, job_id: str) -> bool:
-    return self.repo.delete(job_id)
+    deleted = self.repo.delete(job_id)
+    if deleted:
+      job_event_bus.publish_sync({"type": "job_deleted", "job_id": job_id})
+    return deleted

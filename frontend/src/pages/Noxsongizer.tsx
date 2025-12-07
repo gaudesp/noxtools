@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
-import { uploadNoxsongizer, type Job, deleteJob } from "../lib/api"
-import { useJob, useJobs } from "../lib/jobs"
+import { uploadNoxsongizer, type Job } from "../lib/api"
+import { useJobStream } from "../lib/jobs"
 import JobDetailsModal from "../components/jobs/JobDetailsModal"
 import NoxsongizerResultPreview from "../components/jobs/NoxsongizerResultPreview"
 import JobTable from "../components/jobs/JobTable"
@@ -17,14 +17,13 @@ export default function Noxsongizer() {
   const pageSize = 10
   const offset = (page - 1) * pageSize
 
-  const { jobs, total, loading, error, refresh } = useJobs({
+  const { jobs: allJobs, loading, error, deleteJob: deleteJobLive, getJobById } = useJobStream({
     tool: "noxsongizer",
-    polling: true,
-    limit: pageSize,
-    offset,
   })
 
-  const { job: selectedJob } = useJob(selectedJobId, { polling: true })
+  const pagedJobs = allJobs.slice(offset, offset + pageSize)
+  const total = allJobs.length
+  const selectedJob = getJobById(selectedJobId)
 
   async function startUpload(file: File) {
     try {
@@ -34,7 +33,6 @@ export default function Noxsongizer() {
       const res = await uploadNoxsongizer(file)
       setLastJobId(res.job_id)
       setFileName(res.filename)
-      refresh()
     } catch (err) {
       console.error(err)
       setErrorMessage("File upload failed.")
@@ -74,7 +72,7 @@ export default function Noxsongizer() {
           </div>
         )}
         <JobTable
-          jobs={jobs}
+          jobs={pagedJobs}
           total={total}
           pageSize={pageSize}
           currentPage={page}
@@ -82,8 +80,7 @@ export default function Noxsongizer() {
           onSelectJob={(job) => setSelectedJobId(job.id)}
           onDeleteJob={async (job) => {
             try {
-              await deleteJob(job.id)
-              refresh()
+              await deleteJobLive(job.id)
             } catch (err) {
               console.error(err)
               setErrorMessage("Failed to delete job.")

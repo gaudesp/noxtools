@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type MouseEvent } from "react"
 import { type Job } from "../../lib/api"
 import JobStatusBadge from "./JobStatusBadge"
 import DeleteConfirmModal from "./DeleteConfirmModal"
@@ -119,7 +119,7 @@ export default function JobTable({
                   <div className="flex items-center justify-end gap-2">
                     <button
                       type="button"
-                      onClick={(e) => {
+                      onClick={(e: MouseEvent) => {
                         e.stopPropagation()
                         setConfirmDeleteId(job.id)
                       }}
@@ -130,11 +130,11 @@ export default function JobTable({
                   </div>
                   <DeleteConfirmModal
                     open={confirmDeleteId === job.id}
-                    onCancel={(e?: React.MouseEvent) => {
+                    onCancel={(e?: MouseEvent) => {
                       if (e) e.stopPropagation()
                       setConfirmDeleteId(null)
                     }}
-                    onConfirm={(e?: React.MouseEvent) => {
+                    onConfirm={(e?: MouseEvent) => {
                       if (e) e.stopPropagation()
                       onDeleteJob && onDeleteJob(job)
                       setConfirmDeleteId(null)

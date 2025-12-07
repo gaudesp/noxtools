@@ -1,9 +1,12 @@
+import asyncio
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import jobs, noxsongizer, noxelizer
 from app.db import engine, init_db
 from app.models.job import JobTool
+from app.events.job_events import job_event_bus
 from app.services.noxsongizer_service import NoxsongizerService
 from app.workers.job_worker import JobWorker
 
@@ -36,6 +39,7 @@ job_worker.register_executor(
 @app.on_event("startup")
 def on_startup() -> None:
   init_db()
+  job_event_bus.set_loop(asyncio.get_event_loop())
   job_worker.start()
 
 
