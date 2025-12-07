@@ -8,8 +8,7 @@ import JobUploader from "../components/jobs/JobUploader"
 
 export default function Noxsongizer() {
   const [isUploading, setIsUploading] = useState(false)
-  const [lastJobId, setLastJobId] = useState<string | null>(null)
-  const [fileName, setFileName] = useState<string | null>(null)
+  const [lastJobIds, setLastJobIds] = useState<string[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
   const [page, setPage] = useState<number>(1)
@@ -25,14 +24,15 @@ export default function Noxsongizer() {
   const total = allJobs.length
   const selectedJob = getJobById(selectedJobId)
 
-  async function startUpload(file: File) {
+  async function startUpload(files: File[]) {
     try {
       setErrorMessage(null)
       setIsUploading(true)
+      setLastJobIds([])
 
-      const res = await uploadNoxsongizer(file)
-      setLastJobId(res.job_id)
-      setFileName(res.filename)
+      const res = await uploadNoxsongizer(files)
+      const ids = res.jobs.map((j) => j.job_id)
+      setLastJobIds(ids)
     } catch (err) {
       console.error(err)
       setErrorMessage("File upload failed.")
@@ -55,14 +55,12 @@ export default function Noxsongizer() {
       <h1 className="text-2xl font-bold mb-4">Noxsongizer</h1>
 
       <JobUploader
-        onUpload={(file) => {
-          setFileName(file.name)
-          startUpload(file)
+        onUpload={(files) => {
+          startUpload(files)
         }}
         busy={isUploading}
         errorMessage={errorMessage}
-        lastJobId={lastJobId}
-        fileName={fileName}
+        lastJobIds={lastJobIds}
       />
 
       <div className="mt-10 space-y-3">

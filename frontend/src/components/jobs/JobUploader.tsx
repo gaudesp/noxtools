@@ -1,33 +1,31 @@
 import { useState } from "react"
 
 type Props = {
-  onUpload: (file: File) => void
+  onUpload: (files: File[]) => void
   busy?: boolean
   errorMessage?: string | null
-  lastJobId?: string | null
-  fileName?: string | null
+  lastJobIds?: string[]
 }
 
 export default function JobUploader({
   onUpload,
   busy,
   errorMessage,
-  lastJobId,
-  fileName,
+  lastJobIds,
 }: Props) {
   const [isDragging, setIsDragging] = useState(false)
 
-  function handleFileSelection(file: File | null) {
-    if (!file) return
-    onUpload(file)
+  function handleFileSelection(files: FileList | null) {
+    if (!files || files.length === 0) return
+    onUpload(Array.from(files))
   }
 
   function onDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault()
     e.stopPropagation()
     setIsDragging(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) handleFileSelection(file)
+    const files = e.dataTransfer.files
+    if (files && files.length > 0) handleFileSelection(files)
   }
 
   function onDragOver(e: React.DragEvent<HTMLDivElement>) {
@@ -66,22 +64,23 @@ export default function JobUploader({
           id="job-uploader-input"
           type="file"
           accept="audio/*"
+          multiple
           className="hidden"
-          onChange={(e) => handleFileSelection(e.target.files?.[0] || null)}
+          onChange={(e) => handleFileSelection(e.target.files)}
         />
 
         {!busy && (
           <>
-            <p className="text-lg font-medium mb-2">Drag & drop an audio file here</p>
+            <p className="text-lg font-medium mb-2">Drag & drop audio files here</p>
             <p className="text-sm text-neutral-400">
-              or click to choose a file from your computer
+              or click to choose one or multiple files from your computer
             </p>
           </>
         )}
 
         {busy && (
           <p className="text-sm text-neutral-300">
-            Uploading <span className="font-semibold">{fileName}</span>…
+            Uploading files…
           </p>
         )}
 
@@ -92,9 +91,9 @@ export default function JobUploader({
         )}
       </div>
 
-      {lastJobId && (
+      {lastJobIds && lastJobIds.length > 0 && (
         <div className="mt-4 text-sm text-emerald-300 bg-emerald-900/20 border border-emerald-700 rounded px-3 py-2">
-          Upload successful. Job created.
+          Upload successful. {lastJobIds.length} job(s) created.
         </div>
       )}
     </div>

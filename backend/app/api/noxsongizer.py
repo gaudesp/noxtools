@@ -23,9 +23,13 @@ def get_noxsongizer_service(job_service: JobService = Depends(get_job_service)) 
   return NoxsongizerService(job_service)
 
 
-class UploadResponse(BaseModel):
+class UploadItem(BaseModel):
   job_id: str
   filename: str
+
+
+class UploadResponse(BaseModel):
+  jobs: List[UploadItem]
 
 
 class StatusResponse(BaseModel):
@@ -41,12 +45,14 @@ def health() -> dict:
 
 
 @router.post("/upload", response_model=UploadResponse)
-async def upload_file(
-  file: UploadFile = File(...),
+async def upload_files(
+  files: List[UploadFile] = File(...),
   service: NoxsongizerService = Depends(get_noxsongizer_service),
 ) -> UploadResponse:
-  job = service.create_job_from_upload(file)
-  return UploadResponse(job_id=job.id, filename=file.filename)
+  jobs = service.create_jobs_from_uploads(files)
+  return UploadResponse(
+    jobs=[UploadItem(job_id=job.id, filename=file.filename) for job, file in jobs],
+  )
 
 
 @router.get("/status/{job_id}", response_model=StatusResponse)

@@ -40,9 +40,13 @@ export interface ListJobsParams {
   offset?: number;
 }
 
-export interface NoxsongizerUploadResponse {
+export interface NoxsongizerUploadItem {
   job_id: string;
   filename: string;
+}
+
+export interface NoxsongizerUploadResponse {
+  jobs: NoxsongizerUploadItem[];
 }
 
 export interface NoxsongizerJobResult {
@@ -93,9 +97,9 @@ export async function deleteJob(jobId: string): Promise<void> {
 // -----------------------------
 // Noxsongizer-specific helpers
 // -----------------------------
-export async function uploadNoxsongizer(file: File): Promise<NoxsongizerUploadResponse> {
+export async function uploadNoxsongizer(files: File[]): Promise<NoxsongizerUploadResponse> {
   const form = new FormData();
-  form.append("file", file);
+  files.forEach((file) => form.append("files", file));
 
   const res = await fetch(`${API_BASE_URL}/noxsongizer/upload`, {
     method: "POST",

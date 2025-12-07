@@ -3,7 +3,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 from fastapi import UploadFile
 
@@ -39,6 +39,26 @@ class NoxsongizerService:
     self.job_service.update_job(job.id, JobUpdate(input_path=str(dest)))
     refreshed = self.job_service.get_job(job.id)
     return refreshed or job
+
+  def create_jobs_from_uploads(self, files: List[UploadFile]) -> List[Tuple[Job, UploadFile]]:
+    jobs_with_files: List[Tuple[Job, UploadFile]] = []
+    for file in files:
+      job = self.job_service.create_job(
+        tool=JobTool.NOXSONGIZER,
+        input_filename=file.filename,
+      )
+
+      upload_dir = self.BASE_UPLOAD / job.id
+      upload_dir.mkdir(parents=True, exist_ok=True)
+
+      dest = upload_dir / file.filename
+      with dest.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+      self.job_service.update_job(job.id, JobUpdate(input_path=str(dest)))
+      refreshed = self.job_service.get_job(job.id)
+      jobs_with_files.append((refreshed or job, file))
+    return jobs_with_files
 
   # -----------------------------
   # Worker executor
