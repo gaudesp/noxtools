@@ -10,7 +10,7 @@ export default function DeleteConfirmModal({ open, onCancel, onConfirm }: Props)
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center text-center">
       <div
         className="absolute inset-0 bg-black/80"
         onClick={onCancel}
@@ -22,7 +22,7 @@ export default function DeleteConfirmModal({ open, onCancel, onConfirm }: Props)
         <p className="text-xs text-slate-300 mb-4">
           This will remove the job and its related files.
         </p>
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-center gap-2">
           <button
             type="button"
             className="text-xs px-3 py-1 rounded border border-slate-700 text-slate-200 hover:border-slate-500 transition"
