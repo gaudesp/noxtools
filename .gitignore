@@ -17,3 +17,6 @@ dist/
 # Media
 backend/media/uploads/
 backend/media/outputs/
+
+# Database
+*.db

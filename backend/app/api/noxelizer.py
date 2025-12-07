@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-router = APIRouter()
+router = APIRouter(prefix="/api/noxelizer", tags=["noxelizer"])
 
 @router.get("/health")
 def health() -> dict:

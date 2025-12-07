@@ -1,52 +1,100 @@
-import { useEffect, useState } from "react";
-import { API_BASE_URL } from "../lib/api";
+import { useCallback, useEffect, useRef, useState } from "react"
+import { uploadNoxsongizer, type Job } from "../lib/api"
+import { useJobStream } from "../lib/jobs"
+import { useNotifications } from "../components/notifications/Notifications"
+import JobDetailsModal from "../components/jobs/JobDetailsModal"
+import NoxsongizerResultPreview from "../components/jobs/NoxsongizerResultPreview"
+import JobTable from "../components/jobs/JobTable"
+import JobUploader from "../components/jobs/JobUploader"
 
-type HealthStatus = {
-  status: string;
-  service: string;
-} | null;
+export default function Noxsongizer() {
+  const [isUploading, setIsUploading] = useState(false)
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
+  const [page, setPage] = useState<number>(1)
+  const { notify } = useNotifications()
+  const lastErrorRef = useRef<string | null>(null)
 
-function Noxsongizer() {
-  const [health, setHealth] = useState<HealthStatus>(null);
-  const [error, setError] = useState<string | null>(null);
+  const pageSize = 10
+  const offset = (page - 1) * pageSize
+
+  const { jobs: allJobs, loading, error, deleteJob: deleteJobLive, getJobById } = useJobStream({
+    tool: "noxsongizer",
+  })
+
+  const pagedJobs = allJobs.slice(offset, offset + pageSize)
+  const total = allJobs.length
+  const selectedJob = getJobById(selectedJobId)
+
+  async function startUpload(files: File[]) {
+    try {
+      setIsUploading(true)
+
+      const res = await uploadNoxsongizer(files)
+      const ids = res.jobs.map((j) => j.job_id)
+      notify(`Upload successful: ${ids.length} job(s) created.`, "success")
+    } catch (err) {
+      console.error(err)
+      notify("File upload failed.", "danger")
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const renderJobContent = useCallback(
+    (job: Job) => <NoxsongizerResultPreview job={job} />,
+    [],
+  )
 
   useEffect(() => {
-    const fetchHealth = async () => {
-      try {
-        setError(null);
-        const res = await fetch(`${API_BASE_URL}/api/noxsongizer/health`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = (await res.json()) as HealthStatus;
-        setHealth(data);
-      } catch (err) {
-        setError("Impossible de joindre l'API Noxsongizer");
-      }
-    };
+    if (error && error !== lastErrorRef.current) {
+      notify(error, "danger")
+      lastErrorRef.current = error
+    }
+  }, [error, notify])
 
-    fetchHealth();
-  }, []);
+  function onCloseModal() {
+    setSelectedJobId(null)
+  }
 
   return (
-    <section>
-      <h2 className="text-2xl font-semibold mb-4">Noxsongizer</h2>
-      <p className="text-sm text-slate-300 mb-4">
-        Interface à venir pour séparer les pistes audio avec Demucs.
-      </p>
+    <div className="p-6 text-white">
+      <h1 className="text-2xl font-bold mb-4">Noxsongizer</h1>
 
-      <div className="inline-flex items-center gap-2 rounded-md border border-slate-800 px-3 py-2 text-xs">
-        <span className="font-semibold text-slate-200">API status :</span>
-        {error && <span className="text-red-400">{error}</span>}
-        {!error && !health && (
-          <span className="text-slate-400">Vérification en cours…</span>
-        )}
-        {health && !error && (
-          <span className="text-emerald-400">
-            {health.service} → {health.status}
-          </span>
-        )}
+      <JobUploader
+        onUpload={(files) => {
+          startUpload(files)
+        }}
+        busy={isUploading}
+      />
+
+      <div className="mt-10 space-y-3">
+        <JobTable
+          jobs={pagedJobs}
+          total={total}
+          pageSize={pageSize}
+          currentPage={page}
+          onPageChange={(p) => setPage(p)}
+          onSelectJob={(job) => setSelectedJobId(job.id)}
+          onDeleteJob={async (job) => {
+            try {
+              await deleteJobLive(job.id)
+              notify("Job deleted.", "success")
+            } catch (err) {
+              console.error(err)
+              notify("Failed to delete job.", "danger")
+            }
+          }}
+          loading={loading}
+          error={null}
+        />
       </div>
-    </section>
-  );
-}
 
-export default Noxsongizer;
+      <JobDetailsModal
+        job={selectedJob}
+        open={Boolean(selectedJob)}
+        onClose={onCloseModal}
+        renderContent={renderJobContent}
+      />
+    </div>
+  )
+}
