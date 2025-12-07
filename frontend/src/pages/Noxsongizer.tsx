@@ -1,6 +1,7 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { uploadNoxsongizer, type Job } from "../lib/api"
 import { useJobStream } from "../lib/jobs"
+import { useNotifications } from "../components/notifications/Notifications"
 import JobDetailsModal from "../components/jobs/JobDetailsModal"
 import NoxsongizerResultPreview from "../components/jobs/NoxsongizerResultPreview"
 import JobTable from "../components/jobs/JobTable"
@@ -8,10 +9,10 @@ import JobUploader from "../components/jobs/JobUploader"
 
 export default function Noxsongizer() {
   const [isUploading, setIsUploading] = useState(false)
-  const [lastJobIds, setLastJobIds] = useState<string[]>([])
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
   const [page, setPage] = useState<number>(1)
+  const { notify } = useNotifications()
+  const lastErrorRef = useRef<string | null>(null)
 
   const pageSize = 10
   const offset = (page - 1) * pageSize
@@ -26,16 +27,14 @@ export default function Noxsongizer() {
 
   async function startUpload(files: File[]) {
     try {
-      setErrorMessage(null)
       setIsUploading(true)
-      setLastJobIds([])
 
       const res = await uploadNoxsongizer(files)
       const ids = res.jobs.map((j) => j.job_id)
-      setLastJobIds(ids)
+      notify(`Upload successful: ${ids.length} job(s) created.`, "success")
     } catch (err) {
       console.error(err)
-      setErrorMessage("File upload failed.")
+      notify("File upload failed.", "danger")
     } finally {
       setIsUploading(false)
     }
@@ -45,6 +44,13 @@ export default function Noxsongizer() {
     (job: Job) => <NoxsongizerResultPreview job={job} />,
     [],
   )
+
+  useEffect(() => {
+    if (error && error !== lastErrorRef.current) {
+      notify(error, "danger")
+      lastErrorRef.current = error
+    }
+  }, [error, notify])
 
   function onCloseModal() {
     setSelectedJobId(null)
@@ -59,16 +65,9 @@ export default function Noxsongizer() {
           startUpload(files)
         }}
         busy={isUploading}
-        errorMessage={errorMessage}
-        lastJobIds={lastJobIds}
       />
 
       <div className="mt-10 space-y-3">
-        {error && (
-          <div className="text-sm text-rose-200 bg-rose-900/30 border border-rose-800 rounded px-3 py-2">
-            {error}
-          </div>
-        )}
         <JobTable
           jobs={pagedJobs}
           total={total}
@@ -79,9 +78,10 @@ export default function Noxsongizer() {
           onDeleteJob={async (job) => {
             try {
               await deleteJobLive(job.id)
+              notify("Job deleted.", "success")
             } catch (err) {
               console.error(err)
-              setErrorMessage("Failed to delete job.")
+              notify("Failed to delete job.", "danger")
             }
           }}
           loading={loading}

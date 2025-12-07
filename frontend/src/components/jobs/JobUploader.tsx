@@ -3,15 +3,11 @@ import { useState } from "react"
 type Props = {
   onUpload: (files: File[]) => void
   busy?: boolean
-  errorMessage?: string | null
-  lastJobIds?: string[]
 }
 
 export default function JobUploader({
   onUpload,
   busy,
-  errorMessage,
-  lastJobIds,
 }: Props) {
   const [isDragging, setIsDragging] = useState(false)
 
@@ -84,18 +80,7 @@ export default function JobUploader({
           </p>
         )}
 
-        {errorMessage && (
-          <p className="text-sm text-red-400 mt-2">
-            {errorMessage}
-          </p>
-        )}
       </div>
-
-      {lastJobIds && lastJobIds.length > 0 && (
-        <div className="mt-4 text-sm text-emerald-300 bg-emerald-900/20 border border-emerald-700 rounded px-3 py-2">
-          Upload successful. {lastJobIds.length} job(s) created.
-        </div>
-      )}
     </div>
   )
 }
