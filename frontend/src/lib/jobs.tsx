@@ -28,6 +28,7 @@ export function useJobStream(params: UseJobStreamParams = {}): UseJobStreamResul
   const eventSourceRef = useRef<EventSource | null>(null)
   const initialLoadedRef = useRef<string | null>(null)
   const loadCompleteRef = useRef<boolean>(false)
+  const backendDownRef = useRef<boolean>(false)
 
   useEffect(() => {
     if (initialLoadedRef.current === tool) return
@@ -45,10 +46,15 @@ export function useJobStream(params: UseJobStreamParams = {}): UseJobStreamResul
         })
         setJobsMap(next)
         loadCompleteRef.current = true
+        setError(null)
+        backendDownRef.current = false
       } catch (err) {
         console.error(err)
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load jobs")
+          if (!backendDownRef.current) {
+            setError("Backend unreachable.")
+            backendDownRef.current = true
+          }
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -78,6 +84,8 @@ export function useJobStream(params: UseJobStreamParams = {}): UseJobStreamResul
         const data = JSON.parse((event as MessageEvent).data) as { job: Job }
         if (tool && data.job.tool !== tool) return
         setJobsMap((prev) => ({ ...prev, [data.job.id]: data.job }))
+        backendDownRef.current = false
+        setError(null)
       } catch (err) {
         console.error("Failed to parse job_created event", err)
       }
@@ -88,6 +96,8 @@ export function useJobStream(params: UseJobStreamParams = {}): UseJobStreamResul
         const data = JSON.parse((event as MessageEvent).data) as { job: Job }
         if (tool && data.job.tool !== tool) return
         setJobsMap((prev) => ({ ...prev, [data.job.id]: data.job }))
+        backendDownRef.current = false
+        setError(null)
       } catch (err) {
         console.error("Failed to parse job_updated event", err)
       }
@@ -101,6 +111,8 @@ export function useJobStream(params: UseJobStreamParams = {}): UseJobStreamResul
           delete next[data.job_id]
           return next
         })
+        backendDownRef.current = false
+        setError(null)
       } catch (err) {
         console.error("Failed to parse job_deleted event", err)
       }
@@ -108,7 +120,10 @@ export function useJobStream(params: UseJobStreamParams = {}): UseJobStreamResul
 
     es.onerror = (err) => {
       console.error("SSE connection error", err)
-      setError("Live updates unavailable. SSE connection failed.")
+      if (!backendDownRef.current) {
+        setError("Backend unreachable.")
+        backendDownRef.current = true
+      }
     }
 
     return () => {
