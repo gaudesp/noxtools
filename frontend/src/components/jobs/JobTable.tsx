@@ -119,11 +119,12 @@ export default function JobTable({
                   <div className="flex items-center justify-end gap-2">
                     <button
                       type="button"
+                      disabled={job.status === "running"}
                       onClick={(e: MouseEvent) => {
                         e.stopPropagation()
                         setConfirmDeleteId(job.id)
                       }}
-                      className="text-xs px-2 py-1 rounded border border-rose-700 text-rose-200 hover:border-rose-500 hover:text-rose-100 transition"
+                      className="text-xs px-2 py-1 rounded border border-rose-700 text-rose-200 hover:border-rose-500 hover:text-rose-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>

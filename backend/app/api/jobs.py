@@ -79,6 +79,8 @@ def delete_job(
   job = job_service.get_job(job_id)
   if not job:
     raise HTTPException(status_code=404, detail="Job not found")
+  if job.status == JobStatus.RUNNING:
+    raise HTTPException(status_code=409, detail="Cannot delete a running job")
 
   cleanup = JobCleanupService()
   cleanup.cleanup_job_files(job)
