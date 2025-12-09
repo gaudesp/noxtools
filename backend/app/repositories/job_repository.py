@@ -107,7 +107,8 @@ class JobRepository:
       stmt = stmt.where(Job.tool == tool)
     if status:
       stmt = stmt.where(Job.status == status)
-    return int(self.session.exec(stmt).scalar_one())
+    result = self.session.exec(stmt).one()
+    return int(result[0] if isinstance(result, tuple) else result)
 
   def update(self, job_id: str, payload: JobUpdate) -> Optional[Job]:
     """
