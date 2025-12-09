@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
@@ -40,15 +40,6 @@ class UploadResponse(BaseModel):
   jobs: List[UploadItem]
 
 
-class StatusResponse(BaseModel):
-  """Status response for a Noxsongizer job."""
-
-  job_id: str
-  status: str
-  stems: List[str] = []
-  error: Optional[str] = None
-
-
 @router.get("/health")
 def health() -> dict:
   """Health check for the Noxsongizer tool."""
@@ -66,28 +57,6 @@ async def upload_files(
   jobs = service.create_jobs_from_uploads(files)
   return UploadResponse(
     jobs=[UploadItem(job_id=job.id, filename=file.filename) for job, file in jobs],
-  )
-
-
-@router.get("/status/{job_id}", response_model=StatusResponse)
-def get_status(
-  job_id: str,
-  job_service: JobService = Depends(get_job_service),
-) -> StatusResponse:
-  """
-  Retrieve the processing status and available stems for a job.
-  """
-  job = job_service.get_job(job_id)
-  if not job:
-    raise HTTPException(status_code=404, detail="Job not found")
-
-  stems = job.output_files or (job.result.get("stems") if job.result else [])
-
-  return StatusResponse(
-    job_id=job_id,
-    status=str(job.status.value),
-    stems=list(stems),
-    error=job.error_message,
   )
 
 
