@@ -1,3 +1,5 @@
+"""FastAPI routes for Noxsongizer-specific operations."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -16,23 +18,31 @@ router = APIRouter(prefix="/api/noxsongizer", tags=["noxsongizer"])
 
 
 def get_job_service(session: Session = Depends(get_session)) -> JobService:
+  """Dependency injector for JobService."""
   return JobService(session)
 
 
 def get_noxsongizer_service(job_service: JobService = Depends(get_job_service)) -> NoxsongizerService:
+  """Dependency injector for NoxsongizerService."""
   return NoxsongizerService(job_service)
 
 
 class UploadItem(BaseModel):
+  """Single upload job descriptor."""
+
   job_id: str
   filename: str
 
 
 class UploadResponse(BaseModel):
+  """Response containing created jobs for uploaded files."""
+
   jobs: List[UploadItem]
 
 
 class StatusResponse(BaseModel):
+  """Status response for a Noxsongizer job."""
+
   job_id: str
   status: str
   stems: List[str] = []
@@ -41,6 +51,7 @@ class StatusResponse(BaseModel):
 
 @router.get("/health")
 def health() -> dict:
+  """Health check for the Noxsongizer tool."""
   return {"status": "ok", "service": "noxsongizer"}
 
 
@@ -49,6 +60,9 @@ async def upload_files(
   files: List[UploadFile] = File(...),
   service: NoxsongizerService = Depends(get_noxsongizer_service),
 ) -> UploadResponse:
+  """
+  Upload one or more audio files and enqueue jobs for separation.
+  """
   jobs = service.create_jobs_from_uploads(files)
   return UploadResponse(
     jobs=[UploadItem(job_id=job.id, filename=file.filename) for job, file in jobs],
@@ -60,6 +74,9 @@ def get_status(
   job_id: str,
   job_service: JobService = Depends(get_job_service),
 ) -> StatusResponse:
+  """
+  Retrieve the processing status and available stems for a job.
+  """
   job = job_service.get_job(job_id)
   if not job:
     raise HTTPException(status_code=404, detail="Job not found")
@@ -80,6 +97,9 @@ def download_stem(
   stem_name: str,
   job_service: JobService = Depends(get_job_service),
 ) -> FileResponse:
+  """
+  Download a generated stem file for the given job.
+  """
   job = job_service.get_job(job_id)
   if not job or not job.output_path:
     raise HTTPException(status_code=404, detail="Job not found or not ready")
