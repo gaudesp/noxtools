@@ -48,7 +48,7 @@ class NoxelizerExecutor:
     self.final_hold = final_hold
     self.codec = codec
     self.suffix = self._normalize_suffix(suffix)
-    self.base_output = base_output or Path("media/outputs") / "noxelizer"
+    self.base_output = base_output or Path("media/noxelizer/outputs")
 
     self._validate_config()
     self.base_output.mkdir(parents=True, exist_ok=True)

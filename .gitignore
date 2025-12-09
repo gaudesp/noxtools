@@ -15,8 +15,7 @@ dist/
 .vscode/
 
 # Media
-backend/media/uploads/
-backend/media/outputs/
+backend/media/
 
 # Database
 *.db

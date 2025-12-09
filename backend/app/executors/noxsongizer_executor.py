@@ -30,7 +30,7 @@ class NoxsongizerExecutor:
     """
     self.demucs_bin = demucs_bin
     self.demucs_model = demucs_model
-    self.base_output = base_output or Path("media/outputs") / "noxsongizer"
+    self.base_output = base_output or Path("media/noxsongizer/outputs")
     self.base_output.mkdir(parents=True, exist_ok=True)
 
   def execute(self, job: Job) -> Tuple[Path, List[str]]:

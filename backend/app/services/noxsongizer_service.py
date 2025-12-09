@@ -16,8 +16,8 @@ from app.services.job_service import JobService
 class NoxsongizerService:
   """Handles Noxsongizer uploads and processing."""
 
-  BASE_UPLOAD = Path("media/uploads") / "noxsongizer"
-  BASE_OUTPUT = Path("media/outputs") / "noxsongizer"
+  BASE_UPLOAD = Path("media/noxsongizer/uploads")
+  BASE_OUTPUT = Path("media/noxsongizer/outputs")
 
   def __init__(self, job_service: JobService) -> None:
     self.job_service = job_service
