@@ -1,3 +1,5 @@
+"""Database engine configuration and session dependency helpers."""
+
 from __future__ import annotations
 
 import os
@@ -25,9 +27,11 @@ engine = create_engine(
 
 
 def init_db() -> None:
+  """Create database tables if they do not exist."""
   SQLModel.metadata.create_all(engine)
 
 
 def get_session() -> Generator[Session, None, None]:
+  """Yield a SQLModel session for dependency injection."""
   with Session(engine) as session:
     yield session
