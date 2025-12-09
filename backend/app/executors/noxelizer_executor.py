@@ -127,7 +127,7 @@ class NoxelizerExecutor:
   def _build_output_name(self, input_file: Path) -> str:
     """Derive the output filename from the input image stem."""
     stem = input_file.stem or "noxelizer_output"
-    return f"{stem}_pixelate{self.suffix}"
+    return f"[Pixelate] {stem}{self.suffix}"
 
   def _render_video(self, image_path: Path, output_path: Path) -> int:
     image = cv2.imread(str(image_path))

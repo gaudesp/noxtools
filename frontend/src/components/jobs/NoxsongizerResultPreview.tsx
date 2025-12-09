@@ -5,12 +5,17 @@ type StemType = "vocals" | "other" | "drums" | "bass"
 const STEM_ORDER: { type: StemType; label: string }[] = [
   { type: "vocals", label: "Vocals" },
   { type: "other", label: "Other" },
-  { type: "drums", label: "Drums" },
   { type: "bass", label: "Bass" },
+  { type: "drums", label: "Drums" },
 ]
 
 function isStem(stem: string, type: StemType): boolean {
-  return stem === `${type}.wav` || stem.endsWith(`_${type}.wav`)
+  const lowerStem = stem.toLowerCase()
+  return (
+    lowerStem === `${type}.wav` ||
+    lowerStem.endsWith(`_${type}.wav`) ||
+    lowerStem.startsWith(`[${type}] `)
+  )
 }
 
 export default function NoxsongizerResultPreview({ job }: { job: Job }) {

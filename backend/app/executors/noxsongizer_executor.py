@@ -128,11 +128,24 @@ class NoxsongizerExecutor:
     for stem_path in source_dir.iterdir():
       if not stem_path.is_file():
         continue
-      renamed = f"{input_stem}_{stem_path.stem}{stem_path.suffix}"
+      label = self._label_for_stem(stem_path.stem)
+      renamed = f"[{label}] {input_stem}{stem_path.suffix}"
       target = target_dir / renamed
       shutil.move(str(stem_path), str(target))
       stems.append(renamed)
     return stems
+
+  def _label_for_stem(self, stem_name: str) -> str:
+    """
+    Map Demucs stem names to user-facing labels.
+    """
+    mapping = {
+      "vocals": "Vocals",
+      "other": "Other",
+      "bass": "Bass",
+      "drums": "Drums",
+    }
+    return mapping.get(stem_name.lower(), stem_name.title())
 
   def _cleanup(self, path: Path) -> None:
     """Best-effort cleanup of temporary directories."""
