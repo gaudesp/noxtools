@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 from sqlmodel import Session
 
-from app.events.job_events import job_event_bus
+from app.events.job_events import JobEvent, job_event_bus
 from app.models.job import Job, JobCreate, JobStatus, JobTool, JobUpdate, _utcnow
 from app.repositories.job_repository import JobRepository
 
@@ -295,9 +295,9 @@ class JobService:
     """
     try:
       if "job" in data and isinstance(data["job"], Job):
-        payload = {"type": event_type, "job": data["job"].model_dump(mode="json")}
+        event = JobEvent(type=event_type, payload={"job": data["job"].model_dump(mode="json")})
       else:
-        payload = {"type": event_type, **data}
-      job_event_bus.publish_sync(payload)
+        event = JobEvent(type=event_type, payload=data)
+      job_event_bus.publish_sync(event)
     except Exception:
       pass
