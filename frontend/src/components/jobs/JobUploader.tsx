@@ -3,11 +3,23 @@ import { useState } from "react"
 type Props = {
   onUpload: (files: File[]) => void
   busy?: boolean
+  accept?: string
+  title?: string
+  description?: string
+  inputId?: string
+  multiple?: boolean
+  busyLabel?: string
 }
 
 export default function JobUploader({
   onUpload,
   busy,
+  accept = "audio/*",
+  title = "Drag & drop audio files here",
+  description = "or click to choose one or multiple files from your computer",
+  inputId = "job-uploader-input",
+  multiple = true,
+  busyLabel = "Uploading files…",
 }: Props) {
   const [isDragging, setIsDragging] = useState(false)
 
@@ -48,7 +60,7 @@ export default function JobUploader({
         ].join(" ")}
         onClick={() => {
           const input = document.getElementById(
-            "job-uploader-input",
+            inputId,
           ) as HTMLInputElement | null
           input?.click()
         }}
@@ -57,26 +69,26 @@ export default function JobUploader({
         onDragLeave={onDragLeave}
       >
         <input
-          id="job-uploader-input"
+          id={inputId}
           type="file"
-          accept="audio/*"
-          multiple
+          accept={accept}
+          multiple={multiple}
           className="hidden"
           onChange={(e) => handleFileSelection(e.target.files)}
         />
 
         {!busy && (
           <>
-            <p className="text-lg font-medium mb-2">Drag & drop audio files here</p>
+            <p className="text-lg font-medium mb-2">{title}</p>
             <p className="text-sm text-neutral-400">
-              or click to choose one or multiple files from your computer
+              {description}
             </p>
           </>
         )}
 
         {busy && (
           <p className="text-sm text-neutral-300">
-            Uploading files…
+            {busyLabel}
           </p>
         )}
 
