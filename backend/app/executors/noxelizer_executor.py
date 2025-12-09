@@ -48,7 +48,7 @@ class NoxelizerExecutor:
     self.final_hold = final_hold
     self.codec = codec
     self.suffix = self._normalize_suffix(suffix)
-    self.base_output = base_output or Path("media/outputs")
+    self.base_output = base_output or Path("media/outputs") / "noxelizer"
 
     self._validate_config()
     self.base_output.mkdir(parents=True, exist_ok=True)
@@ -127,7 +127,7 @@ class NoxelizerExecutor:
   def _build_output_name(self, input_file: Path) -> str:
     """Derive the output filename from the input image stem."""
     stem = input_file.stem or "noxelizer_output"
-    return f"{stem}{self.suffix}"
+    return f"{stem}_pixelate{self.suffix}"
 
   def _render_video(self, image_path: Path, output_path: Path) -> int:
     image = cv2.imread(str(image_path))
