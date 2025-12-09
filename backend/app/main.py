@@ -10,6 +10,7 @@ from app.db import engine, init_db
 from app.events.job_events import job_event_bus
 from app.models.job import JobTool
 from app.services.noxsongizer_service import NoxsongizerService
+from app.services.noxelizer_service import NoxelizerService
 from app.workers.job_worker import JobWorker
 
 app = FastAPI(title="Noxtools API")
@@ -34,6 +35,10 @@ job_worker = JobWorker(engine)
 job_worker.register_executor(
   JobTool.NOXSONGIZER,
   lambda job, svc: NoxsongizerService(svc).process_job(job),
+)
+job_worker.register_executor(
+  JobTool.NOXELIZER,
+  lambda job, svc: NoxelizerService(svc).process_job(job),
 )
 
 

@@ -59,6 +59,29 @@ export interface NoxsongizerJob extends Job {
   result?: NoxsongizerJobResult;
 }
 
+export interface NoxelizerUploadItem {
+  job_id: string;
+  filename: string;
+}
+
+export interface NoxelizerUploadResponse {
+  jobs: NoxelizerUploadItem[];
+}
+
+export interface NoxelizerJobResult {
+  video?: string;
+  frames_written?: number;
+  fps?: number;
+  duration?: number;
+  final_hold?: number;
+  codec?: string;
+}
+
+export interface NoxelizerJob extends Job {
+  tool: "noxelizer";
+  result?: NoxelizerJobResult;
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const text = await res.text();
@@ -117,4 +140,29 @@ export async function listNoxsongizerJobs(
 
 export function getNoxsongizerDownloadUrl(jobId: string, stem: string): string {
   return `${API_BASE_URL}/noxsongizer/download/${jobId}/${encodeURIComponent(stem)}`;
+}
+
+// -----------------------------
+// Noxelizer-specific helpers
+// -----------------------------
+export async function uploadNoxelizer(files: File[]): Promise<NoxelizerUploadResponse> {
+  const form = new FormData();
+  files.forEach((file) => form.append("files", file));
+
+  const res = await fetch(`${API_BASE_URL}/noxelizer/upload`, {
+    method: "POST",
+    body: form,
+  });
+
+  return handleResponse<NoxelizerUploadResponse>(res);
+}
+
+export async function listNoxelizerJobs(
+  params: Omit<ListJobsParams, "tool"> = {},
+): Promise<PaginatedJobs> {
+  return listJobs({ ...params, tool: "noxelizer" });
+}
+
+export function getNoxelizerDownloadUrl(jobId: string, filename: string): string {
+  return `${API_BASE_URL}/noxelizer/download/${jobId}/${encodeURIComponent(filename)}`;
 }
