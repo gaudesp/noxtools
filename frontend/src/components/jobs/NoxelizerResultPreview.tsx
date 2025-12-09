@@ -57,7 +57,7 @@ export default function NoxelizerResultPreview({ job }: { job: Job }) {
         </p>
         <div className="border border-slate-800 rounded-lg p-3 bg-slate-900 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-semibold truncate">{filename}</span>
+            <span className="text-sm font-semibold truncate">Video</span>
             <a
               href={url}
               download

@@ -30,8 +30,10 @@ def purge_database() -> None:
 
 def purge_media() -> None:
   paths = [
-    Path("media/uploads"),
-    Path("media/outputs"),
+    Path("media/noxsongizer/uploads"),
+    Path("media/noxsongizer/outputs"),
+    Path("media/noxelizer/uploads"),
+    Path("media/noxelizer/outputs"),
     Path("separated"),
   ]
   for path in paths:

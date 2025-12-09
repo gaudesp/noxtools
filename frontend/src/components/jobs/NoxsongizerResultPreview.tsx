@@ -1,10 +1,21 @@
 import { type Job, getNoxsongizerDownloadUrl } from "../../lib/api"
 
-const STEM_LABELS: Record<string, string> = {
-  "vocals.wav": "Vocals",
-  "drums.wav": "Drums",
-  "bass.wav": "Bass",
-  "other.wav": "Other",
+type StemType = "vocals" | "other" | "drums" | "bass"
+
+const STEM_ORDER: { type: StemType; label: string }[] = [
+  { type: "vocals", label: "Vocals" },
+  { type: "other", label: "Other" },
+  { type: "bass", label: "Bass" },
+  { type: "drums", label: "Drums" },
+]
+
+function isStem(stem: string, type: StemType): boolean {
+  const lowerStem = stem.toLowerCase()
+  return (
+    lowerStem === `${type}.wav` ||
+    lowerStem.endsWith(`_${type}.wav`) ||
+    lowerStem.startsWith(`[${type}] `)
+  )
 }
 
 export default function NoxsongizerResultPreview({ job }: { job: Job }) {
@@ -41,18 +52,22 @@ export default function NoxsongizerResultPreview({ job }: { job: Job }) {
 
   if (job.status === "done") {
     const stems = job.output_files || (job.result?.stems as string[] | undefined) || []
+    const orderedStems = STEM_ORDER.map((stemInfo) => {
+      const match = stems.find((stem) => isStem(stem, stemInfo.type))
+      return match ? { ...stemInfo, filename: match } : null
+    }).filter(Boolean) as Array<{ type: StemType; label: string; filename: string }>
+
     return (
       <div className="space-y-3">
         <p className="text-sm text-slate-200">
           Job completed. Download or listen to the stems below.
         </p>
         <div className="grid gap-3 md:grid-cols-2">
-          {stems.map((stem) => {
-            const label = STEM_LABELS[stem] ?? stem
-            const url = getNoxsongizerDownloadUrl(job.id, stem)
+          {orderedStems.map(({ label, filename, type }) => {
+            const url = getNoxsongizerDownloadUrl(job.id, filename)
             return (
               <div
-                key={stem}
+                key={type}
                 className="border border-slate-800 rounded-lg p-3 bg-slate-900"
               >
                 <div className="flex items-center justify-between mb-2">
