@@ -1,3 +1,5 @@
+"""Application entrypoint wiring FastAPI routes, worker, and executors."""
+
 import asyncio
 
 from fastapi import FastAPI
@@ -5,14 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import jobs, noxsongizer, noxelizer
 from app.db import engine, init_db
-from app.models.job import JobTool
 from app.events.job_events import job_event_bus
+from app.models.job import JobTool
 from app.services.noxsongizer_service import NoxsongizerService
 from app.workers.job_worker import JobWorker
 
 app = FastAPI(title="Noxtools API")
 
-# Autoriser le front localhost:5173
 origins = [
   "http://localhost:5173",
 ]
@@ -38,6 +39,7 @@ job_worker.register_executor(
 
 @app.on_event("startup")
 def on_startup() -> None:
+  """Initialize database, event loop binding, and start worker."""
   init_db()
   job_event_bus.set_loop(asyncio.get_event_loop())
   job_worker.start()
@@ -45,4 +47,5 @@ def on_startup() -> None:
 
 @app.on_event("shutdown")
 def on_shutdown() -> None:
+  """Stop background worker on application shutdown."""
   job_worker.stop()

@@ -108,16 +108,3 @@ class NoxsongizerService:
     except Exception:
       return None
     return dest
-
-  def _cleanup_folder(self, path: Path) -> None:
-    """
-    Best-effort removal of a folder (used for Demucs temp outputs).
-
-    Args:
-      path: Folder to remove.
-    """
-    try:
-      if path.exists():
-        shutil.rmtree(path)
-    except Exception:
-      pass
