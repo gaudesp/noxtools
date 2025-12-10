@@ -2,6 +2,7 @@ import { useState, type MouseEvent } from "react"
 import { type Job } from "../../lib/api"
 import JobStatusBadge from "./JobStatusBadge"
 import DeleteConfirmModal from "./DeleteConfirmModal"
+import JobPreview from "./JobPreview"
 
 type Props = {
   jobs: Job[]
@@ -91,6 +92,7 @@ export default function JobTable({
           <thead className="bg-slate-800/60 text-xs uppercase text-slate-400">
             <tr>
               <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-left">Preview</th>
               <th className="px-4 py-3 text-left">File</th>
               <th className="px-4 py-3 text-left">Created</th>
               <th className="px-4 py-3 text-right">Actions</th>
@@ -105,6 +107,9 @@ export default function JobTable({
               >
                 <td className="px-4 py-3 align-middle">
                   <JobStatusBadge status={job.status} />
+                </td>
+                <td className="px-4 py-3 align-middle">
+                  <JobPreview job={job} />
                 </td>
                 <td className="px-4 py-3 align-middle text-slate-100">
                   {job.input_filename || "Unknown file"}
@@ -146,7 +151,7 @@ export default function JobTable({
             ))}
             {jobs.length === 0 && !loading && !error && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
                   No jobs to show.
                 </td>
               </tr>

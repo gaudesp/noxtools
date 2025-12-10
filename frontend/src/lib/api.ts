@@ -142,6 +142,10 @@ export function getNoxsongizerDownloadUrl(jobId: string, stem: string): string {
   return `${API_BASE_URL}/noxsongizer/download/${jobId}/${encodeURIComponent(stem)}`;
 }
 
+export function getNoxsongizerSourceUrl(jobId: string): string {
+  return `${API_BASE_URL}/noxsongizer/source/${jobId}`;
+}
+
 // -----------------------------
 // Noxelizer-specific helpers
 // -----------------------------
@@ -165,4 +169,8 @@ export async function listNoxelizerJobs(
 
 export function getNoxelizerDownloadUrl(jobId: string, filename: string): string {
   return `${API_BASE_URL}/noxelizer/download/${jobId}/${encodeURIComponent(filename)}`;
+}
+
+export function getNoxelizerSourceUrl(jobId: string): string {
+  return `${API_BASE_URL}/noxelizer/source/${jobId}`;
 }

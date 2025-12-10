@@ -66,7 +66,10 @@ export default function NoxelizerResultPreview({ job }: { job: Job }) {
               Download
             </a>
           </div>
-          <video controls className="w-full rounded border border-slate-800 bg-black">
+          <video
+            controls
+            className="w-full h-[400px] rounded border border-slate-800 bg-black object-contain"
+          >
             <source src={url} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
