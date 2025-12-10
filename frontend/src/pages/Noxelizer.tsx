@@ -30,7 +30,7 @@ export default function Noxelizer() {
       setIsUploading(true)
       const res = await uploadNoxelizer(files)
       const ids = res.jobs.map((j) => j.job_id)
-      notify(`Upload successful: ${ids.length} job(s) created.`, "success")
+      notify(`${ids.length} job(s) created.`, "success")
     } catch (err) {
       console.error(err)
       notify("File upload failed.", "danger")
@@ -56,17 +56,27 @@ export default function Noxelizer() {
   }
 
   return (
-    <div className="p-6 text-white">
-      <h1 className="text-2xl font-bold mb-4">Noxelizer</h1>
+    <div className="p-6 text-white space-y-8">
+      <h1 className="text-2xl font-bold mb-2">Noxelizer</h1>
+      <p className="text-sm text-slate-400">
+        Generate smooth depixelization videos that reveal an image over time.
+      </p>
 
-      <JobUploader
-        onUpload={(files) => startUpload(files)}
-        busy={isUploading}
-        accept="image/*"
-        title="Drag & drop images here"
-        description="or click to choose one or multiple images from your computer"
-        inputId="noxelizer-uploader-input"
-      />
+      <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 shadow-md">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold mb-2">Files</label>
+            <JobUploader
+              onUpload={(files) => startUpload(files)}
+              busy={isUploading}
+              accept="image/*"
+              title="Drag & drop images here"
+              description="or click to choose one or multiple images from your computer"
+              inputId="noxelizer-uploader-input"
+            />
+          </div>
+        </div>
+      </div>
 
       <div className="mt-10 space-y-3">
         <JobTable

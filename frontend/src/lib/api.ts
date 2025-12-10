@@ -3,9 +3,9 @@ const API_BASE_URL = "http://localhost:8000/api";
 export { API_BASE_URL };
 
 export type JobStatus = "pending" | "running" | "done" | "error";
-export type JobTool = "noxsongizer" | "noxelizer";
+export type JobTool = "noxsongizer" | "noxelizer" | "noxtubizer";
 
-export interface Job {
+export interface Job<ResultType = Record<string, unknown>> {
   id: string;
   tool: JobTool;
   status: JobStatus;
@@ -14,7 +14,7 @@ export interface Job {
   output_path?: string | null;
   output_files?: string[] | null;
   params?: Record<string, unknown>;
-  result?: Record<string, unknown>;
+  result?: ResultType;
   error_message?: string | null;
   created_at?: string;
   updated_at?: string;
@@ -25,6 +25,7 @@ export interface Job {
   attempt?: number;
   max_attempts?: number;
 }
+
 
 export interface PaginatedJobs {
   items: Job[];
@@ -53,10 +54,8 @@ export interface NoxsongizerJobResult {
   stems?: string[];
 }
 
-export interface NoxsongizerJob extends Job {
+export interface NoxsongizerJob extends Job<NoxsongizerJobResult> {
   tool: "noxsongizer";
-  output_files?: string[] | null;
-  result?: NoxsongizerJobResult;
 }
 
 export interface NoxelizerUploadItem {
@@ -77,9 +76,56 @@ export interface NoxelizerJobResult {
   codec?: string;
 }
 
-export interface NoxelizerJob extends Job {
+export interface NoxelizerJob extends Job<NoxelizerJobResult> {
   tool: "noxelizer";
   result?: NoxelizerJobResult;
+}
+
+export interface NoxtubizerJobResult {
+  mode?: "audio" | "video" | "both";
+  source_title?: string;
+  safe_title?: string;
+  url?: string;
+  audio?: {
+    filename: string;
+    format: string;
+    quality: string;
+    real_bitrate?: number;
+  };
+  video?: {
+    filename: string;
+    format: string;
+    quality: string;
+    has_audio: boolean;
+    real_height?: number;
+  };
+  both?: {
+    filename: string;
+    format: string;
+    audio_format: string;
+    audio_quality: string;
+    has_audio: boolean;
+    real_height?: number;
+    real_bitrate?: number;
+  };
+}
+
+export interface NoxtubizerJob extends Job<NoxtubizerJobResult> {
+  tool: "noxtubizer";
+  result?: NoxtubizerJobResult;
+}
+
+export interface NoxtubizerCreateRequest {
+  url: string;
+  mode: "audio" | "video" | "both";
+  audio_quality?: "high" | "320kbps" | "256kbps" | "128kbps" | "64kbps";
+  audio_format?: "mp3" | "m4a" | "ogg" | "wav";
+  video_quality?: "best" | "4320p" | "2160p" | "1440p" | "1080p" | "720p" | "480p" | "360p" | "240p";
+  video_format?: "mp4" | "mkv";
+}
+
+export interface NoxtubizerCreateResponse {
+  job_id: string;
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
@@ -90,9 +136,6 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// -----------------------------
-// Jobs API (generic)
-// -----------------------------
 export async function listJobs(params: ListJobsParams = {}): Promise<PaginatedJobs> {
   const search = new URLSearchParams();
   if (params.tool) search.set("tool", params.tool);
@@ -117,9 +160,6 @@ export async function deleteJob(jobId: string): Promise<void> {
   }
 }
 
-// -----------------------------
-// Noxsongizer-specific helpers
-// -----------------------------
 export async function uploadNoxsongizer(files: File[]): Promise<NoxsongizerUploadResponse> {
   const form = new FormData();
   files.forEach((file) => form.append("files", file));
@@ -146,9 +186,6 @@ export function getNoxsongizerSourceUrl(jobId: string): string {
   return `${API_BASE_URL}/noxsongizer/source/${jobId}`;
 }
 
-// -----------------------------
-// Noxelizer-specific helpers
-// -----------------------------
 export async function uploadNoxelizer(files: File[]): Promise<NoxelizerUploadResponse> {
   const form = new FormData();
   files.forEach((file) => form.append("files", file));
@@ -173,4 +210,26 @@ export function getNoxelizerDownloadUrl(jobId: string, filename: string): string
 
 export function getNoxelizerSourceUrl(jobId: string): string {
   return `${API_BASE_URL}/noxelizer/source/${jobId}`;
+}
+
+export async function createNoxtubizerJob(
+  payload: NoxtubizerCreateRequest,
+): Promise<NoxtubizerCreateResponse> {
+  const res = await fetch(`${API_BASE_URL}/noxtubizer/jobs`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  return handleResponse<NoxtubizerCreateResponse>(res);
+}
+
+export async function listNoxtubizerJobs(
+  params: Omit<ListJobsParams, "tool"> = {},
+): Promise<PaginatedJobs> {
+  return listJobs({ ...params, tool: "noxtubizer" });
+}
+
+export function getNoxtubizerDownloadUrl(jobId: string, filename: string): string {
+  return `${API_BASE_URL}/noxtubizer/download/${jobId}/${encodeURIComponent(filename)}`;
 }

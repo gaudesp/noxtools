@@ -3,21 +3,11 @@ import { type Job, getNoxelizerDownloadUrl } from "../../lib/api"
 export default function NoxelizerResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxelizer") return null
 
-  if (job.status === "pending") {
-    return (
-      <p className="text-sm text-slate-200">
-        Your job is queued and will start processing soon.
-      </p>
-    )
-  }
+  if (job.status === "pending")
+    return <p className="text-sm text-slate-200">Job queued, we will start processing soon.</p>
 
-  if (job.status === "running") {
-    return (
-      <p className="text-sm text-slate-200">
-        Rendering your depixelization video. Hang tight!
-      </p>
-    )
-  }
+  if (job.status === "running")
+    return <p className="text-sm text-slate-200">Rendering your depixelization video. Hang tight!</p>
 
   if (job.status === "error") {
     return (
@@ -52,9 +42,6 @@ export default function NoxelizerResultPreview({ job }: { job: Job }) {
 
     return (
       <div className="space-y-3">
-        <p className="text-sm text-slate-200">
-          Job completed. Watch or download your reveal video below.
-        </p>
         <div className="border border-slate-800 rounded-lg p-3 bg-slate-900 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-semibold truncate">Video</span>
