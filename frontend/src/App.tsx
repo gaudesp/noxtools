@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar";
 import Noxsongizer from "./pages/Noxsongizer";
 import Noxelizer from "./pages/Noxelizer";
 import Noxtubizer from "./pages/Noxtubizer";
+import Noxtunizer from "./pages/Noxtunizer";
 import AllJobs from "./pages/AllJobs";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/noxsongizer" element={<Noxsongizer />} />
           <Route path="/noxelizer" element={<Noxelizer />} />
           <Route path="/noxtubizer" element={<Noxtubizer />} />
+          <Route path="/noxtunizer" element={<Noxtunizer />} />
           <Route path="/jobs" element={<AllJobs />} />
         </Routes>
       </main>

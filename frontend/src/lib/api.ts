@@ -3,7 +3,7 @@ const API_BASE_URL = "http://localhost:8000/api";
 export { API_BASE_URL };
 
 export type JobStatus = "pending" | "running" | "done" | "error";
-export type JobTool = "noxsongizer" | "noxelizer" | "noxtubizer";
+export type JobTool = "noxsongizer" | "noxelizer" | "noxtubizer" | "noxtunizer";
 
 export interface Job<ResultType = Record<string, unknown>> {
   id: string;
@@ -25,7 +25,6 @@ export interface Job<ResultType = Record<string, unknown>> {
   attempt?: number;
   max_attempts?: number;
 }
-
 
 export interface PaginatedJobs {
   items: Job[];
@@ -79,6 +78,27 @@ export interface NoxelizerJobResult {
 export interface NoxelizerJob extends Job<NoxelizerJobResult> {
   tool: "noxelizer";
   result?: NoxelizerJobResult;
+}
+
+export interface NoxtunizerUploadItem {
+  job_id: string;
+  filename: string;
+}
+
+export interface NoxtunizerUploadResponse {
+  jobs: NoxtunizerUploadItem[];
+}
+
+export interface NoxtunizerJobResult {
+  bpm: number | null;
+  key: string | null;
+  duration_seconds: number | null;
+  duration_label: string;
+}
+
+export interface NoxtunizerJob extends Job<NoxtunizerJobResult> {
+  tool: "noxtunizer";
+  result?: NoxtunizerJobResult;
 }
 
 export interface NoxtubizerJobResult {
@@ -173,7 +193,7 @@ export async function uploadNoxsongizer(files: File[]): Promise<NoxsongizerUploa
 }
 
 export async function listNoxsongizerJobs(
-  params: Omit<ListJobsParams, "tool"> = {},
+  params: Omit<ListJobsParams, "tool"> = {}
 ): Promise<PaginatedJobs> {
   return listJobs({ ...params, tool: "noxsongizer" });
 }
@@ -199,7 +219,7 @@ export async function uploadNoxelizer(files: File[]): Promise<NoxelizerUploadRes
 }
 
 export async function listNoxelizerJobs(
-  params: Omit<ListJobsParams, "tool"> = {},
+  params: Omit<ListJobsParams, "tool"> = {}
 ): Promise<PaginatedJobs> {
   return listJobs({ ...params, tool: "noxelizer" });
 }
@@ -212,8 +232,30 @@ export function getNoxelizerSourceUrl(jobId: string): string {
   return `${API_BASE_URL}/noxelizer/source/${jobId}`;
 }
 
+export async function uploadNoxtunizer(files: File[]): Promise<NoxtunizerUploadResponse> {
+  const form = new FormData();
+  files.forEach((file) => form.append("files", file));
+
+  const res = await fetch(`${API_BASE_URL}/noxtunizer/upload`, {
+    method: "POST",
+    body: form,
+  });
+
+  return handleResponse<NoxtunizerUploadResponse>(res);
+}
+
+export async function listNoxtunizerJobs(
+  params: Omit<ListJobsParams, "tool"> = {}
+): Promise<PaginatedJobs> {
+  return listJobs({ ...params, tool: "noxtunizer" });
+}
+
+export function getNoxtunizerSourceUrl(jobId: string): string {
+  return `${API_BASE_URL}/noxtunizer/source/${jobId}`;
+}
+
 export async function createNoxtubizerJob(
-  payload: NoxtubizerCreateRequest,
+  payload: NoxtubizerCreateRequest
 ): Promise<NoxtubizerCreateResponse> {
   const res = await fetch(`${API_BASE_URL}/noxtubizer/jobs`, {
     method: "POST",
@@ -225,7 +267,7 @@ export async function createNoxtubizerJob(
 }
 
 export async function listNoxtubizerJobs(
-  params: Omit<ListJobsParams, "tool"> = {},
+  params: Omit<ListJobsParams, "tool"> = {}
 ): Promise<PaginatedJobs> {
   return listJobs({ ...params, tool: "noxtubizer" });
 }

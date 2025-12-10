@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import ErrorMessage from "../components/common/ErrorMessage"
 import NoxelizerResultPreview from "../components/jobs/NoxelizerResultPreview"
 import NoxsongizerResultPreview from "../components/jobs/NoxsongizerResultPreview"
+import NoxtunizerResultPreview from "../components/jobs/NoxtunizerResultPreview"
 import NoxtubizerResultPreview from "../components/jobs/NoxtubizerResultPreview"
 import { useNotifications } from "../components/notifications/Notifications"
 import JobPreviewModal from "../components/tooling/JobPreviewModal"
@@ -36,6 +38,7 @@ export default function AllJobs() {
   const renderJobContent = useCallback((job: Job) => {
     if (job.tool === "noxsongizer") return <NoxsongizerResultPreview job={job} />
     if (job.tool === "noxelizer") return <NoxelizerResultPreview job={job} />
+    if (job.tool === "noxtunizer") return <NoxtunizerResultPreview job={job} />
     if (job.tool === "noxtubizer") return <NoxtubizerResultPreview job={job} />
     return <p className="text-sm text-slate-200">No preview available for this job.</p>
   }, [])

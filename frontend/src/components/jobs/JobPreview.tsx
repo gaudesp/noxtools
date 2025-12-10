@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react"
 import {
   getNoxelizerSourceUrl,
   getNoxsongizerSourceUrl,
+  getNoxtunizerSourceUrl,
   type Job,
 } from "../../lib/api"
 
@@ -26,8 +27,7 @@ function PlayPauseIcon({ playing }: { playing: boolean }) {
   )
 }
 
-function NoxsongizerPreview({ job }: { job: Job }) {
-  const sourceUrl = useMemo(() => getNoxsongizerSourceUrl(job.id), [job.id])
+function AudioJobPreview({ job, sourceUrl }: { job: Job; sourceUrl: string }) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const [isPlaying, setIsPlaying] = useState(false)
@@ -169,8 +169,11 @@ function NoxtubizerPreview({ job }: { job: Job }) {
 }
 
 export default function JobPreview({ job }: { job: Job }) {
-  if (job.tool === "noxsongizer") return <NoxsongizerPreview job={job} />
+  if (job.tool === "noxsongizer")
+    return <AudioJobPreview job={job} sourceUrl={getNoxsongizerSourceUrl(job.id)} />
   if (job.tool === "noxelizer") return <NoxelizerPreview job={job} />
   if (job.tool === "noxtubizer") return <NoxtubizerPreview job={job} />
+  if (job.tool === "noxtunizer")
+    return <AudioJobPreview job={job} sourceUrl={getNoxtunizerSourceUrl(job.id)} />
   return null
 }
