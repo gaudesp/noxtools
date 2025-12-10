@@ -33,7 +33,6 @@ export default function ToolSummaryRow({ jobs, loading }: Props) {
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3 flex flex-wrap items-center gap-3 text-sm text-slate-200">
-      <span className="text-xs uppercase tracking-wide text-slate-400">Summary</span>
       <div className="flex flex-wrap gap-2">
         {summary.map((item) => (
           <span

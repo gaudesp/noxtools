@@ -13,6 +13,8 @@ type Props = {
   onDeleteJob?: (job: Job) => void
   loading?: boolean
   error?: string | null
+  title?: string
+  description?: string
 }
 
 export default function JobHistorySection({
@@ -25,6 +27,8 @@ export default function JobHistorySection({
   onDeleteJob,
   loading,
   error,
+  title,
+  description,
 }: Props) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
@@ -64,13 +68,13 @@ export default function JobHistorySection({
 
   return (
     <SectionCard
-      title={`Job history (${jobs.length} of ${total})`}
-      description={`Latest jobs for this tool. Click a row to open the preview modal.`}
+      title={title ?? `Job history (${jobs.length} of ${total})`}
+      description={description ?? "Latest jobs for this tool. Click a row to open the preview modal."}
       actions={actions}
       padded={false}
     >
       {error ? (
-        <div className="px-5 pt-5">
+        <div className="px-5 pt-5 pb-5">
           <ErrorMessage title="Unable to load jobs" message={error} compact />
         </div>
       ) : null}
