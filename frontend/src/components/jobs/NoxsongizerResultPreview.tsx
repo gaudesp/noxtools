@@ -1,4 +1,5 @@
 import { type Job, getNoxsongizerDownloadUrl } from "../../lib/api"
+import ErrorMessage from "../common/ErrorMessage"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
 
@@ -29,14 +30,11 @@ export default function NoxsongizerResultPreview({ job }: { job: Job }) {
 
   if (job.status === "error") {
     return (
-      <div className="space-y-2">
-        <p className="text-sm text-red-200">The job failed.</p>
-        {job.error_message && (
-          <pre className="text-xs text-red-300 bg-red-900/30 border border-red-800 rounded p-2 whitespace-pre-wrap">
-            {job.error_message}
-          </pre>
-        )}
-      </div>
+      <ErrorMessage
+        title="Job failed"
+        message="The separation could not be completed."
+        details={job.error_message}
+      />
     )
   }
 
@@ -46,6 +44,16 @@ export default function NoxsongizerResultPreview({ job }: { job: Job }) {
       const match = stems.find((stem) => isStem(stem, stemInfo.type))
       return match ? { ...stemInfo, filename: match } : null
     }).filter(Boolean) as Array<{ type: StemType; label: string; filename: string }>
+
+    if (!orderedStems.length) {
+      return (
+        <ErrorMessage
+          title="No stems available"
+          message="The job completed but no stem files were recorded."
+          tone="warning"
+        />
+      )
+    }
 
     return (
       <div className="space-y-3">
