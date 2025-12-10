@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Noxsongizer from "./pages/Noxsongizer";
 import Noxelizer from "./pages/Noxelizer";
+import Noxtubizer from "./pages/Noxtubizer";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Route path="/" element={<Navigate to="/noxsongizer" replace />} />
           <Route path="/noxsongizer" element={<Noxsongizer />} />
           <Route path="/noxelizer" element={<Noxelizer />} />
+          <Route path="/noxtubizer" element={<Noxtubizer />} />
         </Routes>
       </main>
     </div>

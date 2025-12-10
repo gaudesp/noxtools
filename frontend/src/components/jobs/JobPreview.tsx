@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react"
-import { getNoxelizerSourceUrl, getNoxsongizerSourceUrl, type Job } from "../../lib/api"
+import {
+  getNoxelizerSourceUrl,
+  getNoxsongizerSourceUrl,
+  type Job,
+} from "../../lib/api"
 
 const activeAudios = new Map<string, HTMLAudioElement>()
 
 function pauseOthers(exceptId: string) {
   activeAudios.forEach((audio, id) => {
-    if (id !== exceptId && !audio.paused) {
-      audio.pause()
-    }
+    if (id !== exceptId && !audio.paused) audio.pause()
   })
 }
 
@@ -27,6 +29,7 @@ function PlayPauseIcon({ playing }: { playing: boolean }) {
 function NoxsongizerPreview({ job }: { job: Job }) {
   const sourceUrl = useMemo(() => getNoxsongizerSourceUrl(job.id), [job.id])
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
   const [isPlaying, setIsPlaying] = useState(false)
   const [hasError, setHasError] = useState(false)
 
@@ -35,41 +38,42 @@ function NoxsongizerPreview({ job }: { job: Job }) {
     audioRef.current = audio
     activeAudios.set(job.id, audio)
 
-    const handlePlay = () => setIsPlaying(true)
-    const handlePause = () => setIsPlaying(false)
-    const handleEnded = () => setIsPlaying(false)
-    const handleError = () => setHasError(true)
+    const onPlay = () => setIsPlaying(true)
+    const onPause = () => setIsPlaying(false)
+    const onEnd = () => setIsPlaying(false)
+    const onErr = () => setHasError(true)
 
-    audio.addEventListener("play", handlePlay)
-    audio.addEventListener("pause", handlePause)
-    audio.addEventListener("ended", handleEnded)
-    audio.addEventListener("error", handleError)
+    audio.addEventListener("play", onPlay)
+    audio.addEventListener("pause", onPause)
+    audio.addEventListener("ended", onEnd)
+    audio.addEventListener("error", onErr)
 
     return () => {
       audio.pause()
       audio.src = ""
       activeAudios.delete(job.id)
-      audio.removeEventListener("play", handlePlay)
-      audio.removeEventListener("pause", handlePause)
-      audio.removeEventListener("ended", handleEnded)
-      audio.removeEventListener("error", handleError)
+      audio.removeEventListener("play", onPlay)
+      audio.removeEventListener("pause", onPause)
+      audio.removeEventListener("ended", onEnd)
+      audio.removeEventListener("error", onErr)
       audioRef.current = null
     }
-  }, [sourceUrl])
+  }, [sourceUrl, job.id])
 
   const toggle = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
+
     const audio = audioRef.current
     if (!audio) return
+
     setHasError(false)
+
     if (audio.paused) {
       pauseOthers(job.id)
-      audio
-        .play()
-        .catch(() => {
-          setHasError(true)
-          setIsPlaying(false)
-        })
+      audio.play().catch(() => {
+        setHasError(true)
+        setIsPlaying(false)
+      })
     } else {
       audio.pause()
     }
@@ -79,9 +83,9 @@ function NoxsongizerPreview({ job }: { job: Job }) {
     <button
       type="button"
       onClick={toggle}
-      title={hasError ? "Unable to play audio" : "Play / pause source"}
+      className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-50 hover:border-violet-400 transition"
       aria-pressed={isPlaying}
-      className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-50 hover:border-violet-400 hover:text-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500"
+      title={hasError ? "Unable to play audio" : "Play / pause source"}
     >
       <PlayPauseIcon playing={isPlaying} />
     </button>
@@ -89,7 +93,7 @@ function NoxsongizerPreview({ job }: { job: Job }) {
 }
 
 function NoxelizerPreview({ job }: { job: Job }) {
-  const sourceUrl = useMemo(() => getNoxelizerSourceUrl(job.id), [job.id])
+  const source = useMemo(() => getNoxelizerSourceUrl(job.id), [job.id])
   const hasSource = Boolean(job.input_path)
 
   return (
@@ -99,14 +103,67 @@ function NoxelizerPreview({ job }: { job: Job }) {
     >
       {hasSource ? (
         <img
-          src={sourceUrl}
+          src={source}
           alt={job.input_filename || "Original upload"}
           className="w-full h-full object-cover"
           loading="lazy"
         />
       ) : (
-        <div className="text-[10px] text-slate-500 uppercase tracking-wide">N/A</div>
+        <span className="text-[10px] text-slate-500 uppercase tracking-wide">N/A</span>
       )}
+    </div>
+  )
+}
+
+function NoxtubizerPreview({ job }: { job: Job }) {
+  const mode = ((job.params?.mode as string) || "").toLowerCase()
+
+  const palette = {
+    audio: {
+      wrapper: "border-emerald-400/60 bg-emerald-500/15 text-emerald-100",
+      label: "Audio",
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" fill="none">
+          <path d="M9 18a3 3 0 1 1-3-3" />
+          <path d="M9 18V6l11-2v10" />
+          <path d="M20 14a3 3 0 1 1-3-3" />
+        </svg>
+      ),
+    },
+    video: {
+      wrapper: "border-sky-400/60 bg-sky-500/15 text-sky-100",
+      label: "Video",
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" fill="none">
+          <rect x="3" y="5" width="14" height="14" rx="2" />
+          <path d="m17 9 4-2v10l-4-2" />
+        </svg>
+      ),
+    },
+    both: {
+      wrapper: "border-amber-400/70 bg-amber-500/15 text-amber-100",
+      label: "Both",
+      icon: (
+        <svg className="w-7 h-7" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" fill="none">
+          <rect x="3" y="4" width="13" height="12" rx="2" />
+          <path d="m16 8 4-3v10l-4-3" />
+          <path d="M7 18h10" />
+          <path d="M10 21h4" />
+        </svg>
+      ),
+    },
+  } as const
+
+  const selected = palette[mode as keyof typeof palette] || palette.audio
+
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className={`w-10 h-10 rounded-full border flex items-center justify-center shadow-inner ${selected.wrapper}`}
+      title={selected.label}
+      aria-label={selected.label}
+    >
+      {selected.icon}
     </div>
   )
 }
@@ -114,5 +171,6 @@ function NoxelizerPreview({ job }: { job: Job }) {
 export default function JobPreview({ job }: { job: Job }) {
   if (job.tool === "noxsongizer") return <NoxsongizerPreview job={job} />
   if (job.tool === "noxelizer") return <NoxelizerPreview job={job} />
+  if (job.tool === "noxtubizer") return <NoxtubizerPreview job={job} />
   return null
 }

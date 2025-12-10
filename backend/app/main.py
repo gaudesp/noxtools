@@ -5,12 +5,13 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import jobs, noxsongizer, noxelizer
+from app.api import jobs, noxsongizer, noxelizer, noxtubizer
 from app.db import engine, init_db
 from app.events.job_events import job_event_bus
 from app.models.job import JobTool
 from app.services.noxsongizer_service import NoxsongizerService
 from app.services.noxelizer_service import NoxelizerService
+from app.services.noxtubizer_service import NoxtubizerService
 from app.workers.job_worker import JobWorker
 
 app = FastAPI(title="Noxtools API")
@@ -29,6 +30,7 @@ app.add_middleware(
 
 app.include_router(noxsongizer.router)
 app.include_router(noxelizer.router)
+app.include_router(noxtubizer.router)
 app.include_router(jobs.router)
 
 job_worker = JobWorker(engine)
@@ -39,6 +41,10 @@ job_worker.register_executor(
 job_worker.register_executor(
   JobTool.NOXELIZER,
   lambda job, svc: NoxelizerService(svc).process_job(job),
+)
+job_worker.register_executor(
+  JobTool.NOXTUBIZER,
+  lambda job, svc: NoxtubizerService(svc).process_job(job),
 )
 
 

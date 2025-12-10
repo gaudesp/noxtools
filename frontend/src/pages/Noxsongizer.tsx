@@ -28,10 +28,9 @@ export default function Noxsongizer() {
   async function startUpload(files: File[]) {
     try {
       setIsUploading(true)
-
       const res = await uploadNoxsongizer(files)
       const ids = res.jobs.map((j) => j.job_id)
-      notify(`Upload successful: ${ids.length} job(s) created.`, "success")
+      notify(`${ids.length} job(s) created.`, "success")
     } catch (err) {
       console.error(err)
       notify("File upload failed.", "danger")
@@ -57,15 +56,24 @@ export default function Noxsongizer() {
   }
 
   return (
-    <div className="p-6 text-white">
-      <h1 className="text-2xl font-bold mb-4">Noxsongizer</h1>
-
-      <JobUploader
-        onUpload={(files) => {
-          startUpload(files)
-        }}
-        busy={isUploading}
-      />
+    <div className="p-6 text-white space-y-8">
+      <h1 className="text-2xl font-bold mb-2">Noxsongizer</h1>
+      <p className="text-sm text-slate-400">
+        Split a song into separate audio stems (vocals, bass, drums and other).
+      </p>
+      <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 shadow-md">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold mb-2">Files</label>
+            <JobUploader
+              onUpload={(files) => {
+                startUpload(files)
+              }}
+              busy={isUploading}
+            />
+          </div>
+        </div>
+      </div>
 
       <div className="mt-10 space-y-3">
         <JobTable

@@ -31,6 +31,18 @@ function Sidebar() {
         >
           Noxelizer
         </NavLink>
+        <NavLink
+          to="/noxtubizer"
+          className={({ isActive }) =>
+            `${base} ${
+              isActive
+                ? "bg-violet-600 text-white"
+                : "text-slate-300 hover:bg-slate-800"
+            }`
+          }
+        >
+          Noxtubizer
+        </NavLink>
       </nav>
     </aside>
   );

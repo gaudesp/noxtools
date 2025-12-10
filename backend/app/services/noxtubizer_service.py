@@ -1,0 +1,138 @@
+"""Service layer for orchestrating Noxtubizer jobs."""
+
+from __future__ import annotations
+
+import logging
+from pathlib import Path
+from typing import Literal
+
+from pydantic import BaseModel, HttpUrl
+
+from app.executors.noxtubizer_executor import NoxtubizerExecutor
+from app.models.job import Job, JobTool, JobUpdate
+from app.services.job_service import JobService
+
+logger = logging.getLogger(__name__)
+
+
+class NoxtubizerJobRequest(BaseModel):
+  """Validated request payload for creating a Noxtubizer job."""
+
+  url: HttpUrl
+  mode: Literal["audio", "video", "both"]
+  audio_quality: Literal["high", "320kbps", "256kbps", "128kbps", "64kbps"] | None = None
+  audio_format: Literal["mp3", "m4a", "ogg", "wav"] | None = None
+  video_quality: Literal["best", "4320p", "2160p", "1440p", "1080p", "720p", "480p", "360p", "240p"] | None = None
+  video_format: Literal["mp4", "mkv"] | None = None
+
+
+class NoxtubizerService:
+  """Handles Noxtubizer job creation and execution."""
+
+  BASE_OUTPUT = Path("media/noxtubizer/outputs")
+
+  def __init__(self, job_service: JobService) -> None:
+    self.job_service = job_service
+    self.BASE_OUTPUT.mkdir(parents=True, exist_ok=True)
+    self.executor = NoxtubizerExecutor(base_output=self.BASE_OUTPUT)
+
+  def create_job(self, payload: NoxtubizerJobRequest) -> Job:
+    """
+    Persist a new Noxtubizer job using the provided options.
+    """
+    params = self._normalize_params(payload.model_dump())
+    logger.info(
+      "Noxtubizer create_job requested",
+      extra={
+        "url": params.get("url"),
+        "mode": params.get("mode"),
+        "audio_quality": params.get("audio_quality"),
+        "audio_format": params.get("audio_format"),
+        "video_quality": params.get("video_quality"),
+        "video_format": params.get("video_format"),
+      },
+    )
+    try:
+      self._validate_params(params)
+    except Exception as exc:
+      logger.warning(
+        "Noxtubizer validation failed: %s",
+        exc,
+        extra={
+          "url": payload.url,
+          "mode": payload.mode,
+          "audio_quality": params.get("audio_quality"),
+          "audio_format": params.get("audio_format"),
+          "video_quality": params.get("video_quality"),
+          "video_format": params.get("video_format"),
+          "error": str(exc),
+        },
+      )
+      raise
+    job = self.job_service.create_job(
+      tool=JobTool.NOXTUBIZER,
+      input_filename=params["url"],
+      params=params,
+      max_attempts=2,
+    )
+    return job
+
+  def process_job(self, job: Job) -> None:
+    """
+    Execute the Noxtubizer workflow and persist outputs.
+    """
+    try:
+      output_dir, outputs, result = self.executor.execute(job)
+    except Exception as exc:  # noqa: BLE001
+      logger.exception(
+        "Noxtubizer job failed",
+        extra={"job_id": job.id, "mode": job.params.get("mode"), "url": job.params.get("url")},
+      )
+      self.job_service.mark_error(job.id, str(exc))
+      return
+
+    self.job_service.mark_completed(
+      job.id,
+      output_path=str(output_dir),
+      output_files=outputs,
+      result=result,
+    )
+
+    source_title = result.get("source_title")
+    if source_title and source_title != job.input_filename:
+      self.job_service.update_job(job.id, JobUpdate(input_filename=source_title))
+
+  def _validate_params(self, params: dict) -> None:
+    """
+    Ensure the mode-specific options are present.
+    """
+    mode = params.get("mode")
+    if mode not in ("audio", "video", "both"):
+      raise ValueError("Mode must be one of: audio, video, both")
+
+    if mode in ("audio", "both"):
+      if not params.get("audio_quality") or not params.get("audio_format"):
+        raise ValueError("Audio mode requires audio_quality and audio_format")
+
+    if mode in ("video", "both"):
+      if not params.get("video_quality") or not params.get("video_format"):
+        raise ValueError("Video mode requires video_quality and video_format")
+
+  def _normalize_params(self, params: dict) -> dict:
+    """
+    Normalize and fill defaults for incoming params to make validation predictable.
+    """
+    next_params = dict(params)
+    mode = str(next_params.get("mode") or "").lower()
+    next_params["mode"] = mode
+    next_params["url"] = str(next_params.get("url") or "").strip()
+
+    if mode in ("audio", "both"):
+      next_params["audio_quality"] = next_params.get("audio_quality") or "high"
+      next_params["audio_format"] = next_params.get("audio_format") or "mp3"
+
+    if mode in ("video", "both"):
+      next_params["video_quality"] = next_params.get("video_quality") or "best"
+      next_params["video_format"] = next_params.get("video_format") or "mp4"
+
+    return next_params

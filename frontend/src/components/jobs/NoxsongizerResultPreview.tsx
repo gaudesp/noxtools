@@ -21,21 +21,11 @@ function isStem(stem: string, type: StemType): boolean {
 export default function NoxsongizerResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxsongizer") return null
 
-  if (job.status === "pending") {
-    return (
-      <p className="text-sm text-slate-200">
-        Your job is queued and will be processed shortly.
-      </p>
-    )
-  }
+  if (job.status === "pending")
+    return <p className="text-sm text-slate-200">Job queued, we will start processing soon.</p>
 
-  if (job.status === "running") {
-    return (
-      <p className="text-sm text-slate-200">
-        Demucs is currently separating your track. Hang tight!
-      </p>
-    )
-  }
+  if (job.status === "running")
+    return <p className="text-sm text-slate-200">Demucs is currently separating your track. Hang tight!</p>
 
   if (job.status === "error") {
     return (
@@ -59,9 +49,6 @@ export default function NoxsongizerResultPreview({ job }: { job: Job }) {
 
     return (
       <div className="space-y-3">
-        <p className="text-sm text-slate-200">
-          Job completed. Download or listen to the stems below.
-        </p>
         <div className="grid gap-3 md:grid-cols-2">
           {orderedStems.map(({ label, filename, type }) => {
             const url = getNoxsongizerDownloadUrl(job.id, filename)
@@ -70,7 +57,7 @@ export default function NoxsongizerResultPreview({ job }: { job: Job }) {
                 key={type}
                 className="border border-slate-800 rounded-lg p-3 bg-slate-900"
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-4">
                   <span className="text-sm font-semibold">{label}</span>
                   <a
                     href={url}
