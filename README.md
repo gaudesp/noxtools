@@ -18,6 +18,27 @@ Then, install the necessary dependencies.
 ```bash
 sudo apt update
 sudo apt install ffmpeg
+
+sudo apt-get install -y \
+  build-essential \
+  libeigen3-dev \
+  libyaml-dev \
+  libfftw3-dev \
+  libavcodec-dev \
+  libavformat-dev \
+  libavutil-dev \
+  libswresample-dev \
+  libsamplerate0-dev \
+  libtag1-dev \
+  libchromaprint-dev \
+  python3-dev
+  git clone https://github.com/MTG/essentia.git
+  cd essentia
+  python3 waf configure --with-examples --mode=release
+  python3 waf
+  sudo python3 waf install
+  sudo ldconfig
+  which essentia_streaming_extractor_music
 ```
 
 ## Getting Started

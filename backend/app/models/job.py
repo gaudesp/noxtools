@@ -32,6 +32,7 @@ class JobTool(str, Enum):
   NOXSONGIZER = "noxsongizer"
   NOXELIZER = "noxelizer"
   NOXTUBIZER = "noxtubizer"
+  NOXTUNIZER = "noxtunizer"
 
 
 class Job(SQLModel, table=True):
