@@ -1,14 +1,16 @@
-import { useEffect, useRef, useState } from "react"
-import {
-  createNoxtubizerJob,
-  type NoxtubizerCreateRequest,
-} from "../lib/api"
-import { useJobStream } from "../lib/jobs"
+import { useCallback, useMemo, useState } from "react"
+import ErrorMessage from "../components/common/ErrorMessage"
+import NoxtubizerResultPreview from "../components/jobs/NoxtubizerResultPreview"
 import { useNotifications } from "../components/notifications/Notifications"
-import JobTable from "../components/jobs/JobTable"
-import NoxtubizerPreviewModal from "../components/noxtubizer/NoxtubizerPreviewModal"
 import AudioSelector from "../components/noxtubizer/AudioSelector"
 import VideoSelector from "../components/noxtubizer/VideoSelector"
+import JobPreviewModal from "../components/tooling/JobPreviewModal"
+import JobHistorySection from "../components/tooling/JobHistorySection"
+import SectionCard from "../components/tooling/SectionCard"
+import ToolPageLayout from "../components/tooling/ToolPageLayout"
+import ToolSummaryRow from "../components/tooling/ToolSummaryRow"
+import { createNoxtubizerJob, type NoxtubizerCreateRequest, type Job } from "../lib/api"
+import { useToolJobs } from "../hooks/useToolJobs"
 
 const defaultFormState: NoxtubizerCreateRequest = {
   url: "",
@@ -22,37 +24,46 @@ const defaultFormState: NoxtubizerCreateRequest = {
 export default function Noxtubizer() {
   const [form, setForm] = useState<NoxtubizerCreateRequest>(defaultFormState)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
-  const [page, setPage] = useState(1)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
   const { notify } = useNotifications()
-  const lastErrorRef = useRef<string | null>(null)
-
-  const pageSize = 10
-  const offset = (page - 1) * pageSize
 
   const {
-    jobs: allJobs,
+    jobs,
+    pagedJobs,
+    total,
+    page,
+    pageSize,
+    setPage,
     loading,
-    error,
-    deleteJob: deleteJobLive,
-    getJobById,
-  } = useJobStream({ tool: "noxtubizer" })
+    error: streamError,
+    deleteJob,
+    selectedJob,
+    selectJob,
+    clearSelection,
+  } = useToolJobs({ tool: "noxtubizer" })
 
-  const pagedJobs = allJobs.slice(offset, offset + pageSize)
-  const total = allJobs.length
-  const selectedJob = getJobById(selectedJobId)
-
-  const requiresAudio = form.mode === "audio" || form.mode === "both"
-  const requiresVideo = form.mode === "video" || form.mode === "both"
+  const requiresAudio = useMemo(
+    () => form.mode === "audio" || form.mode === "both",
+    [form.mode],
+  )
+  const requiresVideo = useMemo(
+    () => form.mode === "video" || form.mode === "both",
+    [form.mode],
+  )
 
   async function submitJob() {
-    if (!form.url.trim()) {
-      notify("Please paste a valid YouTube URL.", "danger")
-      return
-    }
-
     try {
       setIsSubmitting(true)
+      setFormError(null)
+      setActionError(null)
+
+      if (!form.url.trim()) {
+        setFormError("Please paste a valid YouTube URL.")
+        return
+      }
+
       const payload: NoxtubizerCreateRequest = {
         ...form,
         url: form.url.trim(),
@@ -62,32 +73,33 @@ export default function Noxtubizer() {
       setForm((prev) => ({ ...prev, url: "" }))
     } catch (err) {
       console.error(err)
+      setFormError("Failed to queue Noxtubizer job.")
       notify("Failed to queue Noxtubizer job.", "danger")
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  useEffect(() => {
-    if (error && error !== lastErrorRef.current) {
-      notify(error, "danger")
-      lastErrorRef.current = error
-    }
-  }, [error, notify])
-
-  function onCloseModal() {
-    setSelectedJobId(null)
-  }
+  const renderJobContent = useCallback(
+    (job: Job) => <NoxtubizerResultPreview job={job} />,
+    [],
+  )
 
   return (
-    <div className="p-6 text-white space-y-8">
-      <h1 className="text-2xl font-bold mb-2">Noxtubizer</h1>
-      <p className="text-sm text-slate-400">
-        Download audio, video, or both from YouTube with exact quality and format control.
-      </p>
+    <ToolPageLayout
+      title="Noxtubizer"
+      description="Download audio, video, or both from YouTube with exact quality and format control."
+      eyebrow="YouTube downloader"
+    >
+      <SectionCard
+        title="Configure your download"
+        description="Paste a YouTube URL, choose what you need, and we will queue the job."
+      >
+        <div className="space-y-5">
+          {formError ? (
+            <ErrorMessage title="Invalid request" message={formError} compact />
+          ) : null}
 
-      <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 shadow-md">
-        <div className="space-y-4">
           <div>
             <label className="block text-sm font-semibold mb-2">YouTube URL</label>
             <input
@@ -174,35 +186,52 @@ export default function Noxtubizer() {
             </button>
           </div>
         </div>
-      </div>
+      </SectionCard>
 
-      <div className="mt-10 space-y-3">
-        <JobTable
-          jobs={pagedJobs}
-          total={total}
-          pageSize={pageSize}
-          currentPage={page}
-          onPageChange={(p) => setPage(p)}
-          onSelectJob={(job) => setSelectedJobId(job.id)}
-          onDeleteJob={async (job) => {
-            try {
-              await deleteJobLive(job.id)
-              notify("Job deleted.", "success")
-            } catch (err) {
-              console.error(err)
-              notify("Failed to delete job.", "danger")
+      {actionError ? (
+        <ErrorMessage title="Action failed" message={actionError} compact />
+      ) : null}
+
+      <JobHistorySection
+        jobs={pagedJobs}
+        total={total}
+        pageSize={pageSize}
+        currentPage={page}
+        onPageChange={(p) => setPage(p)}
+        onSelectJob={(job) => {
+          selectJob(job.id)
+          setPreviewOpen(true)
+        }}
+        onDeleteJob={async (job) => {
+          try {
+            setActionError(null)
+            await deleteJob(job.id)
+            if (selectedJob?.id === job.id) {
+              clearSelection()
+              setPreviewOpen(false)
             }
-          }}
-          loading={loading}
-          error={null}
-        />
-      </div>
-
-      <NoxtubizerPreviewModal
-        job={selectedJob}
-        open={Boolean(selectedJob)}
-        onClose={onCloseModal}
+            notify("Job deleted.", "success")
+          } catch (err) {
+            console.error(err)
+            setActionError("Failed to delete job.")
+            notify("Failed to delete job.", "danger")
+          }
+        }}
+        loading={loading}
+        error={streamError}
       />
-    </div>
+
+      <JobPreviewModal
+        job={selectedJob}
+        open={Boolean(previewOpen && selectedJob)}
+        onClose={() => {
+          clearSelection()
+          setPreviewOpen(false)
+        }}
+        renderPreview={renderJobContent}
+      />
+
+      <ToolSummaryRow jobs={jobs} loading={loading} />
+    </ToolPageLayout>
   )
 }

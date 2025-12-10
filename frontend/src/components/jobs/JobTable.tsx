@@ -1,8 +1,9 @@
 import { useState, type MouseEvent } from "react"
 import { type Job } from "../../lib/api"
-import JobStatusBadge from "./JobStatusBadge"
+import ErrorMessage from "../common/ErrorMessage"
 import DeleteConfirmModal from "./DeleteConfirmModal"
 import JobPreview from "./JobPreview"
+import JobStatusBadge from "./JobStatusBadge"
 
 type Props = {
   jobs: Job[]
@@ -14,6 +15,8 @@ type Props = {
   onDeleteJob?: (job: Job) => void
   loading?: boolean
   error?: string | null
+  showHeader?: boolean
+  bordered?: boolean
 }
 
 const formatDate = (iso?: string) => {
@@ -32,6 +35,8 @@ export default function JobTable({
   onDeleteJob,
   loading,
   error,
+  showHeader = true,
+  bordered = true,
 }: Props) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
@@ -45,34 +50,41 @@ export default function JobTable({
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
-        <div>
-          <h3 className="text-sm font-semibold text-slate-100">Jobs</h3>
-          <p className="text-xs text-slate-500">Showing {jobs.length} of {total}</p>
+    <div
+      className={[
+        "bg-slate-900",
+        bordered ? "border border-slate-800 rounded-lg" : "rounded-none border-0",
+      ].join(" ")}
+    >
+      {showHeader ? (
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-100">Jobs</h3>
+            <p className="text-xs text-slate-500">Showing {jobs.length} of {total}</p>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-300">
+            <button
+              type="button"
+              onClick={handlePrev}
+              disabled={currentPage <= 1}
+              className="px-2 py-1 rounded border border-slate-700 disabled:opacity-50 hover:border-violet-500 transition"
+            >
+              Prev
+            </button>
+            <span className="text-slate-400">
+              Page {currentPage} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={currentPage >= totalPages}
+              className="px-2 py-1 rounded border border-slate-700 disabled:opacity-50 hover:border-violet-500 transition"
+            >
+              Next
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-300">
-          <button
-            type="button"
-            onClick={handlePrev}
-            disabled={currentPage <= 1}
-            className="px-2 py-1 rounded border border-slate-700 disabled:opacity-50 hover:border-violet-500 transition"
-          >
-            Prev
-          </button>
-          <span className="text-slate-400">
-            Page {currentPage} / {totalPages}
-          </span>
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={currentPage >= totalPages}
-            className="px-2 py-1 rounded border border-slate-700 disabled:opacity-50 hover:border-violet-500 transition"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      ) : null}
 
       {loading && (
         <div className="px-4 py-2 text-sm text-slate-400 flex items-center gap-2 border-b border-slate-800">
@@ -81,11 +93,11 @@ export default function JobTable({
         </div>
       )}
 
-      {error && (
-        <div className="px-4 py-2 text-sm text-rose-200 bg-rose-900/30 border-b border-rose-800">
-          {error}
+      {error ? (
+        <div className="px-4 py-3 border-b border-slate-800">
+          <ErrorMessage title="Unable to load jobs" message={error} compact />
         </div>
-      )}
+      ) : null}
 
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-slate-200">
@@ -102,7 +114,10 @@ export default function JobTable({
             {jobs.map((job) => (
               <tr
                 key={job.id}
-                className="border-t border-slate-800 hover:bg-slate-800/40 transition cursor-pointer"
+                className={[
+                  "border-t border-slate-800 first:border-t-0",
+                  onSelectJob ? "hover:bg-slate-800/40 transition cursor-pointer" : "",
+                ].join(" ")}
                 onClick={() => onSelectJob && onSelectJob(job)}
               >
                 <td className="px-4 py-3 align-middle">
