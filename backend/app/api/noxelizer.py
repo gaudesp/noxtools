@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from mimetypes import guess_type
 from pathlib import Path
 from typing import List
 
@@ -11,6 +12,7 @@ from pydantic import BaseModel
 from sqlmodel import Session
 
 from app.db import get_session
+from app.models.job import JobTool
 from app.services.job_service import JobService
 from app.services.noxelizer_service import NoxelizerService
 
@@ -57,6 +59,30 @@ async def upload_files(
   jobs = service.create_jobs_from_uploads(files)
   return UploadResponse(
     jobs=[UploadItem(job_id=job.id, filename=file.filename) for job, file in jobs],
+  )
+
+
+@router.get("/source/{job_id}")
+def download_source(
+  job_id: str,
+  job_service: JobService = Depends(get_job_service),
+) -> FileResponse:
+  """Stream the original uploaded image for a given job."""
+  job = job_service.get_job(job_id)
+  if not job or job.tool != JobTool.NOXELIZER:
+    raise HTTPException(status_code=404, detail="Job not found")
+  if not job.input_path:
+    raise HTTPException(status_code=404, detail="Original file not found")
+
+  path = Path(job.input_path)
+  if not path.exists() or not path.is_file():
+    raise HTTPException(status_code=404, detail="Original file not found")
+
+  media_type, _ = guess_type(path.name)
+  return FileResponse(
+    path=str(path),
+    media_type=media_type or "application/octet-stream",
+    filename=path.name,
   )
 
 
