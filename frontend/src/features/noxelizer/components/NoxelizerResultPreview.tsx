@@ -68,14 +68,6 @@ export default function NoxelizerResultPreview({ job }: { job: Job }) {
             <source src={url} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <div className="text-xs text-slate-400">
-            {typeof frames === "number" && (
-              <span className="mr-3">Frames: {frames}</span>
-            )}
-            {typeof fps === "number" && (
-              <span className="mr-3">FPS: {fps}</span>
-            )}
-          </div>
         </div>
       </div>
     )

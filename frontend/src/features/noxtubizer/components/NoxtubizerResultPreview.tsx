@@ -154,30 +154,6 @@ export default function NoxtubizerResultPreview({ job }: { job: Job }) {
           compact
         />
       )}
-
-      <div className="text-xs text-slate-400">
-        <span className="mr-3">Mode: {mode.toUpperCase()}</span>
-
-        {(audio || both) && (
-          <span className="mr-3">
-            Audio: {(audio?.format || both?.audio_format || "").toUpperCase()} •{" "}
-            {realAudioBitrate
-              ? `${realAudioBitrate} kbps`
-              : AUDIO_QUALITY_LABELS[(audio?.quality || both?.audio_quality) ?? ""] ||
-                (audio?.quality || both?.audio_quality)}
-          </span>
-        )}
-
-        {(video || both) && (
-          <span className="mr-3">
-            Video: {(video?.format || both?.format || "").toUpperCase()} •{" "}
-            {realVideoHeight
-              ? `${realVideoHeight}p`
-              : VIDEO_QUALITY_LABELS[video?.quality ?? ""]}
-          </span>
-        )}
-
-      </div>
     </div>
   )
 }
