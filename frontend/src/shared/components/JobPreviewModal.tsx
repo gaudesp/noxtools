@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { type Job } from "../../lib/api"
+import { type Job } from "../../lib/api/core"
 import JobStatusBadge from "../../components/jobs/JobStatusBadge"
 
 type Props = {

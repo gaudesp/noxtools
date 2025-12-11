@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react"
-import {
-  getNoxelizerSourceUrl,
-  getNoxsongizerSourceUrl,
-  getNoxtunizerSourceUrl,
-  type Job,
-} from "../../../lib/api"
+import { type Job } from "../../../lib/api/core"
+import { getNoxsongizerSourceUrl } from "../../../lib/api/noxsongizer"
+import { getNoxelizerSourceUrl } from "../../../lib/api/noxelizer"
+import { getNoxtunizerSourceUrl } from "../../../lib/api/noxtunizer"
 
 const activeAudios = new Map<string, HTMLAudioElement>()
 

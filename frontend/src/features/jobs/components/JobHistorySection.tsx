@@ -1,4 +1,4 @@
-import { type Job } from "../../../lib/api"
+import { type Job } from "../../../lib/api/core"
 import NoticeMessage from "../../../shared/components/NoticeMessage"
 import SectionCard from "../../../shared/components/SectionCard"
 import JobTable from "./JobTable"

@@ -6,7 +6,5 @@ export {
   type NoxtunizerUploadResponse,
   type NoxtunizerJobResult,
   type NoxtunizerJob,
-  type Job,
-  type JobTool,
-  type JobStatus,
-} from "../../../lib/api"
+} from "../../../lib/api/noxtunizer"
+export { type Job, type JobTool, type JobStatus } from "../../../lib/api/core"

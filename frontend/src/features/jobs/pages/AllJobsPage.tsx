@@ -7,7 +7,7 @@ import NoxsongizerResultPreview from "../../../components/jobs/NoxsongizerResult
 import NoxtunizerResultPreview from "../../../components/jobs/NoxtunizerResultPreview"
 import NoxtubizerResultPreview from "../../../components/jobs/NoxtubizerResultPreview"
 import { useNotifications } from "../../../app/providers/NotificationsProvider"
-import { type Job } from "../../../lib/api"
+import { type Job } from "../../../lib/api/core"
 import ToolPageLayout from "../../../components/tooling/ToolPageLayout"
 import JobHistorySection from "../components/JobHistorySection"
 import { useJobStream } from "../hooks/useJobStream"

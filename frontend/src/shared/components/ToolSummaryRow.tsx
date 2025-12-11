@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { type Job } from "../../lib/api"
+import { type Job } from "../../lib/api/core"
 
 type Props = {
   jobs: Job[]

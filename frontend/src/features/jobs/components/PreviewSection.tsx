@@ -1,6 +1,6 @@
 import { type ReactNode } from "react"
 import SectionCard from "../../../shared/components/SectionCard"
-import { type Job } from "../../../lib/api"
+import { type Job } from "../../../lib/api/core"
 import JobStatusBadge from "./JobStatusBadge"
 
 type Props = {

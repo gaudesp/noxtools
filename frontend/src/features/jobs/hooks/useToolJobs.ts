@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useNotifications } from "../../../app/providers/NotificationsProvider"
-import { type Job, type JobTool } from "../../../lib/api"
+import { type Job, type JobTool } from "../../../lib/api/core"
 import { useJobStream } from "./useJobStream"
 
 type Options = {

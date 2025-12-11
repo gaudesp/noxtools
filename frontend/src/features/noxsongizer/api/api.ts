@@ -7,7 +7,5 @@ export {
   type NoxsongizerUploadResponse,
   type NoxsongizerJobResult,
   type NoxsongizerJob,
-  type Job,
-  type JobTool,
-  type JobStatus,
-} from "../../../lib/api"
+} from "../../../lib/api/noxsongizer"
+export { type Job, type JobTool, type JobStatus } from "../../../lib/api/core"
