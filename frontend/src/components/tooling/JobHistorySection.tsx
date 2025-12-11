@@ -1,5 +1,5 @@
 import { type Job } from "../../lib/api"
-import ErrorMessage from "../common/ErrorMessage"
+import NoticeMessage from "../common/NoticeMessage"
 import JobTable from "../jobs/JobTable"
 import SectionCard from "./SectionCard"
 
@@ -75,7 +75,7 @@ export default function JobHistorySection({
     >
       {error ? (
         <div className="px-5 pt-5 pb-5">
-          <ErrorMessage title="Unable to load jobs" message={error} compact />
+          <NoticeMessage title="Unable to load jobs" message={error} tone="danger" compact />
         </div>
       ) : null}
       <JobTable

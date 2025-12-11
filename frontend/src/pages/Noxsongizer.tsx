@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 import { uploadNoxsongizer, type Job } from "../lib/api"
-import ErrorMessage from "../components/common/ErrorMessage"
+import NoticeMessage from "../components/common/NoticeMessage"
 import JobUploader from "../components/jobs/JobUploader"
 import NoxsongizerResultPreview from "../components/jobs/NoxsongizerResultPreview"
 import { useNotifications } from "../components/notifications/Notifications"
@@ -44,7 +44,6 @@ export default function Noxsongizer() {
     } catch (err) {
       console.error(err)
       setUploadError("File upload failed. Please retry.")
-      notify("File upload failed.", "danger")
     } finally {
       setIsUploading(false)
     }
@@ -63,11 +62,11 @@ export default function Noxsongizer() {
     >
       <SectionCard
         title="Upload your tracks"
-        description="Drop one or multiple songs. Each file will be processed into stems."
+        description="Songs are separated into high-quality audio stems. Upload one or multiple files."
       >
         {uploadError ? (
           <div className="mb-4">
-            <ErrorMessage title="Upload failed" message={uploadError} compact />
+            <NoticeMessage title="Upload failed" message={uploadError} tone="danger" compact />
           </div>
         ) : null}
         <JobUploader
@@ -79,7 +78,7 @@ export default function Noxsongizer() {
       </SectionCard>
 
       {actionError ? (
-        <ErrorMessage title="Action failed" message={actionError} compact />
+        <NoticeMessage title="Action failed" message={actionError} tone="danger" compact />
       ) : null}
 
       <JobHistorySection
@@ -104,7 +103,6 @@ export default function Noxsongizer() {
           } catch (err) {
             console.error(err)
             setActionError("Failed to delete job.")
-            notify("Failed to delete job.", "danger")
           }
         }}
         loading={loading}

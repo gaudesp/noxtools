@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 import { uploadNoxtunizer, type Job } from "../lib/api"
-import ErrorMessage from "../components/common/ErrorMessage"
+import NoticeMessage from "../components/common/NoticeMessage"
 import JobUploader from "../components/jobs/JobUploader"
 import NoxtunizerResultPreview from "../components/jobs/NoxtunizerResultPreview"
 import { useNotifications } from "../components/notifications/Notifications"
@@ -44,7 +44,6 @@ export default function Noxtunizer() {
     } catch (err) {
       console.error(err)
       setUploadError("File upload failed. Please retry.")
-      notify("File upload failed.", "danger")
     } finally {
       setIsUploading(false)
     }
@@ -58,16 +57,16 @@ export default function Noxtunizer() {
   return (
     <ToolPageLayout
       title="Noxtunizer"
-      description="Extract BPM, key, genre, mood, and danceability from any track."
+      description="Extract BPM, key and durability from any track."
       eyebrow="Musical analysis"
     >
       <SectionCard
         title="Upload your audio"
-        description="Drop one or more audio files. Each will be analyzed and reduced to the most confident musical attributes."
+        description="Audio files are analyzed to extract musical attributes. Upload one or multiple files."
       >
         {uploadError ? (
           <div className="mb-4">
-            <ErrorMessage title="Upload failed" message={uploadError} compact />
+            <NoticeMessage title="Upload failed" message={uploadError} tone="danger" compact />
           </div>
         ) : null}
         <JobUploader
@@ -83,7 +82,7 @@ export default function Noxtunizer() {
       </SectionCard>
 
       {actionError ? (
-        <ErrorMessage title="Action failed" message={actionError} compact />
+        <NoticeMessage title="Action failed" message={actionError} tone="danger" compact />
       ) : null}
 
       <JobHistorySection
@@ -108,7 +107,6 @@ export default function Noxtunizer() {
           } catch (err) {
             console.error(err)
             setActionError("Failed to delete job.")
-            notify("Failed to delete job.", "danger")
           }
         }}
         loading={loading}

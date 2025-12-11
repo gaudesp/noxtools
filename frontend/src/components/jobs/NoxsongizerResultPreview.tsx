@@ -1,5 +1,5 @@
 import { type Job, getNoxsongizerDownloadUrl } from "../../lib/api"
-import ErrorMessage from "../common/ErrorMessage"
+import NoticeMessage from "../common/NoticeMessage"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
 
@@ -23,17 +23,25 @@ export default function NoxsongizerResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxsongizer") return null
 
   if (job.status === "pending")
-    return <p className="text-sm text-slate-200">Job queued, we will start processing soon.</p>
+    return (
+      <NoticeMessage
+        message="Job is queued and will start processing soon."
+        tone="warning"
+      />
+    )
 
   if (job.status === "running")
-    return <p className="text-sm text-slate-200">Demucs is currently separating your track. Hang tight!</p>
+    return (
+      <NoticeMessage message="Job is currently being executed." withSpinner tone="info" />
+    )
 
   if (job.status === "error") {
     return (
-      <ErrorMessage
+      <NoticeMessage
         title="Job failed"
-        message="The separation could not be completed."
+        message="An error occurred while executing the job."
         details={job.error_message}
+        tone="danger"
       />
     )
   }
@@ -47,7 +55,7 @@ export default function NoxsongizerResultPreview({ job }: { job: Job }) {
 
     if (!orderedStems.length) {
       return (
-        <ErrorMessage
+        <NoticeMessage
           title="No stems available"
           message="The job completed but no stem files were recorded."
           tone="warning"

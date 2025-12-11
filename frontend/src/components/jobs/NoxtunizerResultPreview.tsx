@@ -1,5 +1,5 @@
 import { type Job, getNoxtunizerSourceUrl } from "../../lib/api";
-import ErrorMessage from "../common/ErrorMessage";
+import NoticeMessage from "../common/NoticeMessage";
 
 function displayValue(value: unknown): string {
   if (value === null || value === undefined) return "—";
@@ -10,17 +10,25 @@ export default function NoxtunizerResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxtunizer") return null;
 
   if (job.status === "pending")
-    return <p className="text-sm text-slate-200">Job queued, starting soon…</p>;
+    return (
+      <NoticeMessage
+        message="Job is queued and will start processing soon."
+        tone="warning"
+      />
+    );
 
   if (job.status === "running")
-    return <p className="text-sm text-slate-200">Analyzing audio with Essentia…</p>;
+    return (
+      <NoticeMessage message="Job is currently being executed." withSpinner tone="info" />
+    );
 
   if (job.status === "error") {
     return (
-      <ErrorMessage
+      <NoticeMessage
         title="Job failed"
-        message="The analysis could not be completed."
+        message="An error occurred while executing the job."
         details={job.error_message}
+        tone="danger"
       />
     );
   }

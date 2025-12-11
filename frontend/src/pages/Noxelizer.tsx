@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 import { uploadNoxelizer, type Job } from "../lib/api"
-import ErrorMessage from "../components/common/ErrorMessage"
+import NoticeMessage from "../components/common/NoticeMessage"
 import JobUploader from "../components/jobs/JobUploader"
 import NoxelizerResultPreview from "../components/jobs/NoxelizerResultPreview"
 import { useNotifications } from "../components/notifications/Notifications"
@@ -44,7 +44,6 @@ export default function Noxelizer() {
     } catch (err) {
       console.error(err)
       setUploadError("File upload failed. Please retry.")
-      notify("File upload failed.", "danger")
     } finally {
       setIsUploading(false)
     }
@@ -67,7 +66,7 @@ export default function Noxelizer() {
       >
         {uploadError ? (
           <div className="mb-4">
-            <ErrorMessage title="Upload failed" message={uploadError} compact />
+            <NoticeMessage title="Upload failed" message={uploadError} tone="danger" compact />
           </div>
         ) : null}
         <JobUploader
@@ -81,7 +80,7 @@ export default function Noxelizer() {
       </SectionCard>
 
       {actionError ? (
-        <ErrorMessage title="Action failed" message={actionError} compact />
+        <NoticeMessage title="Action failed" message={actionError} tone="danger" compact />
       ) : null}
 
       <JobHistorySection
@@ -106,7 +105,6 @@ export default function Noxelizer() {
           } catch (err) {
             console.error(err)
             setActionError("Failed to delete job.")
-            notify("Failed to delete job.", "danger")
           }
         }}
         loading={loading}

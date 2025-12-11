@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import ErrorMessage from "../components/common/ErrorMessage"
+import NoticeMessage from "../components/common/NoticeMessage"
 import NoxelizerResultPreview from "../components/jobs/NoxelizerResultPreview"
 import NoxsongizerResultPreview from "../components/jobs/NoxsongizerResultPreview"
 import NoxtunizerResultPreview from "../components/jobs/NoxtunizerResultPreview"
@@ -71,7 +71,6 @@ export default function AllJobs() {
           } catch (err) {
             console.error(err)
             setActionError("Failed to delete job.")
-            notify("Failed to delete job.", "danger")
           }
         }}
         loading={loading}
@@ -82,7 +81,7 @@ export default function AllJobs() {
 
       {actionError ? (
         <div className="pt-3">
-          <ErrorMessage title="Action failed" message={actionError} compact />
+          <NoticeMessage title="Action failed" message={actionError} tone="danger" compact />
         </div>
       ) : null}
 

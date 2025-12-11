@@ -1,21 +1,29 @@
 import { type Job, getNoxelizerDownloadUrl } from "../../lib/api"
-import ErrorMessage from "../common/ErrorMessage"
+import NoticeMessage from "../common/NoticeMessage"
 
 export default function NoxelizerResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxelizer") return null
 
   if (job.status === "pending")
-    return <p className="text-sm text-slate-200">Job queued, we will start processing soon.</p>
+    return (
+      <NoticeMessage
+        message="Job is queued and will start processing soon."
+        tone="warning"
+      />
+    )
 
   if (job.status === "running")
-    return <p className="text-sm text-slate-200">Rendering your depixelization video. Hang tight!</p>
+    return (
+      <NoticeMessage message="Job is currently being executed." withSpinner tone="info" />
+    )
 
   if (job.status === "error") {
     return (
-      <ErrorMessage
+      <NoticeMessage
         title="Job failed"
-        message="The depixelization render could not be generated."
+        message="An error occurred while executing the job."
         details={job.error_message}
+        tone="danger"
       />
     )
   }
@@ -28,7 +36,7 @@ export default function NoxelizerResultPreview({ job }: { job: Job }) {
 
     if (!filename) {
       return (
-        <ErrorMessage
+        <NoticeMessage
           title="No video available"
           message="The job completed but no output video was recorded."
           tone="warning"
