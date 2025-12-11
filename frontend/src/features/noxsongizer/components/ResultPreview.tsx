@@ -1,4 +1,5 @@
 import NoticeMessage from "@/shared/ui/NoticeMessage"
+import AudioPlayer from "@/shared/ui/AudioPlayer"
 import { type Job, getNoxsongizerDownloadUrl } from "@/features/noxsongizer/api/api"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
@@ -83,10 +84,7 @@ export default function ResultPreview({ job }: { job: Job }) {
                     Download
                   </a>
                 </div>
-                <audio controls className="w-full">
-                  <source src={url} type="audio/wav" />
-                  Your browser does not support the audio element.
-                </audio>
+                <AudioPlayer url={url} />
               </div>
             )
           })}

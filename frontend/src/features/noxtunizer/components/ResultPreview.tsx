@@ -1,4 +1,5 @@
 import NoticeMessage from "@/shared/ui/NoticeMessage"
+import AudioPlayer from "@/shared/ui/AudioPlayer"
 import { type Job, getNoxtunizerSourceUrl } from "@/features/noxtunizer/api/api"
 
 function displayValue(value: unknown): string {
@@ -52,10 +53,7 @@ export default function ResultPreview({ job }: { job: Job }) {
       <div className="space-y-4">
         <div className="border border-slate-800 rounded-lg bg-slate-900 p-3">
           <p className="text-sm font-semibold mb-3">Audio</p>
-          <audio controls className="w-full">
-            <source src={sourceUrl} />
-            Your browser does not support the audio element.
-          </audio>
+          <AudioPlayer url={sourceUrl} />
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

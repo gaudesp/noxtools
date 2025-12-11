@@ -25,14 +25,6 @@ function Dates({ task }: { task: Job }) {
   )
 }
 
-const AUDIO_QUALITY_LABELS: Record<string, string> = {
-  high: "Best available",
-  "320kbps": "320 kbps",
-  "256kbps": "256 kbps",
-  "128kbps": "128 kbps",
-  "64kbps": "64 kbps",
-}
-
 const VIDEO_QUALITY_LABELS: Record<string, string> = {
   best: "Best available",
   "4320p": "4320p (8K)",
@@ -62,11 +54,10 @@ function FooterTags({ task }: { task: Job }) {
       const format = (audio?.format || both?.audio_format || "").toUpperCase()
       const bitrate =
         realAudioBitrate ||
-        AUDIO_QUALITY_LABELS[(audio?.quality || both?.audio_quality) ?? ""] ||
         audio?.quality ||
         both?.audio_quality ||
         ""
-      tags.push(`Audio: ${format}${bitrate ? ` • ${bitrate}` : ""}`)
+      tags.push(`Audio: ${format}${bitrate ? ` • ${bitrate} kbps` : ""}`)
     }
     if (video || both) {
       const format = (video?.format || both?.format || "").toUpperCase()

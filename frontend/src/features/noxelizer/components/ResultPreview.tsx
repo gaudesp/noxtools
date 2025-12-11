@@ -1,5 +1,6 @@
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import { type Job, getNoxelizerDownloadUrl } from "@/features/noxelizer/api/api"
+import VideoPlayer from "@/shared/ui/VideoPlayer"
 
 export default function ResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxelizer") return null
@@ -45,8 +46,6 @@ export default function ResultPreview({ job }: { job: Job }) {
     }
 
     const url = getNoxelizerDownloadUrl(job.id, filename)
-    const frames = job.result?.frames_written
-    const fps = job.result?.fps
 
     return (
       <div className="space-y-3">
@@ -61,13 +60,7 @@ export default function ResultPreview({ job }: { job: Job }) {
               Download
             </a>
           </div>
-          <video
-            controls
-            className="w-full h-[400px] rounded border border-slate-800 bg-black object-contain"
-          >
-            <source src={url} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+          <VideoPlayer url={url} filename={filename} height={400} />
         </div>
       </div>
     )
