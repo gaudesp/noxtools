@@ -1,7 +1,7 @@
-import NoticeMessage from "../../../shared/components/NoticeMessage"
+import NoticeMessage from "../../../shared/ui/NoticeMessage"
 import { type Job, getNoxelizerDownloadUrl } from "../api/api"
 
-export default function NoxelizerResultPreview({ job }: { job: Job }) {
+export default function ResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxelizer") return null
 
   if (job.status === "pending")

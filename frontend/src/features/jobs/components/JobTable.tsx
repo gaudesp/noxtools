@@ -1,6 +1,6 @@
 import { useState, type MouseEvent } from "react"
-import NoticeMessage from "../../../shared/components/NoticeMessage"
-import DeleteConfirmModal from "../../../shared/components/DeleteConfirmModal"
+import NoticeMessage from "../../../shared/ui/NoticeMessage"
+import DeleteConfirmModal from "../../../shared/ui/DeleteConfirmModal"
 import { type Job } from "../../../lib/api/core"
 import JobPreview from "./JobPreview"
 import JobStatusBadge from "./JobStatusBadge"

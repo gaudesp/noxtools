@@ -1,4 +1,4 @@
-import { type NoxtubizerCreateRequest } from "../api/api"
+import { type NoxtubizerCreateRequest } from "../../api/api"
 
 const videoQualityOptions: Array<{ value: NoxtubizerCreateRequest["video_quality"]; label: string }> = [
   { value: "best", label: "Best available" },

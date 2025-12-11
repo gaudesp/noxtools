@@ -1,5 +1,5 @@
 import { type ReactNode } from "react"
-import SectionCard from "../../../shared/components/SectionCard"
+import SectionCard from "../../../shared/ui/SectionCard"
 import { type Job } from "../../../lib/api/core"
 import JobStatusBadge from "./JobStatusBadge"
 

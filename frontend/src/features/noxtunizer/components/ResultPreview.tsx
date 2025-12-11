@@ -1,4 +1,4 @@
-import NoticeMessage from "../../../shared/components/NoticeMessage"
+import NoticeMessage from "../../../shared/ui/NoticeMessage"
 import { type Job, getNoxtunizerSourceUrl } from "../api/api"
 
 function displayValue(value: unknown): string {
@@ -6,7 +6,7 @@ function displayValue(value: unknown): string {
   return String(value)
 }
 
-export default function NoxtunizerResultPreview({ job }: { job: Job }) {
+export default function ResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxtunizer") return null
 
   if (job.status === "pending")

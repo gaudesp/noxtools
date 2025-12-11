@@ -1,11 +1,11 @@
 import { type ReactNode } from "react"
-import NoticeMessage from "../../../shared/components/NoticeMessage"
+import NoticeMessage from "../../../shared/ui/NoticeMessage"
 import {
   getNoxtubizerDownloadUrl,
   type Job,
   type NoxtubizerJobResult,
 } from "../api/api"
-import NoxtubizerVideoPlayer from "./NoxtubizerVideoPlayer"
+import NoxtubizerVideoPlayer from "./Media/VideoPlayer"
 
 const AUDIO_QUALITY_LABELS: Record<string, string> = {
   high: "Best available",
@@ -66,7 +66,7 @@ function AssetBlock({
   )
 }
 
-export default function NoxtubizerResultPreview({ job }: { job: Job }) {
+export default function ResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxtubizer") return null
 
   if (job.status === "pending")

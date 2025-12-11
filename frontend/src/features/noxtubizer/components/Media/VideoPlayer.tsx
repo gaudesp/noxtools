@@ -24,7 +24,7 @@ function mimeFromExtension(ext: string) {
   }
 }
 
-export default function NoxtubizerVideoPlayer({
+export default function VideoPlayer({
   url,
   filename,
   height = 360,

@@ -1,4 +1,4 @@
-import { type NoxtubizerCreateRequest } from "../api/api"
+import { type NoxtubizerCreateRequest } from "../../api/api"
 
 const audioQualityOptions: Array<{ value: NoxtubizerCreateRequest["audio_quality"]; label: string }> = [
   { value: "high", label: "Best available" },

@@ -1,4 +1,4 @@
-import NoticeMessage from "../../../shared/components/NoticeMessage"
+import NoticeMessage from "../../../shared/ui/NoticeMessage"
 import { type Job, getNoxsongizerDownloadUrl } from "../api/api"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
@@ -19,7 +19,7 @@ function isStem(stem: string, type: StemType): boolean {
   )
 }
 
-export default function NoxsongizerResultPreview({ job }: { job: Job }) {
+export default function ResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxsongizer") return null
 
   if (job.status === "pending")
