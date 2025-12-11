@@ -4,5 +4,4 @@ export { default as Footer } from "./Footer"
 export { default as Section } from "./Section"
 export { default as Sidebar } from "./Sidebar"
 
-export * from "./providers/LayoutProvider"
-export * from "./hooks/useLayout"
+export * from "./context/LayoutContext"

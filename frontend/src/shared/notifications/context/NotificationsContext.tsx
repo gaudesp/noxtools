@@ -1,3 +1,5 @@
+// shared/notifications/NotificationsContext.tsx
+
 import {
   createContext,
   useCallback,
@@ -5,67 +7,67 @@ import {
   useMemo,
   useRef,
   useState,
+  useContext,
   type ReactNode,
-} from "react";
+} from "react"
 
-export type NotificationType = "success" | "info" | "warning" | "danger";
+export type NotificationType = "success" | "info" | "warning" | "danger"
 
 export type Notification = {
-  id: string;
-  message: string;
-  type: NotificationType;
-  closing?: boolean;
-};
+  id: string
+  message: string
+  type: NotificationType
+  closing?: boolean
+}
 
 type NotificationsContextValue = {
-  notify: (message: string, type?: NotificationType) => void;
-};
+  notify: (message: string, type?: NotificationType) => void
+}
 
-export const NotificationsContext = createContext<NotificationsContextValue | undefined>(undefined);
+const NotificationsContext = createContext<NotificationsContextValue | null>(null)
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<Notification[]>([]);
-  const timeouts = useRef<Record<string, number>>({});
+  const [items, setItems] = useState<Notification[]>([])
+  const timeouts = useRef<Record<string, number>>({})
 
   const remove = useCallback((id: string) => {
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, closing: true } : n)));
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, closing: true } : n)))
+
     timeouts.current[id] = window.setTimeout(() => {
-      setItems((prev) => prev.filter((n) => n.id !== id));
-      window.clearTimeout(timeouts.current[id]);
-      delete timeouts.current[id];
-    }, 400);
-  }, []);
+      setItems((prev) => prev.filter((n) => n.id !== id))
+      window.clearTimeout(timeouts.current[id])
+      delete timeouts.current[id]
+    }, 400)
+  }, [])
 
   const notify = useCallback(
     (message: string, type: NotificationType = "info") => {
-      const id = crypto.randomUUID();
-      setItems((prev) => [{ id, message, type }, ...prev]);
+      const id = crypto.randomUUID()
+      setItems((prev) => [{ id, message, type }, ...prev])
 
+      // Auto-close only for success/info
       if (type === "success" || type === "info") {
-        timeouts.current[id] = window.setTimeout(() => remove(id), 10000);
+        timeouts.current[id] = window.setTimeout(() => remove(id), 10000)
       }
     },
     [remove],
-  );
+  )
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      Object.values(timeouts.current).forEach((t) => window.clearTimeout(t));
-      timeouts.current = {};
-    };
-  }, []);
+      Object.values(timeouts.current).forEach((t) => window.clearTimeout(t))
+      timeouts.current = {}
+    }
+  }, [])
 
-  const value = useMemo(
-    () => ({
-      notify,
-    }),
-    [notify],
-  );
+  const value = useMemo(() => ({ notify }), [notify])
 
   return (
     <NotificationsContext.Provider value={value}>
       {children}
 
+      {/* Notification UI */}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-6 sm:justify-end sm:px-6 sm:pt-6">
         <div className="flex w-full max-w-sm flex-col gap-3">
           {items.map((n) => (
@@ -99,5 +101,13 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         </div>
       </div>
     </NotificationsContext.Provider>
-  );
+  )
+}
+
+export function useNotifications() {
+  const ctx = useContext(NotificationsContext)
+  if (!ctx) {
+    throw new Error("useNotifications must be used within <NotificationsProvider>")
+  }
+  return ctx
 }

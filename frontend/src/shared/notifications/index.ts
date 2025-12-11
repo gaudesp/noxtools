@@ -1,2 +1,1 @@
-export * from "./providers/NotificationsProvider";
-export * from "./hooks/useNotifications";
+export * from "./context/NotificationsContext"
