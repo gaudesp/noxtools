@@ -16,7 +16,7 @@ type FooterData = {
 type LayoutContextType = HeaderData &
   FooterData & {
     setHeader: (data: HeaderData) => void
-    setFooterJobs: (jobs: Job[], loading?: boolean) => void
+    setFooter: (jobs: Job[], loading?: boolean) => void
   }
 
 const LayoutContext = createContext<LayoutContextType | null>(null)
@@ -36,7 +36,7 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
     setHeader(data)
   }
 
-  function setFooterJobs(jobs: Job[], loading?: boolean) {
+  function updateFooter(jobs: Job[], loading?: boolean) {
     setFooter({ jobs, loading })
   }
 
@@ -46,7 +46,7 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
         ...header,
         ...footer,
         setHeader: updateHeader,
-        setFooterJobs,
+        setFooter: updateFooter,
       }}
     >
       {children}

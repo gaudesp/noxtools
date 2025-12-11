@@ -1,11 +1,14 @@
-import { useCallback, useMemo, useState, useEffect } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Section } from "@/app/layout"
 import { useLayout } from "@/app/layout"
-import { useNotifications } from "@/shared/notifications";
+import { useNotifications } from "@/shared/notifications"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
-import JobHistorySection from "@/features/jobs/components/JobHistorySection"
-import JobPreviewModal from "@/features/jobs/components/JobPreviewModal"
-import { useToolJobs } from "@/features/jobs/hooks/useToolJobs"
+import Table from "@/shared/ui/Table"
+import Pagination from "@/shared/ui/Pagination"
+import PreviewModal from "@/shared/ui/PreviewModal"
+import { usePaginatedData } from "@/shared/hooks/usePaginatedData"
+import { useSelection } from "@/shared/hooks/useSelection"
+import { useTaskStream } from "@/modules/tasks/useTaskStream"
 import AudioSelector from "@/features/noxtubizer/components/Media/AudioSelector"
 import VideoSelector from "@/features/noxtubizer/components/Media/VideoSelector"
 import NoxtubizerResultPreview from "@/features/noxtubizer/components/ResultPreview"
@@ -27,22 +30,10 @@ export default function NoxtubizerPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
   const { notify } = useNotifications()
-  const { setHeader, setFooterJobs } = useLayout()
-
-  const {
-    jobs,
-    pagedJobs,
-    total,
-    page,
-    pageSize,
-    setPage,
-    loading,
-    error: streamError,
-    deleteJob,
-    selectedJob,
-    selectJob,
-    clearSelection,
-  } = useToolJobs({ tool: "noxtubizer" })
+  const { setHeader, setFooter } = useLayout()
+  const { jobs, loading, error: streamError, deleteJob, getJobById } = useTaskStream({ tool: "noxtubizer" })
+  const { pagedItems, total, page, pageSize, setPage } = usePaginatedData<Job>({ items: jobs, pageSize: 10 })
+  const { selectedId, selectedItem, select, clear } = useSelection<Job>({ getItemById: getJobById })
 
   useEffect(() => {
     setHeader({
@@ -51,21 +42,15 @@ export default function NoxtubizerPage() {
       eyebrow: "YouTube downloader",
     })
 
-    setFooterJobs(jobs, loading)
+    setFooter(jobs, loading)
 
     return () => {
-      setFooterJobs([], false)
+      setFooter([], false)
     }
   }, [jobs, loading])
 
-  const requiresAudio = useMemo(
-    () => form.mode === "audio" || form.mode === "both",
-    [form.mode],
-  )
-  const requiresVideo = useMemo(
-    () => form.mode === "video" || form.mode === "both",
-    [form.mode],
-  )
+  const requiresAudio = useMemo(() => form.mode === "audio" || form.mode === "both", [form.mode])
+  const requiresVideo = useMemo(() => form.mode === "video" || form.mode === "both", [form.mode])
 
   async function submitJob() {
     try {
@@ -201,39 +186,55 @@ export default function NoxtubizerPage() {
         <NoticeMessage title="Action failed" message={actionError} tone="danger" compact />
       ) : null}
 
-      <JobHistorySection
-        jobs={pagedJobs}
-        total={total}
-        pageSize={pageSize}
-        currentPage={page}
-        onPageChange={(p) => setPage(p)}
-        onSelectJob={(job) => {
-          selectJob(job.id)
-          setPreviewOpen(true)
-        }}
-        onDeleteJob={async (job) => {
-          try {
-            setActionError(null)
-            await deleteJob(job.id)
-            if (selectedJob?.id === job.id) {
-              clearSelection()
-              setPreviewOpen(false)
+      <Section
+        title={`Task history (${pagedItems.length} of ${total})`}
+        description="Latest tasks for this tool. Click a row to open the preview modal."
+        actions={
+          <Pagination total={total} pageSize={pageSize} currentPage={page} onPageChange={(p) => setPage(p)} />
+        }
+        padded={false}
+      >
+        {streamError ? (
+          <div className="px-5 pt-5 pb-5">
+            <NoticeMessage title="Unable to load tasks" message={streamError} tone="danger" compact />
+          </div>
+        ) : null}
+        <Table
+          tasks={pagedItems}
+          total={total}
+          pageSize={pageSize}
+          currentPage={page}
+          onPageChange={(p) => setPage(p)}
+          onSelectTask={(task) => {
+            select(task.id)
+            setPreviewOpen(true)
+          }}
+          onDeleteTask={async (task) => {
+            try {
+              setActionError(null)
+              await deleteJob(task.id)
+              if (selectedId === task.id) {
+                clear()
+                setPreviewOpen(false)
+              }
+              notify("Job deleted.", "success")
+            } catch (err) {
+              console.error(err)
+              setActionError("Failed to delete job.")
             }
-            notify("Job deleted.", "success")
-          } catch (err) {
-            console.error(err)
-            setActionError("Failed to delete job.")
-          }
-        }}
-        loading={loading}
-        error={streamError}
-      />
+          }}
+          loading={loading}
+          error={null}
+          bordered={false}
+          showHeader={false}
+        />
+      </Section>
 
-      <JobPreviewModal
-        job={selectedJob}
-        open={Boolean(previewOpen && selectedJob)}
+      <PreviewModal
+        task={selectedItem}
+        open={Boolean(previewOpen && selectedItem)}
         onClose={() => {
-          clearSelection()
+          clear()
           setPreviewOpen(false)
         }}
         renderPreview={renderJobContent}

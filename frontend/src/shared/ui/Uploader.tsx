@@ -11,13 +11,13 @@ type Props = {
   busyLabel?: string
 }
 
-export default function JobUploader({
+export default function Uploader({
   onUpload,
   busy,
   accept = "audio/*",
-  title = "Drag & drop audio files here",
+  title = "Drag & drop files here",
   description = "or click to choose one or multiple files from your computer",
-  inputId = "job-uploader-input",
+  inputId = "uploader-input",
   multiple = true,
   busyLabel = "Uploading files…",
 }: Props) {
@@ -59,9 +59,7 @@ export default function JobUploader({
           busy ? "opacity-60 pointer-events-none" : "",
         ].join(" ")}
         onClick={() => {
-          const input = document.getElementById(
-            inputId,
-          ) as HTMLInputElement | null
+          const input = document.getElementById(inputId) as HTMLInputElement | null
           input?.click()
         }}
         onDrop={onDrop}
@@ -80,18 +78,11 @@ export default function JobUploader({
         {!busy && (
           <>
             <p className="text-lg font-medium mb-2">{title}</p>
-            <p className="text-sm text-neutral-400">
-              {description}
-            </p>
+            <p className="text-sm text-neutral-400">{description}</p>
           </>
         )}
 
-        {busy && (
-          <p className="text-sm text-neutral-300">
-            {busyLabel}
-          </p>
-        )}
-
+        {busy && <p className="text-sm text-neutral-300">{busyLabel}</p>}
       </div>
     </div>
   )

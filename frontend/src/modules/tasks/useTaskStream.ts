@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { API_BASE_URL, type Job, type JobTool } from "@/lib/api/core"
 import { deleteJob as deleteJobApi, listJobs } from "@/lib/api/jobs"
 
-type UseJobStreamParams = {
+type UseTaskStreamParams = {
   tool?: JobTool
 }
 
-type UseJobStreamResult = {
+type UseTaskStreamResult = {
   jobs: Job[]
   total: number
   loading: boolean
@@ -15,7 +15,7 @@ type UseJobStreamResult = {
   getJobById: (id: string | null) => Job | null
 }
 
-export function useJobStream(params: UseJobStreamParams = {}): UseJobStreamResult {
+export function useTaskStream(params: UseTaskStreamParams = {}): UseTaskStreamResult {
   const { tool } = params
   const [jobsMap, setJobsMap] = useState<Record<string, Job>>({})
   const [loading, setLoading] = useState<boolean>(false)
@@ -29,6 +29,7 @@ export function useJobStream(params: UseJobStreamParams = {}): UseJobStreamResul
     if (initialLoadedRef.current === tool) return
     initialLoadedRef.current = tool ?? "__all__"
     let cancelled = false
+
     async function loadInitial() {
       setLoading(true)
       setError(null)
@@ -55,6 +56,7 @@ export function useJobStream(params: UseJobStreamParams = {}): UseJobStreamResul
         if (!cancelled) setLoading(false)
       }
     }
+
     loadInitial()
     return () => {
       cancelled = true

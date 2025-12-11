@@ -1,97 +1,57 @@
 import { useCallback, useEffect, useState } from "react"
-import NoticeMessage from "@/shared/ui/NoticeMessage"
-import PreviewModal from "@/shared/ui/PreviewModal"
-import Table from "@/shared/ui/Table"
-import Pagination from "@/shared/ui/Pagination"
-import Uploader from "@/shared/ui/Uploader"
 import { Section } from "@/app/layout"
 import { useLayout } from "@/app/layout"
 import { useNotifications } from "@/shared/notifications"
+import NoticeMessage from "@/shared/ui/NoticeMessage"
+import Table from "@/shared/ui/Table"
+import Pagination from "@/shared/ui/Pagination"
+import PreviewModal from "@/shared/ui/PreviewModal"
 import { usePaginatedData } from "@/shared/hooks/usePaginatedData"
 import { useSelection } from "@/shared/hooks/useSelection"
 import { useTaskStream } from "@/modules/tasks/useTaskStream"
+import NoxelizerResultPreview from "@/features/noxelizer/components/ResultPreview"
+import NoxtubizerResultPreview from "@/features/noxtubizer/components/ResultPreview"
 import NoxtunizerResultPreview from "@/features/noxtunizer/components/ResultPreview"
-import { uploadNoxtunizer, type Job } from "@/features/noxtunizer/api/api"
+import NoxsongizerResultPreview from "@/features/noxsongizer/components/ResultPreview"
+import { type Job } from "@/lib/api/core"
 
-export default function NoxtunizerPage() {
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
+export default function Dashboard() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
   const { notify } = useNotifications()
   const { setHeader, setFooter } = useLayout()
-  const { jobs, loading, error: streamError, deleteJob, getJobById } = useTaskStream({ tool: "noxtunizer" })
+  const { jobs, loading, error: streamError, deleteJob, getJobById } = useTaskStream()
   const { pagedItems, total, page, pageSize, setPage } = usePaginatedData<Job>({ items: jobs, pageSize: 10 })
   const { selectedId, selectedItem, select, clear } = useSelection<Job>({ getItemById: getJobById })
 
   useEffect(() => {
     setHeader({
-      title: "Noxtunizer",
-      description: "Extract BPM, key and durability from any track.",
-      eyebrow: "Musical analysis",
+      title: "Dashboard",
+      description: "Monitor all tasks across tools and follow live updates.",
+      eyebrow: "Tools overview",
     })
-
     setFooter(jobs, loading)
-
-    return () => {
-      setFooter([], false)
-    }
+    return () => setFooter([], false)
   }, [jobs, loading])
 
-  async function startUpload(files: File[]) {
-    try {
-      setIsUploading(true)
-      setUploadError(null)
-      setActionError(null)
-      const res = await uploadNoxtunizer(files)
-      const ids = res.jobs.map((j) => j.job_id)
-      notify(`${ids.length} job(s) created.`, "success")
-    } catch (err) {
-      console.error(err)
-      setUploadError("File upload failed. Please retry.")
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  const renderJobContent = useCallback(
-    (job: Job) => <NoxtunizerResultPreview job={job} />,
-    [],
-  )
+  const renderTaskContent = useCallback((task: Job) => {
+    if (task.tool === "noxsongizer") return <NoxsongizerResultPreview job={task} />
+    if (task.tool === "noxelizer") return <NoxelizerResultPreview job={task} />
+    if (task.tool === "noxtubizer") return <NoxtubizerResultPreview job={task} />
+    if (task.tool === "noxtunizer") return <NoxtunizerResultPreview job={task} />
+    return null
+  }, [])
 
   return (
     <div className="flex flex-col gap-8">
-      <Section
-        title="Upload your audio"
-        description="Audio files are analyzed to extract musical attributes. Upload one or multiple files."
-      >
-        {uploadError ? (
-          <div className="mb-4">
-            <NoticeMessage title="Upload failed" message={uploadError} tone="danger" compact />
-          </div>
-        ) : null}
-        <Uploader
-          onUpload={(files) => {
-            startUpload(files)
-          }}
-          busy={isUploading}
-          accept="audio/*"
-          title="Drag & drop audio here"
-          description="or click to choose one or multiple songs from your computer"
-          inputId="noxtunizer-uploader-input"
-        />
-      </Section>
-
       {actionError ? (
         <NoticeMessage title="Action failed" message={actionError} tone="danger" compact />
       ) : null}
 
       <Section
         title={`Task history (${pagedItems.length} of ${total})`}
-        description="Latest tasks for this tool. Click a row to open the preview modal."
-        actions={
-          <Pagination total={total} pageSize={pageSize} currentPage={page} onPageChange={(p) => setPage(p)} />
-        }
+        description="Latest tasks from every tool. Click a row to preview results."
+        actions={<Pagination total={total} pageSize={pageSize} currentPage={page} onPageChange={(p) => setPage(p)} />}
         padded={false}
       >
         {streamError ? (
@@ -99,6 +59,7 @@ export default function NoxtunizerPage() {
             <NoticeMessage title="Unable to load tasks" message={streamError} tone="danger" compact />
           </div>
         ) : null}
+
         <Table
           tasks={pagedItems}
           total={total}
@@ -137,7 +98,7 @@ export default function NoxtunizerPage() {
           clear()
           setPreviewOpen(false)
         }}
-        renderPreview={renderJobContent}
+        renderPreview={renderTaskContent}
       />
     </div>
   )

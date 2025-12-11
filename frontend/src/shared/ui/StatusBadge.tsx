@@ -11,7 +11,7 @@ const STYLES: Record<JobStatus, string> = {
   error: "bg-rose-500/15 text-rose-100 border border-rose-400/40",
 }
 
-export default function JobStatusBadge({ status }: Props) {
+export default function StatusBadge({ status }: Props) {
   const label = status.charAt(0).toUpperCase() + status.slice(1)
   return (
     <span className={`px-2 py-1 text-xs font-semibold rounded ${STYLES[status]}`}>

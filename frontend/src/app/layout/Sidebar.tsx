@@ -84,12 +84,9 @@ export default function Sidebar() {
         </NavLink>
       </nav>
       <div className="mt-auto">
-        <NavLink
-          to="/jobs"
-          className={({ isActive }) => itemClass(isActive)}
-        >
+        <NavLink to="/dashboard" className={({ isActive }) => itemClass(isActive)}>
           {icons.alljobs}
-          All jobs
+          Dashboard
         </NavLink>
       </div>
     </aside>
