@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react"
-import ErrorMessage from "../components/common/ErrorMessage"
+import NoticeMessage from "../components/common/NoticeMessage"
 import NoxtubizerResultPreview from "../components/jobs/NoxtubizerResultPreview"
 import { useNotifications } from "../components/notifications/Notifications"
 import AudioSelector from "../components/noxtubizer/AudioSelector"
@@ -73,8 +73,7 @@ export default function Noxtubizer() {
       setForm((prev) => ({ ...prev, url: "" }))
     } catch (err) {
       console.error(err)
-      setFormError("Failed to queue Noxtubizer job.")
-      notify("Failed to queue Noxtubizer job.", "danger")
+      setFormError("Form submit failed. Please retry.")
     } finally {
       setIsSubmitting(false)
     }
@@ -93,11 +92,11 @@ export default function Noxtubizer() {
     >
       <SectionCard
         title="Configure your download"
-        description="Paste a YouTube URL, choose what you need, and we will queue the job."
+        description="YouTube videos are fetched and converted according to the selected options. Paste a YouTube URL."
       >
         <div className="space-y-5">
           {formError ? (
-            <ErrorMessage title="Invalid request" message={formError} compact />
+            <NoticeMessage title="Invalid request" message={formError} tone="danger" compact />
           ) : null}
 
           <div>
@@ -189,7 +188,7 @@ export default function Noxtubizer() {
       </SectionCard>
 
       {actionError ? (
-        <ErrorMessage title="Action failed" message={actionError} compact />
+        <NoticeMessage title="Action failed" message={actionError} tone="danger" compact />
       ) : null}
 
       <JobHistorySection
@@ -214,7 +213,6 @@ export default function Noxtubizer() {
           } catch (err) {
             console.error(err)
             setActionError("Failed to delete job.")
-            notify("Failed to delete job.", "danger")
           }
         }}
         loading={loading}

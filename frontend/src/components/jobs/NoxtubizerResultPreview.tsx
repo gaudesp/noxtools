@@ -4,7 +4,7 @@ import {
   type Job,
   type NoxtubizerJobResult,
 } from "../../lib/api"
-import ErrorMessage from "../common/ErrorMessage"
+import NoticeMessage from "../common/NoticeMessage"
 import NoxtubizerVideoPlayer from "../noxtubizer/NoxtubizerVideoPlayer"
 
 const AUDIO_QUALITY_LABELS: Record<string, string> = {
@@ -70,17 +70,25 @@ export default function NoxtubizerResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxtubizer") return null
 
   if (job.status === "pending")
-    return <p className="text-sm text-slate-200">Job queued, we will start processing soon.</p>
+    return (
+      <NoticeMessage
+        message="Job is queued and will start processing soon."
+        tone="warning"
+      />
+    )
 
   if (job.status === "running")
-    return <p className="text-sm text-slate-200">Downloading and processing your request. Hang tight!</p>
+    return (
+      <NoticeMessage message="Job is currently being executed." withSpinner tone="info" />
+    )
 
   if (job.status === "error") {
     return (
-      <ErrorMessage
+      <NoticeMessage
         title="Job failed"
-        message="The download or muxing step failed."
+        message="An error occurred while executing the job."
         details={job.error_message}
+        tone="danger"
       />
     )
   }
@@ -139,7 +147,7 @@ export default function NoxtubizerResultPreview({ job }: { job: Job }) {
       )}
 
       {!audioUrl && !videoUrl && !finalUrl && (
-        <ErrorMessage
+        <NoticeMessage
           title="No outputs available"
           message="The job completed but did not produce any downloadable files."
           tone="warning"

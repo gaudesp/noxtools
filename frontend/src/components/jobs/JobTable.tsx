@@ -1,6 +1,6 @@
 import { useState, type MouseEvent } from "react"
 import { type Job } from "../../lib/api"
-import ErrorMessage from "../common/ErrorMessage"
+import NoticeMessage from "../common/NoticeMessage"
 import DeleteConfirmModal from "./DeleteConfirmModal"
 import JobPreview from "./JobPreview"
 import JobStatusBadge from "./JobStatusBadge"
@@ -95,7 +95,7 @@ export default function JobTable({
 
       {error ? (
         <div className="px-4 py-3 border-b border-slate-800">
-          <ErrorMessage title="Unable to load jobs" message={error} compact />
+          <NoticeMessage title="Unable to load jobs" message={error} tone="danger" compact />
         </div>
       ) : null}
 
