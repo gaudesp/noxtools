@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState, useEffect } from "react"
 import { Section } from "../../../app/layout"
 import { useLayout } from "../../../app/layout"
-import { useNotifications } from "../../../app/providers/NotificationsProvider"
+import { useNotifications } from "../../../shared/notifications";
 import NoticeMessage from "../../../shared/ui/NoticeMessage"
 import JobHistorySection from "../../jobs/components/JobHistorySection"
 import JobPreviewModal from "../../jobs/components/JobPreviewModal"

@@ -17,7 +17,7 @@ type LayoutContextType = {
   setFooterJobs: (jobs: Job[], loading?: boolean) => void
 }
 
-const LayoutContext = createContext<LayoutContextType | null>(null)
+export const LayoutContext = createContext<LayoutContextType | null>(null)
 
 export function LayoutProvider({ children }: { children: ReactNode }) {
   const [header, setHeaderState] = useState<{

@@ -1,5 +1,10 @@
-import { useLayoutContext } from "../providers/LayoutProvider"
+import { useContext } from "react"
+import { LayoutContext } from "../providers/LayoutProvider"
 
 export function useLayout() {
-  return useLayoutContext()
+  const ctx = useContext(LayoutContext)
+  if (!ctx) {
+    throw new Error("useLayout must be used inside <LayoutProvider>")
+  }
+  return ctx
 }
