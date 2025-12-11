@@ -1,5 +1,4 @@
 import { type Job } from "../../../../lib/api/core"
-import JobStatusBadge from "../JobStatusBadge"
 
 const AUDIO_QUALITY_LABELS: Record<string, string> = {
   high: "Best available",
@@ -23,10 +22,9 @@ const VIDEO_QUALITY_LABELS: Record<string, string> = {
 
 type Props = {
   job: Job
-  onClose: () => void
 }
 
-export default function Footer({ job, onClose }: Props) {
+export default function Footer({ job }: Props) {
   const tags: string[] = []
 
   if (job.tool === "noxtubizer") {

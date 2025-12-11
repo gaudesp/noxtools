@@ -83,7 +83,7 @@ export default function Sidebar() {
           Noxtunizer
         </NavLink>
       </nav>
-      <div className="mt-auto pt-6 border-t border-slate-800">
+      <div className="mt-auto">
         <NavLink
           to="/jobs"
           className={({ isActive }) => itemClass(isActive)}

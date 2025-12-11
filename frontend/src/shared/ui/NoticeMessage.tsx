@@ -18,7 +18,7 @@ const TONE_STYLES: Record<Tone, string> = {
   info: "bg-sky-900/30 border-sky-700 text-sky-50",
 }
 
-const ICONS: Record<Tone, JSX.Element> = {
+const ICONS: Record<Tone, ReactNode> = {
   success: (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
       <path d="m5 13 4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -57,16 +57,17 @@ export default function NoticeMessage({
 
   return (
     <div className={`rounded-xl border px-4 py-3 ${toneStyles}`}>
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-black/20">
-          <div className="text-current" aria-hidden>
-            {ICONS[tone]}
-          </div>
+      <div className="flex items-center gap-3">
+        
+        <div className="flex h-8 w-8 items-center justify-center rounded-full">
+          {ICONS[tone]}
         </div>
-        <div className="space-y-1">
-          {title ? (
+
+        <div className="flex flex-col justify-center self-stretch space-y-1">
+          {title && (
             <p className="text-sm font-semibold leading-tight">{title}</p>
-          ) : null}
+          )}
+
           <p
             className={
               compact
@@ -75,18 +76,19 @@ export default function NoticeMessage({
             }
           >
             <span>{message}</span>
-            {withSpinner ? (
+            {withSpinner && (
               <span
-                className="inline-block h-4 w-4 rounded-full border border-current border-t-transparent align-middle animate-spin"
+                className="inline-block h-4 w-4 rounded-full border border-current border-t-transparent animate-spin"
                 aria-hidden
               />
-            ) : null}
+            )}
           </p>
-          {details ? (
+
+          {details && (
             <div className="whitespace-pre-wrap text-xs leading-relaxed text-white/80">
               {details}
             </div>
-          ) : null}
+          )}
         </div>
       </div>
     </div>

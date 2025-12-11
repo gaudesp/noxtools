@@ -32,7 +32,7 @@ export default function Footer({ jobs, loading }: Props) {
   ]
 
   return (
-    <div className="sticky bottom-0 z-40 flex flex-wrap items-center gap-3 border-t border-slate-800 bg-slate-900/90 px-4 py-3 text-sm text-slate-200 backdrop-blur">
+    <div className="sticky bottom-0 z-40 flex flex-wrap items-center gap-3 border-t border-slate-800 bg-slate-900/90 px-4 py-6 text-sm text-slate-200 backdrop-blur">
       <div className="flex flex-wrap gap-2">
         {summary.map((item) => (
           <span
