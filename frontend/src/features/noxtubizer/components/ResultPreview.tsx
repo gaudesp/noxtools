@@ -1,11 +1,11 @@
 import { type ReactNode } from "react"
-import NoticeMessage from "../../../shared/ui/NoticeMessage"
+import NoticeMessage from "@/shared/ui/NoticeMessage"
 import {
   getNoxtubizerDownloadUrl,
   type Job,
   type NoxtubizerJobResult,
-} from "../api/api"
-import NoxtubizerVideoPlayer from "./Media/VideoPlayer"
+} from "@/features/noxtubizer/api/api"
+import NoxtubizerVideoPlayer from "@/features/noxtubizer/components/Media/VideoPlayer"
 
 const AUDIO_QUALITY_LABELS: Record<string, string> = {
   high: "Best available",

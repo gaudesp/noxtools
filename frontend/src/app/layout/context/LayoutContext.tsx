@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
-import type { Job } from "../../../lib/api/core"
+import type { Job } from "@/lib/api/core"
 
 type HeaderData = {
   title: string

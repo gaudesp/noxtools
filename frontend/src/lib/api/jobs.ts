@@ -6,7 +6,7 @@ import {
   type JobStatus,
   type PaginatedJobs,
   type ListJobsParams,
-} from "./core"
+} from "@/lib/api/core"
 
 export async function listJobs(params: ListJobsParams = {}): Promise<PaginatedJobs> {
   const search = new URLSearchParams()

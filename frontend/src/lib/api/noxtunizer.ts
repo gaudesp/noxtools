@@ -1,5 +1,5 @@
-import { API_BASE_URL, handleResponse, type Job, type PaginatedJobs, type ListJobsParams } from "./core"
-import { listJobs } from "./jobs"
+import { API_BASE_URL, handleResponse, type Job, type PaginatedJobs, type ListJobsParams } from "@/lib/api/core"
+import { listJobs } from "@/lib/api/jobs"
 
 export interface NoxtunizerUploadItem {
   job_id: string

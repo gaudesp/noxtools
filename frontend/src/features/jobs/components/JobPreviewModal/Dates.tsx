@@ -1,4 +1,4 @@
-import { type Job } from "../../../../lib/api/core"
+import { type Job } from "@/lib/api/core"
 
 const formatDate = (iso?: string) => {
   if (!iso) return ""

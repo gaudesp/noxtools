@@ -1,5 +1,5 @@
-import NoticeMessage from "../../../shared/ui/NoticeMessage"
-import { type Job, getNoxtunizerSourceUrl } from "../api/api"
+import NoticeMessage from "@/shared/ui/NoticeMessage"
+import { type Job, getNoxtunizerSourceUrl } from "@/features/noxtunizer/api/api"
 
 function displayValue(value: unknown): string {
   if (value === null || value === undefined) return "—"

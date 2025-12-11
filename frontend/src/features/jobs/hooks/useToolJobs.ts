@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { useNotifications } from "../../../shared/notifications";
-import { type JobTool } from "../../../lib/api/core"
-import { useJobStream } from "./useJobStream"
+import { useNotifications } from "@/shared/notifications";
+import { type JobTool } from "@/lib/api/core"
+import { useJobStream } from "@/features/jobs/hooks/useJobStream"
 
 type Options = {
   tool: JobTool

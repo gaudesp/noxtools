@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom"
-import { AppLayout } from "../layout"
-import { routes } from "./routes"
+import { AppLayout } from "@/app/layout"
+import { routes } from "@/app/router/routes"
 
 export default function AppRouter() {
   return (

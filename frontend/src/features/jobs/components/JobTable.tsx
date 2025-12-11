@@ -1,9 +1,9 @@
 import { useState, type MouseEvent } from "react"
-import NoticeMessage from "../../../shared/ui/NoticeMessage"
-import DeleteConfirmModal from "../../../shared/ui/DeleteConfirmModal"
-import { type Job } from "../../../lib/api/core"
-import JobPreview from "./JobPreview"
-import JobStatusBadge from "./JobStatusBadge"
+import NoticeMessage from "@/shared/ui/NoticeMessage"
+import DeleteConfirmModal from "@/shared/ui/DeleteConfirmModal"
+import { type Job } from "@/lib/api/core"
+import JobPreview from "@/features/jobs/components/JobPreview"
+import JobStatusBadge from "@/features/jobs/components/JobStatusBadge"
 
 type Props = {
   jobs: Job[]

@@ -1,5 +1,5 @@
-import { type Job } from "../../../../lib/api/core"
-import JobStatusBadge from "../JobStatusBadge"
+import { type Job } from "@/lib/api/core"
+import JobStatusBadge from "@/features/jobs/components/JobStatusBadge"
 
 type Props = {
   job: Job

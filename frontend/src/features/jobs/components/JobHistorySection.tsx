@@ -1,7 +1,7 @@
-import { type Job } from "../../../lib/api/core"
-import NoticeMessage from "../../../shared/ui/NoticeMessage"
-import { Section } from "../../../app/layout"
-import JobTable from "./JobTable"
+import { type Job } from "@/lib/api/core"
+import NoticeMessage from "@/shared/ui/NoticeMessage"
+import { Section } from "@/app/layout"
+import JobTable from "@/features/jobs/components/JobTable"
 
 type Props = {
   jobs: Job[]

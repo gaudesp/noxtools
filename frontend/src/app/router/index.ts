@@ -1,2 +1,2 @@
-export { default as AppRouter } from "./AppRouter"
-export * from "./routes"
+export { default as AppRouter } from "@/app/router/AppRouter"
+export * from "@/app/router/routes"

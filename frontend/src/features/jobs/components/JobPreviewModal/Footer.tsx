@@ -1,4 +1,4 @@
-import { type Job } from "../../../../lib/api/core"
+import { type Job } from "@/lib/api/core"
 
 const AUDIO_QUALITY_LABELS: Record<string, string> = {
   high: "Best available",

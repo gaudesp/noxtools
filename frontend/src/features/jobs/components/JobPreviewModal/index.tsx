@@ -1,8 +1,8 @@
 import { useEffect } from "react"
-import { type Job } from "../../../../lib/api/core"
-import Dates from "./Dates"
-import Footer from "./Footer"
-import Header from "./Header"
+import { type Job } from "@/lib/api/core"
+import Dates from "@/features/jobs/components/JobPreviewModal/Dates"
+import Footer from "@/features/jobs/components/JobPreviewModal/Footer"
+import Header from "@/features/jobs/components/JobPreviewModal/Header"
 
 type Props = {
   job: Job | null

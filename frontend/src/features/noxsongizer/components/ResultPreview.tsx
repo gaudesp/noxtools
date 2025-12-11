@@ -1,5 +1,5 @@
-import NoticeMessage from "../../../shared/ui/NoticeMessage"
-import { type Job, getNoxsongizerDownloadUrl } from "../api/api"
+import NoticeMessage from "@/shared/ui/NoticeMessage"
+import { type Job, getNoxsongizerDownloadUrl } from "@/features/noxsongizer/api/api"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
 

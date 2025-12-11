@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import NoticeMessage from "../../../shared/ui/NoticeMessage"
-import JobPreviewModal from "../components/JobPreviewModal"
-import { useLayout } from "../../../app/layout"
-import NoxelizerResultPreview from "../../noxelizer/components/ResultPreview"
-import NoxsongizerResultPreview from "../../noxsongizer/components/ResultPreview"
-import NoxtunizerResultPreview from "../../noxtunizer/components/ResultPreview"
-import NoxtubizerResultPreview from "../../noxtubizer/components/ResultPreview"
-import { useNotifications } from "../../../shared/notifications";
-import { type Job } from "../../../lib/api/core"
-import JobHistorySection from "../components/JobHistorySection"
-import { useJobStream } from "../hooks/useJobStream"
+import NoticeMessage from "@/shared/ui/NoticeMessage"
+import JobPreviewModal from "@/features/jobs/components/JobPreviewModal"
+import { useLayout } from "@/app/layout"
+import NoxelizerResultPreview from "@/features/noxelizer/components/ResultPreview"
+import NoxsongizerResultPreview from "@/features/noxsongizer/components/ResultPreview"
+import NoxtunizerResultPreview from "@/features/noxtunizer/components/ResultPreview"
+import NoxtubizerResultPreview from "@/features/noxtubizer/components/ResultPreview"
+import { useNotifications } from "@/shared/notifications";
+import { type Job } from "@/lib/api/core"
+import JobHistorySection from "@/features/jobs/components/JobHistorySection"
+import { useJobStream } from "@/features/jobs/hooks/useJobStream"
 
 const PAGE_SIZE = 20
 

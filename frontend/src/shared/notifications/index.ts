@@ -1,1 +1,1 @@
-export * from "./context/NotificationsContext"
+export * from "@/shared/notifications/context/NotificationsContext"

@@ -1,5 +1,5 @@
-import NoticeMessage from "../../../shared/ui/NoticeMessage"
-import { type Job, getNoxelizerDownloadUrl } from "../api/api"
+import NoticeMessage from "@/shared/ui/NoticeMessage"
+import { type Job, getNoxelizerDownloadUrl } from "@/features/noxelizer/api/api"
 
 export default function ResultPreview({ job }: { job: Job }) {
   if (job.tool !== "noxelizer") return null

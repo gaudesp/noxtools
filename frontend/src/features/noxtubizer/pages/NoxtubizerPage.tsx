@@ -1,15 +1,15 @@
 import { useCallback, useMemo, useState, useEffect } from "react"
-import { Section } from "../../../app/layout"
-import { useLayout } from "../../../app/layout"
-import { useNotifications } from "../../../shared/notifications";
-import NoticeMessage from "../../../shared/ui/NoticeMessage"
-import JobHistorySection from "../../jobs/components/JobHistorySection"
-import JobPreviewModal from "../../jobs/components/JobPreviewModal"
-import { useToolJobs } from "../../jobs/hooks/useToolJobs"
-import AudioSelector from "../components/Media/AudioSelector"
-import VideoSelector from "../components/Media/VideoSelector"
-import NoxtubizerResultPreview from "../components/ResultPreview"
-import { createNoxtubizerJob, type NoxtubizerCreateRequest, type Job } from "../api/api"
+import { Section } from "@/app/layout"
+import { useLayout } from "@/app/layout"
+import { useNotifications } from "@/shared/notifications";
+import NoticeMessage from "@/shared/ui/NoticeMessage"
+import JobHistorySection from "@/features/jobs/components/JobHistorySection"
+import JobPreviewModal from "@/features/jobs/components/JobPreviewModal"
+import { useToolJobs } from "@/features/jobs/hooks/useToolJobs"
+import AudioSelector from "@/features/noxtubizer/components/Media/AudioSelector"
+import VideoSelector from "@/features/noxtubizer/components/Media/VideoSelector"
+import NoxtubizerResultPreview from "@/features/noxtubizer/components/ResultPreview"
+import { createNoxtubizerJob, type NoxtubizerCreateRequest, type Job } from "@/features/noxtubizer/api/api"
 
 const defaultFormState: NoxtubizerCreateRequest = {
   url: "",

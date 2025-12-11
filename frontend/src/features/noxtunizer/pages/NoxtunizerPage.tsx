@@ -1,14 +1,14 @@
 import { useCallback, useState, useEffect } from "react"
-import NoticeMessage from "../../../shared/ui/NoticeMessage"
-import JobPreviewModal from "../../jobs/components/JobPreviewModal"
-import { Section } from "../../../app/layout"
-import { useLayout } from "../../../app/layout"
-import { useNotifications } from "../../../shared/notifications";
-import JobUploader from "../../jobs/components/JobUploader"
-import JobHistorySection from "../../jobs/components/JobHistorySection"
-import { useToolJobs } from "../../jobs/hooks/useToolJobs"
-import NoxtunizerResultPreview from "../components/ResultPreview"
-import { uploadNoxtunizer, type Job } from "../api/api"
+import NoticeMessage from "@/shared/ui/NoticeMessage"
+import JobPreviewModal from "@/features/jobs/components/JobPreviewModal"
+import { Section } from "@/app/layout"
+import { useLayout } from "@/app/layout"
+import { useNotifications } from "@/shared/notifications";
+import JobUploader from "@/features/jobs/components/JobUploader"
+import JobHistorySection from "@/features/jobs/components/JobHistorySection"
+import { useToolJobs } from "@/features/jobs/hooks/useToolJobs"
+import NoxtunizerResultPreview from "@/features/noxtunizer/components/ResultPreview"
+import { uploadNoxtunizer, type Job } from "@/features/noxtunizer/api/api"
 
 export default function NoxtunizerPage() {
   const [isUploading, setIsUploading] = useState(false)

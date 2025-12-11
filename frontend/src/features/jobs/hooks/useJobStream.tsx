@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { API_BASE_URL, type Job, type JobTool } from "../../../lib/api/core"
-import { deleteJob as deleteJobApi, listJobs } from "../../../lib/api/jobs"
+import { API_BASE_URL, type Job, type JobTool } from "@/lib/api/core"
+import { deleteJob as deleteJobApi, listJobs } from "@/lib/api/jobs"
 
 type UseJobStreamParams = {
   tool?: JobTool
