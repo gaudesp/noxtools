@@ -78,6 +78,35 @@ class NoxtunizerExecutor:
       text=True,
       check=False,
     )
+  
+  def _normalize_key(self, key: str | None) -> str | None:
+    if not key or not isinstance(key, str):
+      return None
+    k = key.strip().upper()
+
+    mapping = {
+      "BB": "Bb",
+      "EB": "Eb",
+      "AB": "Ab",
+      "DB": "Db",
+      "GB": "Gb",
+      "FB": "E",
+      "CB": "B",
+      "B#": "C",
+      "E#": "F",
+    }
+
+    if k in mapping:
+      return mapping[k]
+
+    if len(k) == 2:
+      note, accidental = k[0], k[1]
+      if accidental == "B":
+        return f"{note}b"
+      if accidental == "#":
+        return f"{note}#"
+
+    return k.capitalize()
 
   def _reduce_output(self, payload: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -91,7 +120,7 @@ class NoxtunizerExecutor:
     key_scale = tonal.get("key_scale") or tonal.get("chords_scale")
 
     if isinstance(key_key, str):
-      key_key = key_key.strip().upper()
+      key_key = self._normalize_key(key_key)
     else:
       key_key = None
 
