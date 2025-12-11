@@ -1,13 +1,12 @@
-import { useCallback, useState } from "react"
+import { useCallback, useState, useEffect } from "react"
 import NoticeMessage from "../../../shared/ui/NoticeMessage"
 import JobPreviewModal from "../../jobs/components/JobPreviewModal"
-import SectionCard from "../../../shared/ui/SectionCard"
-import ToolSummaryRow from "../../../shared/ui/ToolSummaryRow"
+import { Section } from "../../../app/layout"
+import { useLayout } from "../../../app/layout"
 import { useNotifications } from "../../../app/providers/NotificationsProvider"
 import JobUploader from "../../jobs/components/JobUploader"
 import JobHistorySection from "../../jobs/components/JobHistorySection"
 import { useToolJobs } from "../../jobs/hooks/useToolJobs"
-import ToolPageLayout from "../../../components/tooling/ToolPageLayout"
 import NoxsongizerResultPreview from "../components/ResultPreview"
 import { uploadNoxsongizer, type Job } from "../api/api"
 
@@ -17,6 +16,7 @@ export default function NoxsongizerPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
   const { notify } = useNotifications()
+  const { setHeader, setFooterJobs } = useLayout()
 
   const {
     jobs,
@@ -32,6 +32,20 @@ export default function NoxsongizerPage() {
     selectJob,
     clearSelection,
   } = useToolJobs({ tool: "noxsongizer" })
+
+  useEffect(() => {
+    setHeader({
+      title: "Noxsongizer",
+      description: "Split a song into separate audio stems (vocals, bass, drums and other).",
+      eyebrow: "Audio separation",
+    })
+
+    setFooterJobs(jobs, loading)
+
+    return () => {
+      setFooterJobs([], false)
+    }
+  }, [jobs, loading])
 
   async function startUpload(files: File[]) {
     try {
@@ -55,12 +69,8 @@ export default function NoxsongizerPage() {
   )
 
   return (
-    <ToolPageLayout
-      title="Noxsongizer"
-      description="Split a song into separate audio stems (vocals, bass, drums and other)."
-      eyebrow="Audio separation"
-    >
-      <SectionCard
+    <div className="flex flex-col gap-8">
+      <Section
         title="Upload your tracks"
         description="Songs are separated into high-quality audio stems. Upload one or multiple files."
       >
@@ -75,7 +85,7 @@ export default function NoxsongizerPage() {
           }}
           busy={isUploading}
         />
-      </SectionCard>
+      </Section>
 
       {actionError ? (
         <NoticeMessage title="Action failed" message={actionError} tone="danger" compact />
@@ -118,8 +128,6 @@ export default function NoxsongizerPage() {
         }}
         renderPreview={renderJobContent}
       />
-
-      <ToolSummaryRow jobs={jobs} loading={loading} />
-    </ToolPageLayout>
+    </div>
   )
 }

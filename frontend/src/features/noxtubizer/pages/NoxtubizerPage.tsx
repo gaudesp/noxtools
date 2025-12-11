@@ -1,15 +1,14 @@
-import { useCallback, useMemo, useState } from "react"
-import NoticeMessage from "../../../shared/ui/NoticeMessage"
-import JobPreviewModal from "../../jobs/components/JobPreviewModal"
-import SectionCard from "../../../shared/ui/SectionCard"
-import ToolSummaryRow from "../../../shared/ui/ToolSummaryRow"
+import { useCallback, useMemo, useState, useEffect } from "react"
+import { Section } from "../../../app/layout"
+import { useLayout } from "../../../app/layout"
 import { useNotifications } from "../../../app/providers/NotificationsProvider"
+import NoticeMessage from "../../../shared/ui/NoticeMessage"
 import JobHistorySection from "../../jobs/components/JobHistorySection"
+import JobPreviewModal from "../../jobs/components/JobPreviewModal"
 import { useToolJobs } from "../../jobs/hooks/useToolJobs"
-import ToolPageLayout from "../../../components/tooling/ToolPageLayout"
-import NoxtubizerResultPreview from "../components/ResultPreview"
 import AudioSelector from "../components/Media/AudioSelector"
 import VideoSelector from "../components/Media/VideoSelector"
+import NoxtubizerResultPreview from "../components/ResultPreview"
 import { createNoxtubizerJob, type NoxtubizerCreateRequest, type Job } from "../api/api"
 
 const defaultFormState: NoxtubizerCreateRequest = {
@@ -28,6 +27,7 @@ export default function NoxtubizerPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
   const { notify } = useNotifications()
+  const { setHeader, setFooterJobs } = useLayout()
 
   const {
     jobs,
@@ -43,6 +43,20 @@ export default function NoxtubizerPage() {
     selectJob,
     clearSelection,
   } = useToolJobs({ tool: "noxtubizer" })
+
+  useEffect(() => {
+    setHeader({
+      title: "Noxtubizer",
+      description: "Download audio, video, or both from YouTube with exact quality and format control.",
+      eyebrow: "YouTube downloader",
+    })
+
+    setFooterJobs(jobs, loading)
+
+    return () => {
+      setFooterJobs([], false)
+    }
+  }, [jobs, loading])
 
   const requiresAudio = useMemo(
     () => form.mode === "audio" || form.mode === "both",
@@ -85,12 +99,8 @@ export default function NoxtubizerPage() {
   )
 
   return (
-    <ToolPageLayout
-      title="Noxtubizer"
-      description="Download audio, video, or both from YouTube with exact quality and format control."
-      eyebrow="YouTube downloader"
-    >
-      <SectionCard
+    <div className="flex flex-col gap-8">
+      <Section
         title="Configure your download"
         description="YouTube videos are fetched and converted according to the selected options. Paste a YouTube URL."
       >
@@ -185,7 +195,7 @@ export default function NoxtubizerPage() {
             </button>
           </div>
         </div>
-      </SectionCard>
+      </Section>
 
       {actionError ? (
         <NoticeMessage title="Action failed" message={actionError} tone="danger" compact />
@@ -228,8 +238,6 @@ export default function NoxtubizerPage() {
         }}
         renderPreview={renderJobContent}
       />
-
-      <ToolSummaryRow jobs={jobs} loading={loading} />
-    </ToolPageLayout>
+    </div>
   )
 }

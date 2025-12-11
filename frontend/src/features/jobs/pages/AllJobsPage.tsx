@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import NoticeMessage from "../../../shared/ui/NoticeMessage"
 import JobPreviewModal from "../components/JobPreviewModal"
-import ToolSummaryRow from "../../../shared/ui/ToolSummaryRow"
+import { Section } from "../../../app/layout"
+import { useLayout } from "../../../app/layout"
 import NoxelizerResultPreview from "../../noxelizer/components/ResultPreview"
 import NoxsongizerResultPreview from "../../noxsongizer/components/ResultPreview"
 import NoxtunizerResultPreview from "../../noxtunizer/components/ResultPreview"
 import NoxtubizerResultPreview from "../../noxtubizer/components/ResultPreview"
 import { useNotifications } from "../../../app/providers/NotificationsProvider"
 import { type Job } from "../../../lib/api/core"
-import ToolPageLayout from "../../../components/tooling/ToolPageLayout"
 import JobHistorySection from "../components/JobHistorySection"
 import { useJobStream } from "../hooks/useJobStream"
 
@@ -21,12 +21,25 @@ export default function AllJobsPage() {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const { notify } = useNotifications()
+  const { setHeader, setFooterJobs } = useLayout()
 
-  const totalPages = Math.max(1, Math.ceil(allJobs.length / PAGE_SIZE))
   const offset = (page - 1) * PAGE_SIZE
   const pagedJobs = useMemo(() => allJobs.slice(offset, offset + PAGE_SIZE), [allJobs, offset])
-
   const selectedJob = useMemo(() => getJobById(selectedJobId), [getJobById, selectedJobId])
+
+  useEffect(() => {
+    setHeader({
+      title: "All jobs",
+      description: "Overall view of jobs across all tools.",
+      eyebrow: "Global overview",
+    })
+
+    setFooterJobs(allJobs, loading)
+
+    return () => {
+      setFooterJobs([], false)
+    }
+  }, [allJobs, loading])
 
   useEffect(() => {
     const lastPage = Math.max(1, Math.ceil(allJobs.length / PAGE_SIZE))
@@ -44,12 +57,11 @@ export default function AllJobsPage() {
   }, [])
 
   return (
-    <ToolPageLayout
-      title="All jobs"
-      description={`Overall view of jobs across all tools.`}
-      eyebrow="Global overview"
-    >
+    <div className="flex flex-col gap-8">
+
       <JobHistorySection
+        title={`Job history (${pagedJobs.length} of ${allJobs.length})`}
+        description="Latest jobs across all tools. Click a row to open the preview modal."
         jobs={pagedJobs}
         total={allJobs.length}
         pageSize={PAGE_SIZE}
@@ -75,8 +87,6 @@ export default function AllJobsPage() {
         }}
         loading={loading}
         error={error}
-        title={`Job history (${pagedJobs.length} of ${allJobs.length})`}
-        description="Latest jobs across all tools. Click a row to open the preview modal."
       />
 
       {actionError ? (
@@ -94,8 +104,6 @@ export default function AllJobsPage() {
         }}
         renderPreview={renderJobContent}
       />
-
-      <ToolSummaryRow jobs={allJobs} loading={loading} />
-    </ToolPageLayout>
+    </div>
   )
 }

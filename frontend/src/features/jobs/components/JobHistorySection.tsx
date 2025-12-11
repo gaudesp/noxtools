@@ -1,6 +1,6 @@
 import { type Job } from "../../../lib/api/core"
 import NoticeMessage from "../../../shared/ui/NoticeMessage"
-import SectionCard from "../../../shared/ui/SectionCard"
+import { Section } from "../../../app/layout"
 import JobTable from "./JobTable"
 
 type Props = {
@@ -67,7 +67,7 @@ export default function JobHistorySection({
   )
 
   return (
-    <SectionCard
+    <Section
       title={title ?? `Job history (${jobs.length} of ${total})`}
       description={description ?? "Latest jobs for this tool. Click a row to open the preview modal."}
       actions={actions}
@@ -91,6 +91,6 @@ export default function JobHistorySection({
         bordered={false}
         showHeader={false}
       />
-    </SectionCard>
+    </Section>
   )
 }

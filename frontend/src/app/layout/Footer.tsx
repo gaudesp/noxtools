@@ -13,7 +13,7 @@ const TONE: Record<string, string> = {
   error: "border-rose-400/30 bg-rose-500/10 text-rose-100",
 }
 
-export default function ToolSummaryRow({ jobs, loading }: Props) {
+export default function Footer({ jobs, loading }: Props) {
   const counts = useMemo(() => {
     return jobs.reduce(
       (acc, job) => {
@@ -32,7 +32,7 @@ export default function ToolSummaryRow({ jobs, loading }: Props) {
   ]
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-3 text-sm text-slate-200">
+    <div className="sticky bottom-0 z-40 flex flex-wrap items-center gap-3 border-t border-slate-800 bg-slate-900/90 px-4 py-3 text-sm text-slate-200 backdrop-blur">
       <div className="flex flex-wrap gap-2">
         {summary.map((item) => (
           <span
@@ -44,6 +44,7 @@ export default function ToolSummaryRow({ jobs, loading }: Props) {
           </span>
         ))}
       </div>
+
       <span className="ml-auto text-xs text-slate-400">
         {loading ? "Refreshing jobs…" : `Total jobs: ${jobs.length}`}
       </span>

@@ -1,13 +1,12 @@
-import { useCallback, useState } from "react"
+import { useCallback, useState, useEffect } from "react"
 import NoticeMessage from "../../../shared/ui/NoticeMessage"
 import JobPreviewModal from "../../jobs/components/JobPreviewModal"
-import SectionCard from "../../../shared/ui/SectionCard"
-import ToolSummaryRow from "../../../shared/ui/ToolSummaryRow"
+import { Section } from "../../../app/layout"
+import { useLayout } from "../../../app/layout"
 import { useNotifications } from "../../../app/providers/NotificationsProvider"
 import JobUploader from "../../jobs/components/JobUploader"
 import JobHistorySection from "../../jobs/components/JobHistorySection"
 import { useToolJobs } from "../../jobs/hooks/useToolJobs"
-import ToolPageLayout from "../../../components/tooling/ToolPageLayout"
 import NoxelizerResultPreview from "../components/ResultPreview"
 import { uploadNoxelizer, type Job } from "../api/api"
 
@@ -17,6 +16,7 @@ export default function NoxelizerPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
   const { notify } = useNotifications()
+  const { setHeader, setFooterJobs } = useLayout()
 
   const {
     jobs,
@@ -32,6 +32,20 @@ export default function NoxelizerPage() {
     selectJob,
     clearSelection,
   } = useToolJobs({ tool: "noxelizer" })
+
+  useEffect(() => {
+    setHeader({
+      title: "Noxelizer",
+      description: "Generate smooth depixelization videos that reveal an image over time.",
+      eyebrow: "Image-to-video",
+    })
+
+    setFooterJobs(jobs, loading)
+
+    return () => {
+      setFooterJobs([], false)
+    }
+  }, [jobs, loading])
 
   async function startUpload(files: File[]) {
     try {
@@ -55,12 +69,8 @@ export default function NoxelizerPage() {
   )
 
   return (
-    <ToolPageLayout
-      title="Noxelizer"
-      description="Generate smooth depixelization videos that reveal an image over time."
-      eyebrow="Image-to-video"
-    >
-      <SectionCard
+    <div className="flex flex-col gap-8">
+      <Section
         title="Upload your images"
         description="Images are animated into a depixelization video. Upload one or multiple files."
       >
@@ -77,7 +87,7 @@ export default function NoxelizerPage() {
           description="or click to choose one or multiple images from your computer"
           inputId="noxelizer-uploader-input"
         />
-      </SectionCard>
+      </Section>
 
       {actionError ? (
         <NoticeMessage title="Action failed" message={actionError} tone="danger" compact />
@@ -120,8 +130,6 @@ export default function NoxelizerPage() {
         }}
         renderPreview={renderJobContent}
       />
-
-      <ToolSummaryRow jobs={jobs} loading={loading} />
-    </ToolPageLayout>
+    </div>
   )
 }

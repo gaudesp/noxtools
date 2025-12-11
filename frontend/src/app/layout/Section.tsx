@@ -8,7 +8,7 @@ type Props = {
   padded?: boolean
 }
 
-export default function SectionCard({
+export default function Section({
   title,
   description,
   actions,

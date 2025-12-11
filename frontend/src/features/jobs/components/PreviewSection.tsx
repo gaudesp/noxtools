@@ -1,5 +1,5 @@
 import { type ReactNode } from "react"
-import SectionCard from "../../../shared/ui/SectionCard"
+import { Section } from "../../../app/layout"
 import { type Job } from "../../../lib/api/core"
 import JobStatusBadge from "./JobStatusBadge"
 
@@ -14,7 +14,7 @@ export default function PreviewSection({ job, renderPreview, onClear, onOpenModa
   const useModal = Boolean(onOpenModal)
 
   return (
-    <SectionCard
+    <Section
       title="Preview"
       description="Select a job from the history to preview its output and download files."
     >
@@ -66,6 +66,6 @@ export default function PreviewSection({ job, renderPreview, onClear, onOpenModa
           )}
         </div>
       )}
-    </SectionCard>
+    </Section>
   )
 }
