@@ -1,6 +1,10 @@
-import { type NoxtubizerCreateRequest } from "@/features/noxtubizer/api/api"
+import {
+  type NoxtubizerAudioFormat,
+  type NoxtubizerAudioQuality,
+  type NoxtubizerCreateRequest,
+} from "@/features/noxtubizer/api"
 
-const audioQualityOptions: Array<{ value: NoxtubizerCreateRequest["audio_quality"]; label: string }> = [
+const audioQualityOptions: Array<{ value: NoxtubizerAudioQuality; label: string }> = [
   { value: "high", label: "Best available" },
   { value: "320kbps", label: "320 kbps" },
   { value: "256kbps", label: "256 kbps" },
@@ -8,19 +12,17 @@ const audioQualityOptions: Array<{ value: NoxtubizerCreateRequest["audio_quality
   { value: "64kbps", label: "64 kbps" },
 ]
 
-const audioFormatOptions: Array<{ value: NonNullable<NoxtubizerCreateRequest["audio_format"]>; label: string }> = [
+const audioFormatOptions: Array<{ value: NoxtubizerAudioFormat; label: string }> = [
   { value: "mp3", label: "MP3" },
   { value: "m4a", label: "M4A" },
   { value: "ogg", label: "OGG" },
   { value: "wav", label: "WAV" },
 ]
 
-type Props = {
-  audioFormat: NonNullable<NoxtubizerCreateRequest["audio_format"]>
-  audioQuality: NoxtubizerCreateRequest["audio_quality"]
-  onChange: (
-    payload: Partial<Pick<NoxtubizerCreateRequest, "audio_format" | "audio_quality">>,
-  ) => void
+interface Props {
+  audioFormat: NoxtubizerAudioFormat
+  audioQuality: NoxtubizerAudioQuality
+  onChange: (payload: Partial<NoxtubizerCreateRequest>) => void
 }
 
 export default function AudioSelector({ audioFormat, audioQuality, onChange }: Props) {
@@ -32,12 +34,13 @@ export default function AudioSelector({ audioFormat, audioQuality, onChange }: P
         <label className="block text-sm font-semibold mb-2">Audio quality</label>
         <select
           value={audioQuality}
-          onChange={(e) => onChange({ audio_quality: e.target.value as NoxtubizerCreateRequest["audio_quality"] })}
+          onChange={(e) =>
+            onChange({ audio_quality: e.target.value as NoxtubizerAudioQuality })
+          }
           disabled={isWav}
-          className={[
-            "w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm focus:border-violet-500 focus:outline-none",
-            isWav ? "opacity-60 cursor-not-allowed" : "",
-          ].join(" ")}
+          className={`w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm ${
+            isWav ? "opacity-60 cursor-not-allowed" : "focus:border-violet-500"
+          }`}
         >
           {audioQualityOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -46,18 +49,19 @@ export default function AudioSelector({ audioFormat, audioQuality, onChange }: P
           ))}
         </select>
       </div>
+
       <div>
         <label className="block text-sm font-semibold mb-2">Audio format</label>
         <select
           value={audioFormat}
           onChange={(e) => {
-            const nextFormat = e.target.value as NoxtubizerCreateRequest["audio_format"]
+            const next = e.target.value as NoxtubizerAudioFormat
             onChange({
-              audio_format: nextFormat,
-              audio_quality: nextFormat === "wav" ? "high" : audioQuality,
+              audio_format: next,
+              audio_quality: next === "wav" ? "high" : audioQuality,
             })
           }}
-          className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm focus:border-violet-500 focus:outline-none"
+          className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm focus:border-violet-500"
         >
           {audioFormatOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
