@@ -2,7 +2,8 @@ import { useState } from "react"
 import { Section } from "@/app/layout"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import Uploader from "@/shared/ui/Uploader"
-import { SubmitButton, ResetButton } from "@/features/noxelizer/ui"
+import SubmitButton from "@/shared/ui/SubmitButton"
+import ResetButton from "@/shared/ui/ResetButton"
 import { useCreateNoxelizerJob } from "@/features/noxelizer/model"
 
 export default function NoxelizerForm() {
@@ -59,7 +60,7 @@ export default function NoxelizerForm() {
 
         <div className="flex items-center justify-end gap-3">
           <ResetButton disabled={isSubmitting} onClick={handleReset} />
-          <SubmitButton loading={isSubmitting} onClick={handleSubmit} />
+          <SubmitButton loading={isSubmitting} onClick={handleSubmit} label="Generate" />
         </div>
       </div>
     </Section>

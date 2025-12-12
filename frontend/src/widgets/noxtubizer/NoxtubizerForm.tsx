@@ -1,12 +1,12 @@
 import { Section } from "@/app/layout"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
+import SubmitButton from "@/shared/ui/SubmitButton"
+import ResetButton from "@/shared/ui/ResetButton"
 import {
   UrlInput,
   ModeSelector,
   AudioSelector,
   VideoSelector,
-  SubmitButton,
-  ResetButton,
 } from "@/features/noxtubizer/ui"
 import { useCreateNoxtubizerJob } from "@/features/noxtubizer/model"
 
@@ -58,7 +58,7 @@ export default function NoxtubizerForm() {
 
         <div className="flex items-center justify-end gap-3">
           <ResetButton disabled={isSubmitting} onClick={resetForm} />
-          <SubmitButton loading={isSubmitting} onClick={submit} />
+          <SubmitButton loading={isSubmitting} onClick={submit} label="Download" />
         </div>
       </div>
     </Section>

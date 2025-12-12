@@ -1,10 +1,9 @@
-export default function ResetButton({
-  disabled,
-  onClick,
-}: {
+type Props = {
   disabled: boolean
   onClick: () => void
-}) {
+}
+
+export default function ResetButton({ disabled, onClick }: Props) {
   return (
     <button
       type="button"
