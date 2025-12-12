@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react"
 import { type Job } from "@/lib/api/core"
 import { getNoxsongizerSourceUrl } from "@/lib/api/noxsongizer"
-import { getNoxelizerSourceUrl } from "@/lib/api/noxelizer"
+import { getNoxelizerSourceUrl } from "@/features/noxelizer/api"
 import { getNoxtunizerSourceUrl } from "@/lib/api/noxtunizer"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import DeleteConfirmModal from "@/shared/ui/DeleteConfirmModal"

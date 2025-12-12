@@ -1,9 +1,10 @@
 import NoticeMessage from "@/shared/ui/NoticeMessage"
-import { type Job, getNoxelizerDownloadUrl } from "@/features/noxelizer/api/api"
 import VideoPlayer from "@/shared/ui/VideoPlayer"
+import { type Job, getNoxelizerDownloadUrl } from "@/features/noxelizer/api"
+import { isNoxelizerJob } from "@/features/noxelizer/model"
 
 export default function ResultPreview({ job }: { job: Job }) {
-  if (job.tool !== "noxelizer") return null
+  if (!isNoxelizerJob(job)) return null
 
   if (job.status === "pending")
     return (
@@ -15,7 +16,11 @@ export default function ResultPreview({ job }: { job: Job }) {
 
   if (job.status === "running")
     return (
-      <NoticeMessage message="Job is currently being executed." withSpinner tone="info" />
+      <NoticeMessage
+        message="Job is currently being executed."
+        withSpinner
+        tone="info"
+      />
     )
 
   if (job.status === "error") {

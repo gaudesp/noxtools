@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, type ReactNode } from "react"
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  type ReactNode,
+} from "react"
 import type { Job } from "@/lib/api/core"
 
 type HeaderData = {
@@ -32,13 +38,13 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
     loading: false,
   })
 
-  function updateHeader(data: HeaderData) {
+  const updateHeader = useCallback((data: HeaderData) => {
     setHeader(data)
-  }
+  }, [])
 
-  function updateFooter(jobs: Job[], loading?: boolean) {
+  const updateFooter = useCallback((jobs: Job[], loading?: boolean) => {
     setFooter({ jobs, loading })
-  }
+  }, [])
 
   return (
     <LayoutContext.Provider
