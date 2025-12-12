@@ -1,5 +1,5 @@
 import { AppRouter } from "@/app/router"
-import { LayoutProvider } from "@/app/layout/context/LayoutContext"
+import { LayoutProvider } from "@/app/layout/model/store"
 
 export default function App() {
   return (

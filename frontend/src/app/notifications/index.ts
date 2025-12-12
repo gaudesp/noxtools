@@ -1,1 +1,1 @@
-export * from "./context"
+export { NotificationsProvider, useNotifications } from "./model/store"

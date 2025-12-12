@@ -1,6 +1,6 @@
 import { type ReactNode } from "react"
 import { type Job } from "@/entities/job"
-import { JobPreviewLayout } from "@/features/job-preview"
+import { JobPreview } from "@/features/job-preview"
 
 type Props<R> = {
   job: Job<unknown, R> | null
@@ -20,13 +20,13 @@ export default function JobPreviewModal<R>({
   if (!job) return null
 
   return (
-    <JobPreviewLayout
+    <JobPreview
       job={job}
       open={open}
       onClose={onClose}
       footer={footer}
     >
       {renderResult(job)}
-    </JobPreviewLayout>
+    </JobPreview>
   )
 }

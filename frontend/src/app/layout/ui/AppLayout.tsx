@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom"
-import Sidebar from "@/app/layout/Sidebar"
-import Header from "@/app/layout/Header"
-import Footer from "@/app/layout/Footer"
-import { useLayout } from "@/app/layout/context/LayoutContext"
+import Sidebar from "@/app/layout/ui/Sidebar"
+import Header from "@/app/layout/ui/Header"
+import Footer from "@/app/layout/ui/Footer"
+import { useLayout } from "@/app/layout/model/store"
 
 export default function AppLayout() {
   const { title, description, eyebrow, actions, jobs, loading } = useLayout()
