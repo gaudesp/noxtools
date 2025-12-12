@@ -50,10 +50,8 @@ async def create_job(
 ) -> CreateJobResponse:
   """
   Create a Noxelizer job from a regular form submission.
-  Mirrors Noxtubizer behavior: return a single job_id.
-  Allows sending files and optional parameters.
   """
-  jobs = service.create_jobs_from_uploads(files)
+  jobs = service.create_jobs(files)
 
   if not jobs:
     raise HTTPException(status_code=400, detail="No valid file provided")

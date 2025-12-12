@@ -16,7 +16,7 @@ export async function createNoxtunizerJob(
   const form = new FormData()
   payload.files.forEach((file) => form.append("files", file))
 
-  const res = await fetch(`${API_BASE_URL}/noxtunizer/upload`, {
+  const res = await fetch(`${API_BASE_URL}/noxtunizer/jobs`, {
     method: "POST",
     body: form,
   })
