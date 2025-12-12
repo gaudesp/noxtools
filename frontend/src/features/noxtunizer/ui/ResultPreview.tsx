@@ -1,6 +1,9 @@
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import AudioPlayer from "@/shared/ui/AudioPlayer"
-import { type Job, getNoxtunizerSourceUrl } from "@/features/noxtunizer/api/api"
+import {
+  type Job,
+  getNoxtunizerSourceUrl,
+} from "@/features/noxtunizer/api"
 
 function displayValue(value: unknown): string {
   if (value === null || value === undefined) return "—"
@@ -20,7 +23,11 @@ export default function ResultPreview({ job }: { job: Job }) {
 
   if (job.status === "running")
     return (
-      <NoticeMessage message="Job is currently being executed." withSpinner tone="info" />
+      <NoticeMessage
+        message="Job is currently being executed."
+        withSpinner
+        tone="info"
+      />
     )
 
   if (job.status === "error") {

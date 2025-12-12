@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom"
 import Noxelizer from "@/pages/noxelizer/NoxelizerPage"
 import Noxsongizer from "@/pages/noxsongizer/NoxsongizerPage"
 import Noxtubizer from "@/pages/noxtubizer/NoxtubizerPage"
-import Noxtunizer from "@/features/noxtunizer/pages/NoxtunizerPage"
+import Noxtunizer from "@/pages/noxtunizer/NoxtunizerPage"
 import Dashboard from "@/features/dashboard/pages/DashboardPage"
 
 export const routes = [

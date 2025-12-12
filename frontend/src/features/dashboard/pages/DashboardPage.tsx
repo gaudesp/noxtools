@@ -11,7 +11,7 @@ import { useSelection } from "@/shared/hooks/useSelection"
 import { useTaskStream } from "@/modules/tasks/useTaskStream"
 import NoxelizerResultPreview from "@/features/noxelizer/ui/ResultPreview"
 import NoxtubizerResultPreview from "@/features/noxtubizer/ui/ResultPreview"
-import NoxtunizerResultPreview from "@/features/noxtunizer/components/ResultPreview"
+import NoxtunizerResultPreview from "@/features/noxtunizer/ui/ResultPreview"
 import NoxsongizerResultPreview from "@/features/noxsongizer/ui/ResultPreview"
 import { type Job } from "@/lib/api/core"
 
