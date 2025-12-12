@@ -2,17 +2,17 @@ import { useState } from "react"
 import { Section } from "@/app/layout"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import Uploader from "@/shared/ui/Uploader"
-import { SubmitButton, ResetButton } from "@/features/noxelizer/ui"
-import { useCreateNoxelizerJob } from "@/features/noxelizer/model"
+import { SubmitButton, ResetButton } from "@/features/noxsongizer/ui"
+import { useCreateNoxsongizerJob } from "@/features/noxsongizer/model"
 
-export default function NoxelizerForm() {
+export default function NoxsongizerForm() {
   const {
     updateForm,
     submit,
     formError,
     isSubmitting,
     resetForm,
-  } = useCreateNoxelizerJob()
+  } = useCreateNoxsongizerJob()
 
   const [files, setFiles] = useState<File[]>([])
 
@@ -34,8 +34,8 @@ export default function NoxelizerForm() {
 
   return (
     <Section
-      title="Upload your images"
-      description="Images are animated into a depixelization video. Upload one or multiple files."
+      title="Upload your tracks"
+      description="Songs are separated into high-quality audio stems. Upload one or multiple files."
     >
       <div className="space-y-5">
         {formError && (
@@ -51,10 +51,10 @@ export default function NoxelizerForm() {
           files={files}
           onUpload={handleUpload}
           busy={isSubmitting}
-          accept="image/*"
-          title="Drag & drop images here"
-          description="or click to choose one or multiple images from your computer"
-          inputId="noxelizer-uploader-input"
+          accept="audio/*"
+          title="Drag & drop audio files here"
+          description="or click to choose one or multiple audio files from your computer"
+          inputId="noxsongizer-uploader-input"
         />
 
         <div className="flex items-center justify-end gap-3">

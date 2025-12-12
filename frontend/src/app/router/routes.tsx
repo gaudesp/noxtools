@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom"
 import Noxelizer from "@/pages/noxelizer/NoxelizerPage"
-import Noxsongizer from "@/features/noxsongizer/pages/NoxsongizerPage"
+import Noxsongizer from "@/pages/noxsongizer/NoxsongizerPage"
 import Noxtubizer from "@/pages/noxtubizer/NoxtubizerPage"
 import Noxtunizer from "@/features/noxtunizer/pages/NoxtunizerPage"
 import Dashboard from "@/features/dashboard/pages/DashboardPage"

@@ -12,7 +12,7 @@ import { useTaskStream } from "@/modules/tasks/useTaskStream"
 import NoxelizerResultPreview from "@/features/noxelizer/ui/ResultPreview"
 import NoxtubizerResultPreview from "@/features/noxtubizer/ui/ResultPreview"
 import NoxtunizerResultPreview from "@/features/noxtunizer/components/ResultPreview"
-import NoxsongizerResultPreview from "@/features/noxsongizer/components/ResultPreview"
+import NoxsongizerResultPreview from "@/features/noxsongizer/ui/ResultPreview"
 import { type Job } from "@/lib/api/core"
 
 export default function Dashboard() {

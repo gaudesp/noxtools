@@ -1,6 +1,13 @@
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import AudioPlayer from "@/shared/ui/AudioPlayer"
-import { type Job, getNoxsongizerDownloadUrl } from "@/features/noxsongizer/api/api"
+import {
+  type Job,
+  getNoxsongizerDownloadUrl,
+} from "@/features/noxsongizer/api"
+import {
+  getNoxsongizerResult,
+  isNoxsongizerJob,
+} from "@/features/noxsongizer/model"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
 
@@ -11,7 +18,7 @@ const STEM_ORDER: { type: StemType; label: string }[] = [
   { type: "drums", label: "Drums" },
 ]
 
-function isStem(stem: string, type: StemType): boolean {
+function isStemMatch(stem: string, type: StemType): boolean {
   const lowerStem = stem.toLowerCase()
   return (
     lowerStem === `${type}.wav` ||
@@ -21,20 +28,26 @@ function isStem(stem: string, type: StemType): boolean {
 }
 
 export default function ResultPreview({ job }: { job: Job }) {
-  if (job.tool !== "noxsongizer") return null
+  if (!isNoxsongizerJob(job)) return null
 
-  if (job.status === "pending")
+  if (job.status === "pending") {
     return (
       <NoticeMessage
         message="Job is queued and will start processing soon."
         tone="warning"
       />
     )
+  }
 
-  if (job.status === "running")
+  if (job.status === "running") {
     return (
-      <NoticeMessage message="Job is currently being executed." withSpinner tone="info" />
+      <NoticeMessage
+        message="Job is currently being executed."
+        withSpinner
+        tone="info"
+      />
     )
+  }
 
   if (job.status === "error") {
     return (
@@ -48,11 +61,16 @@ export default function ResultPreview({ job }: { job: Job }) {
   }
 
   if (job.status === "done") {
-    const stems = job.output_files || (job.result?.stems as string[] | undefined) || []
+    const result = getNoxsongizerResult(job)
+    const stems = job.output_files || result?.stems || []
     const orderedStems = STEM_ORDER.map((stemInfo) => {
-      const match = stems.find((stem) => isStem(stem, stemInfo.type))
+      const match = stems.find((stem) => isStemMatch(stem, stemInfo.type))
       return match ? { ...stemInfo, filename: match } : null
-    }).filter(Boolean) as Array<{ type: StemType; label: string; filename: string }>
+    }).filter(Boolean) as Array<{
+      type: StemType
+      label: string
+      filename: string
+    }>
 
     if (!orderedStems.length) {
       return (
