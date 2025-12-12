@@ -4,9 +4,9 @@ import NoticeMessage from "@/shared/ui/NoticeMessage"
 import Uploader from "@/shared/ui/Uploader"
 import SubmitButton from "@/shared/ui/SubmitButton"
 import ResetButton from "@/shared/ui/ResetButton"
-import { useCreateNoxelizerJob } from "@/features/noxelizer/model"
+import { useCreateNoxelizerJob } from "../model"
 
-export default function NoxelizerForm() {
+export default function Form() {
   const {
     updateForm,
     submit,
@@ -60,7 +60,11 @@ export default function NoxelizerForm() {
 
         <div className="flex items-center justify-end gap-3">
           <ResetButton disabled={isSubmitting} onClick={handleReset} />
-          <SubmitButton loading={isSubmitting} onClick={handleSubmit} label="Generate" />
+          <SubmitButton
+            loading={isSubmitting}
+            onClick={handleSubmit}
+            label="Generate"
+          />
         </div>
       </div>
     </Section>

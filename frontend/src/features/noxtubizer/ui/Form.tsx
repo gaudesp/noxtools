@@ -7,8 +7,8 @@ import {
   ModeSelector,
   AudioSelector,
   VideoSelector,
-} from "@/features/noxtubizer/ui"
-import { useCreateNoxtubizerJob } from "@/features/noxtubizer/model"
+} from "./index"
+import { useCreateNoxtubizerJob } from "../model"
 
 export default function NoxtubizerForm() {
   const {
@@ -30,14 +30,22 @@ export default function NoxtubizerForm() {
     >
       <div className="space-y-5">
         {formError && (
-          <NoticeMessage title="Invalid request" message={formError} tone="danger" compact />
+          <NoticeMessage
+            title="Invalid request"
+            message={formError}
+            tone="danger"
+            compact
+          />
         )}
 
         <UrlInput url={form.url} onChange={(url) => updateForm({ url })} />
 
         <div>
           <p className="block text-sm font-semibold mb-2">Mode</p>
-          <ModeSelector mode={form.mode} onChange={(mode) => updateForm({ mode })} />
+          <ModeSelector
+            mode={form.mode}
+            onChange={(mode) => updateForm({ mode })}
+          />
         </div>
 
         {requiresAudio && (

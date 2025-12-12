@@ -4,38 +4,39 @@ import NoticeMessage from "@/shared/ui/NoticeMessage"
 import Uploader from "@/shared/ui/Uploader"
 import SubmitButton from "@/shared/ui/SubmitButton"
 import ResetButton from "@/shared/ui/ResetButton"
-import { useCreateNoxtunizerJob } from "@/features/noxtunizer/model"
+import { useCreateNoxsongizerJob } from "../model"
 
-export default function NoxtunizerForm() {
+export default function NoxsongizerForm() {
   const {
     updateForm,
     submit,
     formError,
     isSubmitting,
     resetForm,
-  } = useCreateNoxtunizerJob()
+  } = useCreateNoxsongizerJob()
 
   const [files, setFiles] = useState<File[]>([])
 
-  function handleUpload(selected: File[]): void {
+  function handleUpload(selected: File[]) {
     setFiles(selected)
     updateForm({ files: selected })
   }
 
-  function handleReset(): void {
+  async function handleSubmit() {
+    await submit()
     setFiles([])
     resetForm()
   }
 
-  async function handleSubmit(): Promise<void> {
-    await submit()
-    handleReset()
+  function handleReset() {
+    setFiles([])
+    resetForm()
   }
 
   return (
     <Section
-      title="Upload your audio"
-      description="Audio files are analyzed to extract BPM, key and duration."
+      title="Upload your tracks"
+      description="Songs are separated into high-quality audio stems. Upload one or multiple files."
     >
       <div className="space-y-5">
         {formError && (
@@ -52,14 +53,18 @@ export default function NoxtunizerForm() {
           onUpload={handleUpload}
           busy={isSubmitting}
           accept="audio/*"
-          title="Drag & drop audio here"
-          description="or click to choose one or multiple songs from your computer"
-          inputId="noxtunizer-uploader-input"
+          title="Drag & drop audio files here"
+          description="or click to choose one or multiple audio files from your computer"
+          inputId="noxsongizer-uploader-input"
         />
 
         <div className="flex items-center justify-end gap-3">
           <ResetButton disabled={isSubmitting} onClick={handleReset} />
-          <SubmitButton loading={isSubmitting} onClick={handleSubmit} label="Analyze" />
+          <SubmitButton
+            loading={isSubmitting}
+            onClick={handleSubmit}
+            label="Separate"
+          />
         </div>
       </div>
     </Section>

@@ -3,16 +3,22 @@ import NoticeMessage from "@/shared/ui/NoticeMessage"
 import Table from "@/shared/ui/Table"
 import Pagination from "@/shared/ui/Pagination"
 import { useNotifications } from "@/app/notifications"
-import { useNoxsongizerJobs } from "@/features/noxsongizer/model"
+import { type JobHistoryStore } from "../model/types"
+import type { Job } from "@/entities/job"
 
-type NoxsongizerJobsStore = ReturnType<typeof useNoxsongizerJobs>
-
-interface Props {
-  store: NoxsongizerJobsStore
-  onSelectJob: () => void
+type Props = {
+  store: JobHistoryStore
+  onSelectJob: (job: Job) => void
+  title?: string
+  description?: string
 }
 
-export default function NoxsongizerTaskHistory({ store, onSelectJob }: Props) {
+export default function JobHistory({
+  store,
+  onSelectJob,
+  title = "Task history",
+  description = "Latest tasks. Click a row to open the preview.",
+}: Props) {
   const { notify } = useNotifications()
 
   const {
@@ -29,8 +35,8 @@ export default function NoxsongizerTaskHistory({ store, onSelectJob }: Props) {
 
   return (
     <Section
-      title={`Task history (${pagedItems.length} of ${total})`}
-      description="Latest tasks for this tool. Click a row to open the preview modal."
+      title={`${title} (${pagedItems.length} of ${total})`}
+      description={description}
       actions={
         <Pagination
           total={total}
@@ -60,7 +66,7 @@ export default function NoxsongizerTaskHistory({ store, onSelectJob }: Props) {
         onPageChange={setPage}
         onSelectTask={(task) => {
           select(task.id)
-          onSelectJob()
+          onSelectJob(task)
         }}
         onDeleteTask={async (task) => {
           try {
