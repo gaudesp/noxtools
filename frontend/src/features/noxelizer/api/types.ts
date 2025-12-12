@@ -1,4 +1,4 @@
-import { type Job } from "@/lib/api/core"
+import { type Job } from "@/entities/job"
 
 export interface NoxelizerJobResult {
   video?: string
@@ -9,10 +9,7 @@ export interface NoxelizerJobResult {
   codec?: string
 }
 
-export interface NoxelizerJob extends Job<NoxelizerJobResult> {
-  tool: "noxelizer"
-  result?: NoxelizerJobResult
-}
+export type NoxelizerJob = Job<unknown, NoxelizerJobResult>
 
 export interface NoxelizerCreateRequest {
   files: File[]

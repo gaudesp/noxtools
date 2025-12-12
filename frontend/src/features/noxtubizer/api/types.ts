@@ -1,4 +1,4 @@
-import { type Job } from "@/lib/api/core"
+import { type Job } from "@/entities/job"
 
 export type NoxtubizerMode = "audio" | "video" | "both"
 
@@ -59,10 +59,7 @@ export interface NoxtubizerJobResult {
   both?: NoxtubizerBothInfo
 }
 
-export interface NoxtubizerJob extends Job<NoxtubizerJobResult> {
-  tool: "noxtubizer"
-  result?: NoxtubizerJobResult
-}
+export type NoxtubizerJob = Job<unknown, NoxtubizerJobResult>
 
 export interface NoxtubizerCreateRequest {
   url: string

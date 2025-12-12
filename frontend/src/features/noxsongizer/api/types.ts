@@ -1,13 +1,10 @@
-import { type Job as CoreJob } from "@/lib/api/core"
+import { type Job } from "@/entities/job"
 
 export interface NoxsongizerJobResult {
   stems?: string[]
 }
 
-export interface NoxsongizerJob extends CoreJob<NoxsongizerJobResult> {
-  tool: "noxsongizer"
-  result?: NoxsongizerJobResult
-}
+export type NoxsongizerJob = Job<unknown, NoxsongizerJobResult>
 
 export interface NoxsongizerUploadItem {
   job_id: string

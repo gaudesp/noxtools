@@ -1,10 +1,10 @@
+import { API_BASE_URL, handleResponse } from "@/shared/api"
 import {
-  API_BASE_URL,
-  handleResponse,
+  listJobs,
   type PaginatedJobs,
   type ListJobsParams,
-} from "@/lib/api/core"
-import { listJobs } from "@/lib/api/jobs"
+} from "@/entities/job/api"
+
 import {
   type NoxtubizerCreateRequest,
   type NoxtubizerCreateResponse,
@@ -18,6 +18,7 @@ export async function createNoxtubizerJob(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   })
+
   return handleResponse<NoxtubizerCreateResponse>(res)
 }
 

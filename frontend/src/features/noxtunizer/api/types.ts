@@ -1,4 +1,4 @@
-import { type Job as CoreJob } from "@/lib/api/core"
+import { type Job } from "@/entities/job"
 
 export interface NoxtunizerUploadItem {
   job_id: string
@@ -16,10 +16,7 @@ export interface NoxtunizerJobResult {
   duration_label: string
 }
 
-export interface NoxtunizerJob extends CoreJob<NoxtunizerJobResult> {
-  tool: "noxtunizer"
-  result?: NoxtunizerJobResult
-}
+export type NoxtunizerJob = Job<unknown, NoxtunizerJobResult>
 
 export interface NoxtunizerCreateRequest {
   files: File[]
