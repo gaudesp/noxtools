@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react"
-import { type Job } from "@/lib/api/core"
+import { type Job } from "@/entities/job/model"
 import { getNoxsongizerSourceUrl } from "@/features/noxsongizer/api"
 import { getNoxelizerSourceUrl } from "@/features/noxelizer/api"
 import { getNoxtunizerSourceUrl } from "@/features/noxtunizer/api"

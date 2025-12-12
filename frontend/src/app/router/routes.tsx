@@ -3,7 +3,7 @@ import Noxelizer from "@/pages/noxelizer/NoxelizerPage"
 import Noxsongizer from "@/pages/noxsongizer/NoxsongizerPage"
 import Noxtubizer from "@/pages/noxtubizer/NoxtubizerPage"
 import Noxtunizer from "@/pages/noxtunizer/NoxtunizerPage"
-import Dashboard from "@/features/dashboard/pages/DashboardPage"
+// import Dashboard from "@/features/dashboard/pages/DashboardPage"
 
 export const routes = [
   { path: "/", element: <Navigate to="/noxsongizer" replace /> },
@@ -11,5 +11,5 @@ export const routes = [
   { path: "/noxelizer", element: <Noxelizer /> },
   { path: "/noxtubizer", element: <Noxtubizer /> },
   { path: "/noxtunizer", element: <Noxtunizer /> },
-  { path: "/dashboard", element: <Dashboard /> },
+  // { path: "/dashboard", element: <Dashboard /> },
 ]

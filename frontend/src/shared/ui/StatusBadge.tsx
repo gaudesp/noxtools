@@ -1,4 +1,4 @@
-import { type JobStatus } from "@/lib/api/core"
+import { type JobStatus } from "@/entities/job/model"
 
 type Props = {
   status: JobStatus

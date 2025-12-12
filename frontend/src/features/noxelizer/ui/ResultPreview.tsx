@@ -1,11 +1,16 @@
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import VideoPlayer from "@/shared/ui/VideoPlayer"
-import { type Job, getNoxelizerDownloadUrl } from "@/features/noxelizer/api"
-import { isNoxelizerJob } from "@/features/noxelizer/model"
+import { type Job } from "@/entities/job"
+import {
+  getNoxelizerDownloadUrl,
+  type NoxelizerJobResult,
+} from "@/features/noxelizer/api"
 
-export default function ResultPreview({ job }: { job: Job }) {
-  if (!isNoxelizerJob(job)) return null
-
+export default function ResultPreview({
+  job,
+}: {
+  job: Job<unknown, NoxelizerJobResult>
+}) {
   if (job.status === "pending")
     return (
       <NoticeMessage

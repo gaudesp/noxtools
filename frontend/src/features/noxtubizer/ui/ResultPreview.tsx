@@ -1,21 +1,18 @@
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import AudioPlayer from "@/shared/ui/AudioPlayer"
 import VideoPlayer from "@/shared/ui/VideoPlayer"
+import { type Job } from "@/entities/job"
 import {
   getNoxtubizerDownloadUrl,
-  type Job,
   type NoxtubizerJobResult,
 } from "@/features/noxtubizer/api"
-import {
-  getNoxtubizerMode,
-  getNoxtubizerResult,
-  isNoxtubizerJob,
-} from "@/features/noxtubizer/model"
 import AssetBlock from "./AssetBlock"
 
-export default function ResultPreview({ job }: { job: Job }) {
-  if (!isNoxtubizerJob(job)) return null
-
+export default function ResultPreview({
+  job,
+}: {
+  job: Job<unknown, NoxtubizerJobResult>
+}) {
   if (job.status === "pending")
     return <NoticeMessage message="Job is queued…" tone="warning" />
 
@@ -32,8 +29,8 @@ export default function ResultPreview({ job }: { job: Job }) {
       />
     )
 
-  const result: NoxtubizerJobResult = getNoxtubizerResult(job) || {}
-  const mode = getNoxtubizerMode(job)
+  const result = job.result || {}
+  const mode = result.mode
 
   const audio = result.audio?.filename ?? null
   const video = result.video?.filename ?? null

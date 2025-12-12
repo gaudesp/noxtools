@@ -5,7 +5,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react"
-import type { Job } from "@/lib/api/core"
+import type { Job } from "@/entities/job/model"
 
 type HeaderData = {
   title: string

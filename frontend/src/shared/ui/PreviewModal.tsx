@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react"
-import { type Job } from "@/lib/api/core"
+import { type Job } from "@/entities/job/model"
 import StatusBadge from "@/shared/ui/StatusBadge"
 
 type Props = {

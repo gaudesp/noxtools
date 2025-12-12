@@ -1,13 +1,10 @@
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import AudioPlayer from "@/shared/ui/AudioPlayer"
+import { type Job } from "@/entities/job"
 import {
-  type Job,
   getNoxsongizerDownloadUrl,
+  type NoxsongizerJobResult,
 } from "@/features/noxsongizer/api"
-import {
-  getNoxsongizerResult,
-  isNoxsongizerJob,
-} from "@/features/noxsongizer/model"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
 
@@ -27,9 +24,11 @@ function isStemMatch(stem: string, type: StemType): boolean {
   )
 }
 
-export default function ResultPreview({ job }: { job: Job }) {
-  if (!isNoxsongizerJob(job)) return null
-
+export default function ResultPreview({
+  job,
+}: {
+  job: Job<unknown, NoxsongizerJobResult>
+}) {
   if (job.status === "pending") {
     return (
       <NoticeMessage
@@ -61,8 +60,9 @@ export default function ResultPreview({ job }: { job: Job }) {
   }
 
   if (job.status === "done") {
-    const result = getNoxsongizerResult(job)
+    const result = job.result
     const stems = job.output_files || result?.stems || []
+
     const orderedStems = STEM_ORDER.map((stemInfo) => {
       const match = stems.find((stem) => isStemMatch(stem, stemInfo.type))
       return match ? { ...stemInfo, filename: match } : null

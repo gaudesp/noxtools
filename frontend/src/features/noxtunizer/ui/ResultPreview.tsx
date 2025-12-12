@@ -1,8 +1,9 @@
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import AudioPlayer from "@/shared/ui/AudioPlayer"
+import { type Job } from "@/entities/job"
 import {
-  type Job,
   getNoxtunizerSourceUrl,
+  type NoxtunizerJobResult,
 } from "@/features/noxtunizer/api"
 
 function displayValue(value: unknown): string {
@@ -10,9 +11,11 @@ function displayValue(value: unknown): string {
   return String(value)
 }
 
-export default function ResultPreview({ job }: { job: Job }) {
-  if (job.tool !== "noxtunizer") return null
-
+export default function ResultPreview({
+  job,
+}: {
+  job: Job<unknown, NoxtunizerJobResult>
+}) {
   if (job.status === "pending")
     return (
       <NoticeMessage
@@ -72,7 +75,9 @@ export default function ResultPreview({ job }: { job: Job }) {
               <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
                 {block.label}
               </p>
-              <p className="text-lg font-semibold text-slate-50">{block.value}</p>
+              <p className="text-lg font-semibold text-slate-50">
+                {block.value}
+              </p>
             </div>
           ))}
         </div>

@@ -1,10 +1,10 @@
-import { useTaskStream } from "@/modules/tasks/useTaskStream"
+import { useJobStream } from "@/widgets/job-stream"
 import { usePaginatedData } from "@/shared/hooks/usePaginatedData"
 import { useSelection } from "@/shared/hooks/useSelection"
-import { type Job } from "@/features/noxsongizer/api"
+import { type Job } from "@/entities/job"
 
 export function useNoxsongizerJobs() {
-  const { jobs, loading, error, deleteJob, getJobById } = useTaskStream({
+  const { jobs, loading, error, deleteJob, getJobById } = useJobStream({
     tool: "noxsongizer",
   })
 
