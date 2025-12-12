@@ -4,7 +4,7 @@ import { type Job } from "@/entities/job"
 import {
   getNoxsongizerDownloadUrl,
   type NoxsongizerJobResult,
-} from "@/features/noxsongizer/api"
+} from "../api"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
 

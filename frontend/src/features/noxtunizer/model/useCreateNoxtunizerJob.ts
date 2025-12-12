@@ -1,8 +1,5 @@
 import { useState } from "react"
-import {
-  createNoxtunizerJob,
-  type NoxtunizerCreateRequest,
-} from "@/features/noxtunizer/api"
+import { createNoxtunizerJob, type NoxtunizerCreateRequest } from "../api"
 
 export const defaultNoxtunizerFormState: NoxtunizerCreateRequest = {
   files: [],

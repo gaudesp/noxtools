@@ -2,7 +2,7 @@ import {
   type NoxtubizerVideoFormat,
   type NoxtubizerVideoQuality,
   type NoxtubizerCreateRequest,
-} from "@/features/noxtubizer/api"
+} from "../api"
 
 const videoQualityOptions: Array<{ value: NoxtubizerVideoQuality; label: string }> = [
   { value: "best", label: "Best available" },

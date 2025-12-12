@@ -1,4 +1,4 @@
-import { Section } from "@/app/layout"
+import Section from "@/shared/ui/Section"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import Table from "@/shared/ui/Table"
 import Pagination from "@/shared/ui/Pagination"

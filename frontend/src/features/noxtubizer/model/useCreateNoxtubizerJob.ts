@@ -1,8 +1,5 @@
 import { useState } from "react"
-import {
-  createNoxtubizerJob,
-  type NoxtubizerCreateRequest,
-} from "@/features/noxtubizer/api"
+import { createNoxtubizerJob, type NoxtubizerCreateRequest } from "../api"
 
 export const defaultNoxtubizerFormState: NoxtubizerCreateRequest = {
   url: "",

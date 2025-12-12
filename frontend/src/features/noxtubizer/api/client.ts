@@ -1,9 +1,6 @@
 import { API_BASE_URL, handleResponse } from "@/shared/api"
-import {
-  listJobs,
-  type PaginatedJobs,
-  type ListJobsParams,
-} from "@/entities/job/api"
+import { listJobs } from "@/entities/job"
+import type { PaginatedJobs, ListJobsParams } from "@/entities/job"
 
 import {
   type NoxtubizerCreateRequest,

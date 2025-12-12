@@ -2,7 +2,7 @@ import {
   type NoxtubizerAudioFormat,
   type NoxtubizerAudioQuality,
   type NoxtubizerCreateRequest,
-} from "@/features/noxtubizer/api"
+} from "../api"
 
 const audioQualityOptions: Array<{ value: NoxtubizerAudioQuality; label: string }> = [
   { value: "high", label: "Best available" },

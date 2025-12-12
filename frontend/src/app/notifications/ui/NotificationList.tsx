@@ -1,7 +1,7 @@
-import { NotificationItem } from "./NotificationItem"
+import NotificationItem from "./NotificationItem"
 import { type Notification } from "../model"
 
-export function NotificationList({
+export default function NotificationList({
   items,
   onClose,
 }: {

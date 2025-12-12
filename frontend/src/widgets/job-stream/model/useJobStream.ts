@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { type Job, type JobTool } from "@/entities/job"
-import { listJobs, deleteJob } from "@/entities/job/api"
+import { listJobs, deleteJob } from "@/entities/job"
 import { createJobStream } from "@/shared/api/jobStream"
 
 type UseJobStreamParams = {

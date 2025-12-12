@@ -1,8 +1,5 @@
 import { useState } from "react"
-import {
-  createNoxelizerJob,
-  type NoxelizerCreateRequest,
-} from "@/features/noxelizer/api"
+import { createNoxelizerJob, type NoxelizerCreateRequest } from "../api"
 
 export const defaultNoxelizerFormState: NoxelizerCreateRequest = {
   files: [],

@@ -1,4 +1,4 @@
-import { Section } from "@/app/layout"
+import Section from "@/shared/ui/Section"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import SubmitButton from "@/shared/ui/SubmitButton"
 import ResetButton from "@/shared/ui/ResetButton"

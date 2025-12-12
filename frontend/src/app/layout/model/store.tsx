@@ -5,7 +5,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react"
-import type { Job } from "@/entities/job/model"
+import type { Job } from "@/entities/job"
 
 export type LayoutHeader = {
   title: string

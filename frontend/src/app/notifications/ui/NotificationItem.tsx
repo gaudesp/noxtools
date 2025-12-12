@@ -1,6 +1,6 @@
 import { type Notification } from "../model"
 
-export function NotificationItem({
+export default function NotificationItem({
   notification,
   onClose,
 }: {

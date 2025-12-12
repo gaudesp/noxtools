@@ -5,7 +5,7 @@ import { type Job } from "@/entities/job"
 import {
   getNoxtubizerDownloadUrl,
   type NoxtubizerJobResult,
-} from "@/features/noxtubizer/api"
+} from "../api"
 import AssetBlock from "./AssetBlock"
 
 export default function ResultPreview({

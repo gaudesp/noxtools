@@ -1,4 +1,4 @@
-import { type NoxtubizerMode } from "@/features/noxtubizer/api"
+import { type NoxtubizerMode } from "../api"
 
 interface Option {
   value: NoxtubizerMode

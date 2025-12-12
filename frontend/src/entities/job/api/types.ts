@@ -1,4 +1,4 @@
-import { type Job, type JobStatus, type JobTool } from "@/entities/job/model"
+import type { Job, JobStatus, JobTool } from "../model"
 
 export interface PaginatedJobs<T = Job> {
   items: T[]

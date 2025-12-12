@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react"
-import { type Job } from "@/entities/job/model"
-import { getNoxsongizerSourceUrl } from "@/features/noxsongizer/api"
-import { getNoxelizerSourceUrl } from "@/features/noxelizer/api"
-import { getNoxtunizerSourceUrl } from "@/features/noxtunizer/api"
-import NoticeMessage from "@/shared/ui/NoticeMessage"
-import DeleteConfirmModal from "@/shared/ui/DeleteConfirmModal"
-import StatusBadge from "@/shared/ui/StatusBadge"
-import Pagination from "@/shared/ui/Pagination"
+import { type Job } from "@/entities/job"
+import { API_BASE_URL } from "../api"
+import NoticeMessage from "./NoticeMessage"
+import DeleteConfirmModal from "./DeleteConfirmModal"
+import StatusBadge from "./StatusBadge"
+import Pagination from "./Pagination"
+
+const getNoxsongizerSourceUrl = (jobId: string) =>
+  `${API_BASE_URL}/noxsongizer/source/${jobId}`
+
+const getNoxelizerSourceUrl = (jobId: string) =>
+  `${API_BASE_URL}/noxelizer/source/${jobId}`
+
+const getNoxtunizerSourceUrl = (jobId: string) =>
+  `${API_BASE_URL}/noxtunizer/source/${jobId}`
 
 type Props = {
   tasks: Job[]

@@ -4,7 +4,7 @@ import { type Job } from "@/entities/job"
 import {
   getNoxelizerDownloadUrl,
   type NoxelizerJobResult,
-} from "@/features/noxelizer/api"
+} from "../api"
 
 export default function ResultPreview({
   job,

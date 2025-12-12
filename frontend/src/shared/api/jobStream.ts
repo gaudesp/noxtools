@@ -1,5 +1,5 @@
 // src/shared/api/jobStream.ts
-import { API_BASE_URL } from "@/shared/api/config"
+import { API_BASE_URL } from "./config"
 import { type Job } from "@/entities/job"
 
 type JobEvent =

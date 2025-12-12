@@ -1,6 +1,6 @@
 import { API_BASE_URL, handleResponse } from "@/shared/api"
-import { type Job } from "@/entities/job/model"
-import { type ListJobsParams, type PaginatedJobs } from "@/entities/job/api"
+import type { Job } from "../model"
+import type { ListJobsParams, PaginatedJobs } from "./types"
 
 export async function listJobs(
   params: ListJobsParams = {},

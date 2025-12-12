@@ -4,7 +4,7 @@ import { type Job } from "@/entities/job"
 import {
   getNoxtunizerSourceUrl,
   type NoxtunizerJobResult,
-} from "@/features/noxtunizer/api"
+} from "../api"
 
 function displayValue(value: unknown): string {
   if (value === null || value === undefined) return "—"
