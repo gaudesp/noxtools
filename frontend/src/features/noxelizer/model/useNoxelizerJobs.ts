@@ -1,6 +1,5 @@
 import { useJobStream } from "@/widgets/job-stream"
-import { usePaginatedData } from "@/shared/hooks/usePaginatedData"
-import { useSelection } from "@/shared/hooks/useSelection"
+import { usePagination, useSelection } from "@/shared/lib"
 import { type Job } from "@/entities/job"
 
 export function useNoxelizerJobs() {
@@ -8,7 +7,7 @@ export function useNoxelizerJobs() {
     tool: "noxelizer",
   })
 
-  const { pagedItems, total, page, pageSize, setPage } = usePaginatedData<Job>({
+  const { pagedItems, total, page, pageSize, setPage } = usePagination<Job>({
     items: jobs,
     pageSize: 10,
   })

@@ -6,7 +6,11 @@ type Options<T> = {
   initialPage?: number
 }
 
-export function usePaginatedData<T>({ items, pageSize = 10, initialPage = 1 }: Options<T>) {
+export function usePagination<T>({
+  items,
+  pageSize = 10,
+  initialPage = 1,
+}: Options<T>) {
   const [page, setPage] = useState(initialPage)
 
   const total = items.length
@@ -14,12 +18,13 @@ export function usePaginatedData<T>({ items, pageSize = 10, initialPage = 1 }: O
   const offset = (page - 1) * pageSize
 
   useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages)
-    }
+    if (page > totalPages) setPage(totalPages)
   }, [page, totalPages])
 
-  const pagedItems = useMemo(() => items.slice(offset, offset + pageSize), [items, offset, pageSize])
+  const pagedItems = useMemo(
+    () => items.slice(offset, offset + pageSize),
+    [items, offset, pageSize],
+  )
 
   return {
     page,

@@ -2,7 +2,7 @@ import { Section } from "@/app/layout"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import Table from "@/shared/ui/Table"
 import Pagination from "@/shared/ui/Pagination"
-import { useNotifications } from "@/shared/notifications"
+import { useNotifications } from "@/app/notifications"
 import { useNoxelizerJobs } from "@/features/noxelizer/model"
 
 type NoxelizerJobsStore = ReturnType<typeof useNoxelizerJobs>
