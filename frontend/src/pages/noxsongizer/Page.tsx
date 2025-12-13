@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Form, ResultPreview } from "@/features/noxsongizer/ui"
+import { Form, Result } from "@/features/noxsongizer/ui"
 import { useNoxsongizerJobs } from "@/features/noxsongizer/model"
 import { JobHistory } from "@/widgets/job-history"
 import { JobPreviewModal } from "@/widgets/job-preview"
@@ -15,7 +15,7 @@ export default function NoxsongizerPage() {
   const [open, setOpen] = useState(false)
 
   return (
-    <>
+    <div className="flex flex-col gap-8">
       <Form />
 
       <JobHistory
@@ -30,8 +30,8 @@ export default function NoxsongizerPage() {
         job={selectedJob}
         open={open}
         onClose={() => setOpen(false)}
-        renderResult={(job) => <ResultPreview job={job} />}
+        renderResult={(job) => <Result job={job} />}
       />
-    </>
+    </div>
   )
 }
