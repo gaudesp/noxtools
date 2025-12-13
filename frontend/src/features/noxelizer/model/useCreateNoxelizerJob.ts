@@ -1,39 +1,28 @@
 import { useState } from "react"
 import { createNoxelizerJob, type NoxelizerCreateRequest } from "../api"
+import type { SubmitResult } from "@/shared/lib/useFormSubmit"
 
 export const defaultNoxelizerFormState: NoxelizerCreateRequest = {
   files: [],
 }
 
-interface Options {
-  onSuccess?: () => void
-  onError?: (error: unknown) => void
-}
-
-export function useCreateNoxelizerJob(options?: Options) {
+export function useCreateNoxelizerJob() {
   const [form, setForm] = useState<NoxelizerCreateRequest>(defaultNoxelizerFormState)
   const [isSubmitting, setSubmitting] = useState(false)
-  const [formError, setError] = useState<string | null>(null)
 
-  async function submit() {
+  async function submit(): Promise<SubmitResult> {
+    setSubmitting(true)
+
     try {
-      setSubmitting(true)
-      setError(null)
-
-      if (!form.files || form.files.length === 0) {
-        setError("Please upload at least one image.")
-        return
+      if (!form.files.length) {
+        return { status: "invalid", message: "Please upload at least one image." }
       }
-
+      
       await createNoxelizerJob(form)
-
-      if (options?.onSuccess) options.onSuccess()
-
-      setForm({ files: [] })
+      setForm(defaultNoxelizerFormState)
+      return { status: "success" }
     } catch (err) {
-      console.error(err)
-      setError("Form submit failed. Please retry.")
-      if (options?.onError) options.onError(err)
+      return { status: "error", error: err }
     } finally {
       setSubmitting(false)
     }
@@ -47,12 +36,5 @@ export function useCreateNoxelizerJob(options?: Options) {
     setForm(defaultNoxelizerFormState)
   }
 
-  return {
-    form,
-    updateForm,
-    submit,
-    formError,
-    isSubmitting,
-    resetForm,
-  }
+  return { submit, updateForm, resetForm, isSubmitting }
 }

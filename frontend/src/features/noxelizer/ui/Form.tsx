@@ -3,19 +3,17 @@ import Section from "@/shared/ui/Section"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import SubmitButton from "@/shared/ui/SubmitButton"
 import ResetButton from "@/shared/ui/ResetButton"
+import { useFormSubmit } from "@/shared/lib/useFormSubmit"
 import { useCreateNoxelizerJob } from "../model"
 import { ImageUploadField } from "./form"
 
 export default function Form() {
-  const {
-    updateForm,
-    submit,
-    formError,
-    isSubmitting,
-    resetForm,
-  } = useCreateNoxelizerJob()
+  const { submit, updateForm, resetForm, isSubmitting } =
+    useCreateNoxelizerJob()
+  const { handleResult } = useFormSubmit()
 
   const [files, setFiles] = useState<File[]>([])
+  const [formError, setFormError] = useState<string | null>(null)
 
   function handleFilesChange(next: File[]) {
     setFiles(next)
@@ -23,21 +21,19 @@ export default function Form() {
   }
 
   async function handleSubmit() {
-    await submit()
-    setFiles([])
-    resetForm()
+    const result = await submit()
+    handleResult(result, setFormError)
+    if (result.status === "success") setFiles([])
   }
 
   function handleReset() {
     setFiles([])
     resetForm()
+    setFormError(null)
   }
 
   return (
-    <Section
-      title="Upload your images"
-      description="Images are animated into a depixelization video. Upload one or multiple files."
-    >
+    <Section title="Upload your images">
       <div className="space-y-5">
         {formError && (
           <NoticeMessage
@@ -54,13 +50,9 @@ export default function Form() {
           onChange={handleFilesChange}
         />
 
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex justify-end gap-3">
           <ResetButton disabled={isSubmitting} onClick={handleReset} />
-          <SubmitButton
-            loading={isSubmitting}
-            onClick={handleSubmit}
-            label="Generate"
-          />
+          <SubmitButton label="Generate" loading={isSubmitting} onClick={handleSubmit} />
         </div>
       </div>
     </Section>

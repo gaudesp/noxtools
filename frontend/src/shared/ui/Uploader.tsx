@@ -30,7 +30,10 @@ export default function Uploader({
 
   const displayFiles = files ?? localFiles
 
-  function handleFileSelection(list: FileList | null) {
+  function handleFileSelection(
+    list: FileList | null,
+    input?: HTMLInputElement | null,
+  ) {
     if (!list || list.length === 0) return
 
     const selected = Array.from(list)
@@ -40,6 +43,10 @@ export default function Uploader({
     }
 
     onUpload(selected)
+
+    if (input) {
+      input.value = ""
+    }
   }
 
   function onDrop(e: React.DragEvent<HTMLDivElement>) {
@@ -72,7 +79,9 @@ export default function Uploader({
           accept={accept}
           multiple={multiple}
           className="hidden"
-          onChange={(e) => handleFileSelection(e.target.files)}
+          onChange={(e) =>
+            handleFileSelection(e.target.files, e.target)
+          }
         />
 
         {!busy && (

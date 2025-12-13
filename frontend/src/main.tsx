@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "@/app";
 import "@/index.css";
-import { NotificationsProvider } from "@/app/notifications"
+import { NotificationsProvider } from "@/shared/ui/notifications"
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

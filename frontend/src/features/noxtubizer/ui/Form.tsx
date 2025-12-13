@@ -1,27 +1,31 @@
+import { useState } from "react"
 import Section from "@/shared/ui/Section"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import SubmitButton from "@/shared/ui/SubmitButton"
 import ResetButton from "@/shared/ui/ResetButton"
+import { useFormSubmit } from "@/shared/lib/useFormSubmit"
 import { useCreateNoxtubizerJob } from "../model"
-import {
-  UrlField,
-  ModeField,
-  AudioField,
-  VideoField,
-} from "./form"
+import { UrlField, ModeField, AudioField, VideoField } from "./form"
 
 export default function Form() {
-  const {
-    form,
-    updateForm,
-    submit,
-    formError,
-    isSubmitting,
-    resetForm,
-  } = useCreateNoxtubizerJob()
+  const { form, updateForm, submit, resetForm, isSubmitting } =
+    useCreateNoxtubizerJob()
+  const { handleResult } = useFormSubmit()
+
+  const [formError, setFormError] = useState<string | null>(null)
 
   const requiresAudio = form.mode === "audio" || form.mode === "both"
   const requiresVideo = form.mode === "video" || form.mode === "both"
+
+  async function handleSubmit() {
+    const result = await submit()
+    handleResult(result, setFormError)
+  }
+
+  function handleReset() {
+    resetForm()
+    setFormError(null)
+  }
 
   return (
     <Section
@@ -65,10 +69,10 @@ export default function Form() {
         )}
 
         <div className="flex items-center justify-end gap-3">
-          <ResetButton disabled={isSubmitting} onClick={resetForm} />
+          <ResetButton disabled={isSubmitting} onClick={handleReset} />
           <SubmitButton
             loading={isSubmitting}
-            onClick={submit}
+            onClick={handleSubmit}
             label="Download"
           />
         </div>

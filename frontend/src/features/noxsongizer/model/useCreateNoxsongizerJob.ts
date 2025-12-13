@@ -1,41 +1,28 @@
 import { useState } from "react"
 import { createNoxsongizerJob, type NoxsongizerCreateRequest } from "../api"
+import type { SubmitResult } from "@/shared/lib/useFormSubmit"
 
 export const defaultNoxsongizerFormState: NoxsongizerCreateRequest = {
   files: [],
 }
 
-interface Options {
-  onSuccess?: () => void
-  onError?: (error: unknown) => void
-}
-
-export function useCreateNoxsongizerJob(options?: Options) {
-  const [form, setForm] = useState<NoxsongizerCreateRequest>(
-    defaultNoxsongizerFormState,
-  )
+export function useCreateNoxsongizerJob() {
+  const [form, setForm] = useState<NoxsongizerCreateRequest>(defaultNoxsongizerFormState)
   const [isSubmitting, setSubmitting] = useState(false)
-  const [formError, setError] = useState<string | null>(null)
 
-  async function submit() {
+  async function submit(): Promise<SubmitResult> {
+    setSubmitting(true)
+
     try {
-      setSubmitting(true)
-      setError(null)
-
-      if (!form.files || form.files.length === 0) {
-        setError("Please upload at least one track.")
-        return
+      if (!form.files.length) {
+        return { status: "invalid", message: "Please upload at least one audio file." }
       }
 
       await createNoxsongizerJob(form)
-
-      if (options?.onSuccess) options.onSuccess()
-
-      setForm({ files: [] })
+      setForm(defaultNoxsongizerFormState)
+      return { status: "success" }
     } catch (err) {
-      console.error(err)
-      setError("Form submit failed. Please retry.")
-      if (options?.onError) options.onError(err)
+      return { status: "error", error: err }
     } finally {
       setSubmitting(false)
     }
@@ -46,15 +33,14 @@ export function useCreateNoxsongizerJob(options?: Options) {
   }
 
   function resetForm() {
-    setForm({ files: [] })
+    setForm(defaultNoxsongizerFormState)
   }
 
   return {
     form,
     updateForm,
     submit,
-    formError,
-    isSubmitting,
     resetForm,
+    isSubmitting,
   }
 }

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { createNoxtubizerJob, type NoxtubizerCreateRequest } from "../api"
+import type { SubmitResult } from "@/shared/lib/useFormSubmit"
 
 export const defaultNoxtubizerFormState: NoxtubizerCreateRequest = {
   url: "",
@@ -10,36 +11,24 @@ export const defaultNoxtubizerFormState: NoxtubizerCreateRequest = {
   video_format: "mp4",
 }
 
-interface Options {
-  onSuccess?: () => void
-  onError?: (error: unknown) => void
-}
-
-export function useCreateNoxtubizerJob(options?: Options) {
-  const [form, setForm] = useState(defaultNoxtubizerFormState)
+export function useCreateNoxtubizerJob() {
+  const [form, setForm] = useState<NoxtubizerCreateRequest>(defaultNoxtubizerFormState)
   const [isSubmitting, setSubmitting] = useState(false)
-  const [formError, setError] = useState<string | null>(null)
 
-  async function submit() {
+  async function submit(): Promise<SubmitResult> {
+    setSubmitting(true)
+
     try {
-      setSubmitting(true)
-      setError(null)
-
       const trimmed = form.url.trim()
       if (!trimmed) {
-        setError("Please paste a valid YouTube URL.")
-        return
+        return { status: "invalid", message: "Please paste a valid YouTube URL." }
       }
 
       await createNoxtubizerJob({ ...form, url: trimmed })
-
-      if (options?.onSuccess) options.onSuccess()
-
-      setForm((prev) => ({ ...prev, url: "" }))
+      setForm(defaultNoxtubizerFormState)
+      return { status: "success" }
     } catch (err) {
-      console.error(err)
-      setError("Form submit failed. Please retry.")
-      if (options?.onError) options.onError(err)
+      return { status: "error", error: err }
     } finally {
       setSubmitting(false)
     }
@@ -57,8 +46,7 @@ export function useCreateNoxtubizerJob(options?: Options) {
     form,
     updateForm,
     submit,
-    formError,
-    isSubmitting,
     resetForm,
+    isSubmitting,
   }
 }

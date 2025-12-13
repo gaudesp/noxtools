@@ -3,19 +3,17 @@ import Section from "@/shared/ui/Section"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import SubmitButton from "@/shared/ui/SubmitButton"
 import ResetButton from "@/shared/ui/ResetButton"
+import { useFormSubmit } from "@/shared/lib/useFormSubmit"
 import { useCreateNoxtunizerJob } from "../model"
 import { AudioUploadField } from "./form"
 
 export default function Form() {
-  const {
-    updateForm,
-    submit,
-    formError,
-    isSubmitting,
-    resetForm,
-  } = useCreateNoxtunizerJob()
+  const { submit, updateForm, resetForm, isSubmitting } =
+    useCreateNoxtunizerJob()
+  const { handleResult } = useFormSubmit()
 
   const [files, setFiles] = useState<File[]>([])
+  const [formError, setFormError] = useState<string | null>(null)
 
   function handleFilesChange(next: File[]) {
     setFiles(next)
@@ -23,14 +21,15 @@ export default function Form() {
   }
 
   async function handleSubmit() {
-    await submit()
-    setFiles([])
-    resetForm()
+    const result = await submit()
+    handleResult(result, setFormError)
+    if (result.status === "success") setFiles([])
   }
 
   function handleReset() {
     setFiles([])
     resetForm()
+    setFormError(null)
   }
 
   return (
