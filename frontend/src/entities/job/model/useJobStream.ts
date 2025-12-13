@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { type Job, type JobTool } from "@/entities/job"
-import { listJobs, deleteJob } from "@/entities/job"
-import { createJobStream } from "@/shared/api/jobStream"
+import { type Job, type JobTool } from "."
+import { listJobs, deleteJob, createJobStream } from "../api"
 
 type UseJobStreamParams = {
   tool?: JobTool
@@ -14,6 +13,7 @@ export function useJobStream({ tool }: UseJobStreamParams = {}) {
 
   const initializedRef = useRef<string | null>(null)
 
+  // Initial load
   useEffect(() => {
     if (initializedRef.current === tool) return
     initializedRef.current = tool ?? "__all__"
@@ -40,23 +40,23 @@ export function useJobStream({ tool }: UseJobStreamParams = {}) {
     }
 
     load()
+
     return () => {
       cancelled = true
       initializedRef.current = null
     }
   }, [tool])
 
+  // Stream
   useEffect(() => {
     const stream = createJobStream({
       onCreated(job) {
         if (tool && job.tool !== tool) return
         setJobsMap((prev) => ({ ...prev, [job.id]: job }))
-        setError(null)
       },
       onUpdated(job) {
         if (tool && job.tool !== tool) return
         setJobsMap((prev) => ({ ...prev, [job.id]: job }))
-        setError(null)
       },
       onDeleted(jobId) {
         setJobsMap((prev) => {
@@ -64,7 +64,6 @@ export function useJobStream({ tool }: UseJobStreamParams = {}) {
           delete next[jobId]
           return next
         })
-        setError(null)
       },
       onError() {
         setError("Backend unreachable.")

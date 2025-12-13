@@ -1,2 +1,2 @@
-export * from "./types"
-export * from "./queries"
+export { listJobs, getJob, deleteJob } from "./queries"
+export { createJobStream } from "./jobStream"

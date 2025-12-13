@@ -1,6 +1,5 @@
-import { useJobStream } from "@/widgets/job-stream"
+import { useJobStream, type Job } from "@/entities/job"
 import { usePagination, useSelection } from "@/shared/lib"
-import { type Job } from "@/entities/job"
 
 export function useNoxtubizerJobs() {
   const { jobs, loading, error, deleteJob, getJobById } = useJobStream({
