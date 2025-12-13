@@ -1,31 +1,29 @@
 import { type ReactNode } from "react"
-import { type Job } from "@/entities/job"
 import { JobPreview } from "@/features/job-preview"
+import { useJobStream } from "@/widgets/job-stream"
 
-type Props<R> = {
-  job: Job<unknown, R> | null
+type Props = {
+  jobId: string | null
   open: boolean
   onClose: () => void
-  renderResult: (job: Job<unknown, R>) => ReactNode
+  renderResult: (job: any) => ReactNode
   footer?: ReactNode
 }
 
-export default function JobPreviewModal<R>({
-  job,
+export default function JobPreviewModal({
+  jobId,
   open,
   onClose,
   renderResult,
   footer,
-}: Props<R>) {
+}: Props) {
+  const { getJobById } = useJobStream()
+  const job = getJobById(jobId)
+
   if (!job) return null
 
   return (
-    <JobPreview
-      job={job}
-      open={open}
-      onClose={onClose}
-      footer={footer}
-    >
+    <JobPreview job={job} open={open} onClose={onClose} footer={footer}>
       {renderResult(job)}
     </JobPreview>
   )

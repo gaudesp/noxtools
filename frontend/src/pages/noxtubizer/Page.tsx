@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
-import { type Job } from "@/entities/job"
 
 import { Form, Result } from "@/features/noxtubizer/ui"
 import { useNoxtubizerJobs } from "@/features/noxtubizer/model"
-import { type NoxtubizerJobResult } from "@/features/noxtubizer/api"
 
 import { JobHistory } from "@/widgets/job-history"
 import { JobPreviewModal } from "@/widgets/job-preview"
@@ -12,9 +10,6 @@ import { JobPreviewModal } from "@/widgets/job-preview"
 export default function NoxtubizerPage() {
   const { setHeader, setFooter } = useLayout()
   const store = useNoxtubizerJobs()
-
-  const [selectedJob, setSelectedJob] =
-    useState<Job<unknown, NoxtubizerJobResult> | null>(null)
 
   const [open, setOpen] = useState(false)
 
@@ -35,14 +30,13 @@ export default function NoxtubizerPage() {
 
       <JobHistory
         store={store}
-        onSelectJob={(job) => {
-          setSelectedJob(job as Job<unknown, NoxtubizerJobResult>)
+        onSelectJob={() => {
           setOpen(true)
         }}
       />
 
-      <JobPreviewModal<NoxtubizerJobResult>
-        job={selectedJob}
+      <JobPreviewModal
+        jobId={store.selectedId}
         open={open}
         onClose={() => setOpen(false)}
         renderResult={(job) => <Result job={job} />}
