@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
+import { type Job } from "@/entities/job"
 
 import { Form, ResultPreview } from "@/features/noxtunizer/ui"
 import { useNoxtunizerJobs } from "@/features/noxtunizer/model"
-import { type Job } from "@/entities/job"
 import { type NoxtunizerJobResult } from "@/features/noxtunizer/api"
 
 import { JobHistory } from "@/widgets/job-history"

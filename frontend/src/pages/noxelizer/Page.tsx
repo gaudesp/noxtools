@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
+import { type Job } from "@/entities/job"
 
 import { Form, Result } from "@/features/noxelizer/ui"
 import { useNoxelizerJobs } from "@/features/noxelizer/model"
-import { type Job } from "@/entities/job"
 import { type NoxelizerJobResult } from "@/features/noxelizer/api"
 
 import { JobHistory } from "@/widgets/job-history"
