@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
 
-import { Form, ResultPreview } from "@/features/noxelizer/ui"
+import { Form, Result } from "@/features/noxelizer/ui"
 import { useNoxelizerJobs } from "@/features/noxelizer/model"
 import { type Job } from "@/entities/job"
 import { type NoxelizerJobResult } from "@/features/noxelizer/api"
@@ -45,7 +45,7 @@ export default function NoxelizerPage() {
         job={selectedJob}
         open={open}
         onClose={() => setOpen(false)}
-        renderResult={(job) => <ResultPreview job={job} />}
+        renderResult={(job) => <Result job={job} />}
       />
     </div>
   )

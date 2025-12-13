@@ -1,2 +1,2 @@
 export { default as Form } from "./Form"
-export { default as ResultPreview } from "./ResultPreview"
+export { default as Result } from "./Result"

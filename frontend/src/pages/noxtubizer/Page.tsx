@@ -15,7 +15,7 @@ export default function NoxtubizerPage() {
   const [open, setOpen] = useState(false)
 
   return (
-    <>
+    <div className="flex flex-col gap-8">
       <Form />
 
       <JobHistory
@@ -32,6 +32,6 @@ export default function NoxtubizerPage() {
         onClose={() => setOpen(false)}
         renderResult={(job) => <Result job={job} />}
       />
-    </>
+    </div>
   )
 }
