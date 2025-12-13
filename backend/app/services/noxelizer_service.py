@@ -25,27 +25,7 @@ class NoxelizerService:
     self.BASE_OUTPUT.mkdir(parents=True, exist_ok=True)
     self.executor = NoxelizerExecutor(base_output=self.BASE_OUTPUT)
 
-  def create_job_from_upload(self, file: UploadFile) -> Job:
-    """
-    Create a job from a single uploaded file and persist it to disk.
-
-    Args:
-      file: Uploaded image file.
-
-    Returns:
-      The created Job entity.
-    """
-    job = self.job_service.create_job(
-      tool=JobTool.NOXELIZER,
-      input_filename=file.filename,
-    )
-    dest = self._write_upload_file(job.id, file)
-    if dest:
-      self.job_service.update_job(job.id, JobUpdate(input_path=str(dest)))
-    refreshed = self.job_service.get_job(job.id)
-    return refreshed or job
-
-  def create_jobs_from_uploads(self, files: List[UploadFile]) -> List[Tuple[Job, UploadFile]]:
+  def create_jobs(self, files: List[UploadFile]) -> List[Tuple[Job, UploadFile]]:
     """
     Create jobs for a list of uploaded files.
 
