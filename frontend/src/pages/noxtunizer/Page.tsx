@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
 import { type Job } from "@/entities/job"
 
-import { Form, ResultPreview } from "@/features/noxtunizer/ui"
+import { Form, Result } from "@/features/noxtunizer/ui"
 import { useNoxtunizerJobs } from "@/features/noxtunizer/model"
 import { type NoxtunizerJobResult } from "@/features/noxtunizer/api"
 
@@ -45,7 +45,7 @@ export default function NoxtunizerPage() {
         job={selectedJob}
         open={open}
         onClose={() => setOpen(false)}
-        renderResult={(job) => <ResultPreview job={job} />}
+        renderResult={(job) => <Result job={job} />}
       />
     </div>
   )

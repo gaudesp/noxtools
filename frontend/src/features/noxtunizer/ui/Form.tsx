@@ -1,10 +1,10 @@
 import { useState } from "react"
 import Section from "@/shared/ui/Section"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
-import Uploader from "@/shared/ui/Uploader"
 import SubmitButton from "@/shared/ui/SubmitButton"
 import ResetButton from "@/shared/ui/ResetButton"
 import { useCreateNoxtunizerJob } from "../model"
+import { AudioUploadField } from "./form"
 
 export default function Form() {
   const {
@@ -17,19 +17,20 @@ export default function Form() {
 
   const [files, setFiles] = useState<File[]>([])
 
-  function handleUpload(selected: File[]): void {
-    setFiles(selected)
-    updateForm({ files: selected })
+  function handleFilesChange(next: File[]) {
+    setFiles(next)
+    updateForm({ files: next })
   }
 
-  function handleReset(): void {
+  async function handleSubmit() {
+    await submit()
     setFiles([])
     resetForm()
   }
 
-  async function handleSubmit(): Promise<void> {
-    await submit()
-    handleReset()
+  function handleReset() {
+    setFiles([])
+    resetForm()
   }
 
   return (
@@ -47,14 +48,10 @@ export default function Form() {
           />
         )}
 
-        <Uploader
+        <AudioUploadField
           files={files}
-          onUpload={handleUpload}
-          busy={isSubmitting}
-          accept="audio/*"
-          title="Drag & drop audio here"
-          description="or click to choose one or multiple songs from your computer"
-          inputId="noxtunizer-uploader-input"
+          disabled={isSubmitting}
+          onChange={handleFilesChange}
         />
 
         <div className="flex items-center justify-end gap-3">
