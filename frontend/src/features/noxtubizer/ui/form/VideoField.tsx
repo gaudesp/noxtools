@@ -2,7 +2,7 @@ import {
   type NoxtubizerVideoFormat,
   type NoxtubizerVideoQuality,
   type NoxtubizerCreateRequest,
-} from "../api"
+} from "../../api"
 
 const videoQualityOptions: Array<{ value: NoxtubizerVideoQuality; label: string }> = [
   { value: "best", label: "Best available" },
@@ -21,13 +21,17 @@ const videoFormatOptions: Array<{ value: NoxtubizerVideoFormat; label: string }>
   { value: "mkv", label: "MKV" },
 ]
 
-interface Props {
+type Props = {
   videoFormat: NoxtubizerVideoFormat
   videoQuality: NoxtubizerVideoQuality
   onChange: (payload: Partial<NoxtubizerCreateRequest>) => void
 }
 
-export default function VideoSelector({ videoFormat, videoQuality, onChange }: Props) {
+export default function VideoField({
+  videoFormat,
+  videoQuality,
+  onChange,
+}: Props) {
   return (
     <div className="grid md:grid-cols-2 gap-4">
       <div>

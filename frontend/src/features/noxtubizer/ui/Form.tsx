@@ -2,15 +2,15 @@ import Section from "@/shared/ui/Section"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import SubmitButton from "@/shared/ui/SubmitButton"
 import ResetButton from "@/shared/ui/ResetButton"
-import {
-  UrlInput,
-  ModeSelector,
-  AudioSelector,
-  VideoSelector,
-} from "./index"
 import { useCreateNoxtubizerJob } from "../model"
+import {
+  UrlField,
+  ModeField,
+  AudioField,
+  VideoField,
+} from "./form"
 
-export default function NoxtubizerForm() {
+export default function Form() {
   const {
     form,
     updateForm,
@@ -38,18 +38,18 @@ export default function NoxtubizerForm() {
           />
         )}
 
-        <UrlInput url={form.url} onChange={(url) => updateForm({ url })} />
+        <UrlField
+          value={form.url}
+          onChange={(url) => updateForm({ url })}
+        />
 
-        <div>
-          <p className="block text-sm font-semibold mb-2">Mode</p>
-          <ModeSelector
-            mode={form.mode}
-            onChange={(mode) => updateForm({ mode })}
-          />
-        </div>
+        <ModeField
+          value={form.mode}
+          onChange={(mode) => updateForm({ mode })}
+        />
 
         {requiresAudio && (
-          <AudioSelector
+          <AudioField
             audioFormat={form.audio_format || "mp3"}
             audioQuality={form.audio_quality || "high"}
             onChange={(payload) => updateForm(payload)}
@@ -57,7 +57,7 @@ export default function NoxtubizerForm() {
         )}
 
         {requiresVideo && (
-          <VideoSelector
+          <VideoField
             videoFormat={form.video_format || "mp4"}
             videoQuality={form.video_quality || "best"}
             onChange={(payload) => updateForm(payload)}
@@ -66,7 +66,11 @@ export default function NoxtubizerForm() {
 
         <div className="flex items-center justify-end gap-3">
           <ResetButton disabled={isSubmitting} onClick={resetForm} />
-          <SubmitButton loading={isSubmitting} onClick={submit} label="Download" />
+          <SubmitButton
+            loading={isSubmitting}
+            onClick={submit}
+            label="Download"
+          />
         </div>
       </div>
     </Section>

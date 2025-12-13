@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Form, ResultPreview } from "@/features/noxtubizer/ui"
+import { Form, Result } from "@/features/noxtubizer/ui"
 import { useNoxtubizerJobs } from "@/features/noxtubizer/model"
 import { JobHistory } from "@/widgets/job-history"
 import { JobPreviewModal } from "@/widgets/job-preview"
@@ -30,7 +30,7 @@ export default function NoxtubizerPage() {
         job={selectedJob}
         open={open}
         onClose={() => setOpen(false)}
-        renderResult={(job) => <ResultPreview job={job} />}
+        renderResult={(job) => <Result job={job} />}
       />
     </>
   )

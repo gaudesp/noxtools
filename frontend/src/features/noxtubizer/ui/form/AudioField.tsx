@@ -2,7 +2,7 @@ import {
   type NoxtubizerAudioFormat,
   type NoxtubizerAudioQuality,
   type NoxtubizerCreateRequest,
-} from "../api"
+} from "../../api"
 
 const audioQualityOptions: Array<{ value: NoxtubizerAudioQuality; label: string }> = [
   { value: "high", label: "Best available" },
@@ -19,13 +19,17 @@ const audioFormatOptions: Array<{ value: NoxtubizerAudioFormat; label: string }>
   { value: "wav", label: "WAV" },
 ]
 
-interface Props {
+type Props = {
   audioFormat: NoxtubizerAudioFormat
   audioQuality: NoxtubizerAudioQuality
   onChange: (payload: Partial<NoxtubizerCreateRequest>) => void
 }
 
-export default function AudioSelector({ audioFormat, audioQuality, onChange }: Props) {
+export default function AudioField({
+  audioFormat,
+  audioQuality,
+  onChange,
+}: Props) {
   const isWav = audioFormat === "wav"
 
   return (

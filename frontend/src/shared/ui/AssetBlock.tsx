@@ -1,19 +1,24 @@
 import { type ReactNode } from "react"
 
-interface Props {
+type Props = {
   title: string
-  filename: string | null
+  filename?: string
   downloadUrl: string
   children: ReactNode
 }
 
-export default function AssetBlock({ title, filename, downloadUrl, children }: Props) {
+export default function AssetBlock({
+  title,
+  filename,
+  downloadUrl,
+  children,
+}: Props) {
   return (
     <div className="border border-slate-800 rounded-lg p-3 bg-slate-900">
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-sm font-semibold">{title}</p>
-          {filename && <p className="text-xs text-slate-400 break-all">{filename}</p>}
+          <p className="text-xs text-slate-400 break-all">{filename}</p>
         </div>
         <a
           href={downloadUrl}
@@ -23,7 +28,6 @@ export default function AssetBlock({ title, filename, downloadUrl, children }: P
           Download
         </a>
       </div>
-
       {children}
     </div>
   )
