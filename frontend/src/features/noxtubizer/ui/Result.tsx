@@ -31,14 +31,14 @@ export default function Result({ job }: Props) {
         }
 
         return (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {result.mode === "both" && result.both?.filename && (
               (() => {
                 const filename = result.both.filename
                 const url = getNoxtubizerDownloadUrl(job.id, filename)
 
                 return (
-                  <AssetBlock title={filename} downloadUrl={url}>
+                  <AssetBlock title="Audio + Video" downloadUrl={url}>
                     <VideoPlayer url={url} filename={filename} hasAudio={true} height={400} />
                   </AssetBlock>
                 )
@@ -51,7 +51,7 @@ export default function Result({ job }: Props) {
                 const url = getNoxtubizerDownloadUrl(job.id, filename)
 
                 return (
-                  <AssetBlock title={filename} downloadUrl={url}>
+                  <AssetBlock title="Video" downloadUrl={url}>
                     <VideoPlayer url={url} filename={filename} hasAudio={false} height={400} />
                   </AssetBlock>
                 )
@@ -64,7 +64,7 @@ export default function Result({ job }: Props) {
                 const url = getNoxtubizerDownloadUrl(job.id, filename)
 
                 return (
-                  <AssetBlock title={filename} downloadUrl={url}>
+                  <AssetBlock title="Audio" downloadUrl={url}>
                     <AudioPlayer url={url} />
                   </AssetBlock>
                 )

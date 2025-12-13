@@ -3,7 +3,7 @@ import { type ReactNode } from "react"
 type Props = {
   title: string
   filename?: string
-  downloadUrl: string
+  downloadUrl?: string
   children: ReactNode
 }
 
@@ -20,13 +20,15 @@ export default function AssetBlock({
           <p className="text-sm font-semibold">{title}</p>
           <p className="text-xs text-slate-400 break-all">{filename}</p>
         </div>
-        <a
-          href={downloadUrl}
-          download
-          className="text-xs px-3 py-1 rounded bg-violet-600 hover:bg-violet-700 text-white transition"
-        >
-          Download
-        </a>
+        {downloadUrl && (
+          <a
+            href={downloadUrl}
+            download
+            className="text-xs px-3 py-1 rounded bg-violet-600 hover:bg-violet-700 text-white transition"
+          >
+            Download
+          </a>
+        )}
       </div>
       {children}
     </div>

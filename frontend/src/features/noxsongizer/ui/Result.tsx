@@ -57,7 +57,7 @@ export default function Result({ job }: Props) {
         }
 
         return (
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             {orderedStems.map(({ label, filename, type }) => {
               const url = getNoxsongizerDownloadUrl(job.id, filename)
               return (

@@ -1,11 +1,11 @@
 import { JobStatusGate } from "@/features/job-status"
-import NoticeMessage from "@/shared/ui/NoticeMessage"
 import AudioPlayer from "@/shared/ui/AudioPlayer"
 import { type Job } from "@/entities/job"
 import {
   getNoxtunizerSourceUrl,
   type NoxtunizerJobResult,
 } from "../api"
+import AssetBlock from "@/shared/ui/AssetBlock"
 
 function displayValue(value: unknown): string {
   if (value === null || value === undefined) return "—"
@@ -37,12 +37,11 @@ export default function Result({ job }: Props) {
 
         return (
           <div className="space-y-4">
-            <div className="border border-slate-800 rounded-lg bg-slate-900 p-3">
-              <p className="text-sm font-semibold mb-3">Audio</p>
+            <AssetBlock title="Video">
               <AudioPlayer url={sourceUrl} />
-            </div>
+            </AssetBlock>
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 text-center">
               {blocks.map((block) => (
                 <div
                   key={block.label}

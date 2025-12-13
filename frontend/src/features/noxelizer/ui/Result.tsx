@@ -35,7 +35,7 @@ export default function Result({ job }: Props) {
         const url = getNoxelizerDownloadUrl(job.id, filename)
 
         return (
-          <AssetBlock title={filename} downloadUrl={url}>
+          <AssetBlock title="Video" downloadUrl={url}>
             <VideoPlayer url={url} filename={filename} height={400} />
           </AssetBlock>
         )
