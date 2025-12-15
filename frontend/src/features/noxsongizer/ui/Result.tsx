@@ -1,7 +1,6 @@
-import { type Job } from "@/entities/job"
 import { JobStatusGate } from "@/features/job-status"
 import { NoticeMessage, AudioPlayer, FileBlock } from "@/shared/ui"
-import { getNoxsongizerDownloadUrl, type NoxsongizerJobResult } from "../api"
+import { getNoxsongizerDownloadUrl, type NoxsongizerJob } from "../api"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
 
@@ -21,9 +20,7 @@ function isStemMatch(stem: string, type: StemType): boolean {
   )
 }
 
-type Props = {
-  job: Job<unknown, NoxsongizerJobResult>
-}
+type Props = { job: NoxsongizerJob }
 
 export default function Result({ job }: Props) {
   return (

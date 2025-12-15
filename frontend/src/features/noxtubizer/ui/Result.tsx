@@ -1,11 +1,8 @@
-import { type Job } from "@/entities/job"
 import { JobStatusGate } from "@/features/job-status"
 import { NoticeMessage, FileBlock, AudioPlayer, VideoPlayer } from "@/shared/ui"
-import { getNoxtubizerDownloadUrl, type NoxtubizerJobResult } from "../api"
+import { getNoxtubizerDownloadUrl, type NoxtubizerJob } from "../api"
 
-type Props = {
-  job: Job<unknown, NoxtubizerJobResult>
-}
+type Props = { job: NoxtubizerJob }
 
 export default function Result({ job }: Props) {
   return (

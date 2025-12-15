@@ -1,13 +1,9 @@
-import type { Job } from "@/entities/job"
 import { AudioPreview } from "@/shared/ui"
-import { getNoxtunizerSourceUrl } from "../api"
-import { isJob } from "../model"
+import { getNoxtunizerSourceUrl, type NoxtunizerJob } from "../api"
 
-type Props = { job: Job }
+type Props = { job: NoxtunizerJob }
 
 export default function Preview({ job }: Props) {
-  if (!isJob(job)) return null
-
   return (
     <AudioPreview
       id={job.id}

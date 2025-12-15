@@ -1,11 +1,8 @@
 import { useMemo } from "react"
-import type { Job } from "@/entities/job"
-import { getNoxelizerSourceUrl } from "../api"
+import { getNoxelizerSourceUrl, type NoxelizerJob } from "../api"
 import { isJob } from "../model"
 
-type Props = {
-  job: Job
-}
+type Props = { job: NoxelizerJob }
 
 export default function Preview({ job }: Props) {
   if (!isJob(job)) return null

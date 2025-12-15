@@ -1,15 +1,9 @@
 import type { ReactNode } from "react"
-import type { Job } from "@/entities/job"
-import type { NoxtubizerMode } from "../api/types"
-import { isJob } from "../model"
+import type { NoxtubizerJob, NoxtubizerMode } from "../api/types"
 
-type Props = {
-  job: Job
-}
+type Props = { job: NoxtubizerJob }
 
 export default function Preview({ job }: Props) {
-  if (!isJob(job)) return null
-
   const mode = job.result?.mode ?? job.params?.mode
   if (!mode) return null
 
