@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react"
 import { type Job, StatusBadge  } from "@/entities/job"
 import { API_BASE_URL } from "../api"
-import NoticeMessage from "./NoticeMessage"
-import { ConfirmModal } from "@/shared/ui"
-import Pagination from "./Pagination"
+import { NoticeMessage, Pagination, ConfirmModal } from "@/shared/ui"
 
 const getNoxsongizerSourceUrl = (jobId: string) =>
   `${API_BASE_URL}/noxsongizer/source/${jobId}`

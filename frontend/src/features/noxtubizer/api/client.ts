@@ -1,11 +1,6 @@
 import { API_BASE_URL, handleResponse } from "@/shared/api"
-import { listJobs } from "@/entities/job"
-import type { PaginatedJobs, ListJobsParams } from "@/entities/job"
-
-import {
-  type NoxtubizerCreateRequest,
-  type NoxtubizerCreateResponse,
-} from "./types"
+import { type PaginatedJobs, type ListJobsParams, listJobs } from "@/entities/job"
+import type { NoxtubizerCreateRequest, NoxtubizerCreateResponse } from "./types"
 
 export async function createNoxtubizerJob(
   payload: NoxtubizerCreateRequest,

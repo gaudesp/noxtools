@@ -1,11 +1,7 @@
-import { JobStatusGate } from "@/features/job-status"
-import { AudioPlayer } from "@/shared/ui"
 import { type Job } from "@/entities/job"
-import {
-  getNoxtunizerSourceUrl,
-  type NoxtunizerJobResult,
-} from "../api"
-import { FileBlock } from "@/shared/ui"
+import { JobStatusGate } from "@/features/job-status"
+import { FileBlock, AudioPlayer } from "@/shared/ui"
+import { getNoxtunizerSourceUrl, type NoxtunizerJobResult } from "../api"
 
 function displayValue(value: unknown): string {
   if (value === null || value === undefined) return "—"

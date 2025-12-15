@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/shared/api/config"
+import { API_BASE_URL } from "@/shared/api"
 import type { Job } from "../model"
 
 export type JobStreamEvent =

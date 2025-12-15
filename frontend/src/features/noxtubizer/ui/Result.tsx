@@ -1,12 +1,7 @@
-import { JobStatusGate } from "@/features/job-status"
-import NoticeMessage from "@/shared/ui/NoticeMessage"
 import { type Job } from "@/entities/job"
-import {
-  getNoxtubizerDownloadUrl,
-  type NoxtubizerJobResult,
-} from "../api"
-import { FileBlock } from "@/shared/ui"
-import { AudioPlayer, VideoPlayer } from "@/shared/ui"
+import { JobStatusGate } from "@/features/job-status"
+import { NoticeMessage, FileBlock, AudioPlayer, VideoPlayer } from "@/shared/ui"
+import { getNoxtubizerDownloadUrl, type NoxtubizerJobResult } from "../api"
 
 type Props = {
   job: Job<unknown, NoxtubizerJobResult>

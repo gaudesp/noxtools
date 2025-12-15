@@ -1,8 +1,6 @@
 import { useState } from "react"
-import { Section } from "@/shared/ui"
-import NoticeMessage from "@/shared/ui/NoticeMessage"
-import { SubmitButton, ResetButton } from "@/shared/ui"
-import { useFormSubmit } from "@/shared/lib/useFormSubmit"
+import { Section, NoticeMessage, SubmitButton, ResetButton } from "@/shared/ui"
+import { useFormSubmit } from "@/shared/lib"
 import { useCreateNoxtunizerJob } from "../model"
 import { AudioUploadField } from "./form"
 

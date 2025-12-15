@@ -1,10 +1,6 @@
-import { Section } from "@/shared/ui"
-import NoticeMessage from "@/shared/ui/NoticeMessage"
-import Table from "@/shared/ui/Table"
-import Pagination from "@/shared/ui/Pagination"
-import { useNotifications } from "@/shared/ui/notifications"
-import { type JobHistoryStore } from "../model/types"
 import type { Job } from "@/entities/job"
+import { Section, NoticeMessage, Table, Pagination, useNotifications } from "@/shared/ui"
+import { type JobHistoryStore } from "../model/types"
 
 type Props = {
   store: JobHistoryStore

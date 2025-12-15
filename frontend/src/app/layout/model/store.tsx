@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  type ReactNode,
-} from "react"
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
 import type { Job } from "@/entities/job"
 
 export type LayoutHeader = {

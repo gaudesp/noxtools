@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { createNoxtunizerJob, type NoxtunizerCreateRequest } from "../api"
-import type { SubmitResult } from "@/shared/lib/useFormSubmit"
+import type { SubmitResult } from "@/shared/lib"
 
 export const defaultNoxtunizerFormState: NoxtunizerCreateRequest = {
   files: [],

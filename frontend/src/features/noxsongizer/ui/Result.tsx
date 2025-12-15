@@ -1,12 +1,7 @@
-import { JobStatusGate } from "@/features/job-status"
-import NoticeMessage from "@/shared/ui/NoticeMessage"
-import { FileBlock } from "@/shared/ui"
-import { AudioPlayer } from "@/shared/ui"
 import { type Job } from "@/entities/job"
-import {
-  getNoxsongizerDownloadUrl,
-  type NoxsongizerJobResult,
-} from "../api"
+import { JobStatusGate } from "@/features/job-status"
+import { NoticeMessage, AudioPlayer, FileBlock } from "@/shared/ui"
+import { getNoxsongizerDownloadUrl, type NoxsongizerJobResult } from "../api"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
 

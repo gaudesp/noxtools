@@ -1,12 +1,7 @@
-import { JobStatusGate } from "@/features/job-status"
-import NoticeMessage from "@/shared/ui/NoticeMessage"
-import { VideoPlayer } from "@/shared/ui"
-import { FileBlock } from "@/shared/ui"
 import { type Job } from "@/entities/job"
-import {
-  getNoxelizerDownloadUrl,
-  type NoxelizerJobResult,
-} from "../api"
+import { JobStatusGate } from "@/features/job-status"
+import { FileBlock, NoticeMessage, VideoPlayer } from "@/shared/ui"
+import { getNoxelizerDownloadUrl, type NoxelizerJobResult } from "../api"
 
 type Props = {
   job: Job<unknown, NoxelizerJobResult>

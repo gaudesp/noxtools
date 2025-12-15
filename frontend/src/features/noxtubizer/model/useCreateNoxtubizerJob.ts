@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { createNoxtubizerJob, type NoxtubizerCreateRequest } from "../api"
-import type { SubmitResult } from "@/shared/lib/useFormSubmit"
+import type { SubmitResult } from "@/shared/lib"
 
 export const defaultNoxtubizerFormState: NoxtubizerCreateRequest = {
   url: "",

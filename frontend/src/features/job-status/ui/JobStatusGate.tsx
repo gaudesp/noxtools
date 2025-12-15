@@ -1,5 +1,5 @@
 import { type ReactNode } from "react"
-import NoticeMessage from "@/shared/ui/NoticeMessage"
+import { NoticeMessage } from "@/shared/ui"
 import type { Job } from "@/entities/job"
 import type { JobStatusMessages } from "../model/types"
 

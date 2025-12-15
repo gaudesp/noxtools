@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { type Job } from "@/entities/job"
+import type { Job } from "@/entities/job"
 
 type Props = {
   jobs: Job[]

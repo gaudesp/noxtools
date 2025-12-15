@@ -1,8 +1,6 @@
 import { useState } from "react"
-import { Section } from "@/shared/ui"
-import NoticeMessage from "@/shared/ui/NoticeMessage"
-import { SubmitButton, ResetButton } from "@/shared/ui"
-import { useFormSubmit } from "@/shared/lib/useFormSubmit"
+import { Section, SubmitButton, ResetButton, NoticeMessage } from "@/shared/ui"
+import { useFormSubmit } from "@/shared/lib"
 import { useCreateNoxelizerJob } from "../model"
 import { ImageUploadField } from "./form"
 

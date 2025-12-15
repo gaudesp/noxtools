@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
-
 import { JobDetailsModal } from "@/features/job-preview"
-import { Form, Result } from "@/features/noxtunizer/ui"
-import { useNoxtunizerJobs } from "@/features/noxtunizer/model"
-
+import { Form, Result, useNoxtunizerJobs } from "@/features/noxtunizer"
 import { JobHistory } from "@/widgets/job-history"
 
 export default function NoxtunizerPage() {

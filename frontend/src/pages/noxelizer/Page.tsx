@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
-
 import { JobDetailsModal } from "@/features/job-preview"
-import { Form, Result } from "@/features/noxelizer/ui"
-import { useNoxelizerJobs } from "@/features/noxelizer/model"
-
+import { Form, Result, useNoxelizerJobs } from "@/features/noxelizer"
 import { JobHistory } from "@/widgets/job-history"
 
 export default function NoxelizerPage() {
