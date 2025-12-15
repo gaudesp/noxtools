@@ -1,5 +1,5 @@
 import { JobStatusGate } from "@/features/job-status"
-import AudioPlayer from "@/shared/ui/AudioPlayer"
+import { AudioPlayer } from "@/shared/ui"
 import { type Job } from "@/entities/job"
 import {
   getNoxtunizerSourceUrl,
@@ -37,7 +37,7 @@ export default function Result({ job }: Props) {
 
         return (
           <div className="space-y-4">
-            <FileBlock title="Video">
+            <FileBlock title="Audio">
               <AudioPlayer url={sourceUrl} />
             </FileBlock>
 

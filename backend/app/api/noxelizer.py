@@ -100,8 +100,9 @@ def download_video(
   if not path.exists():
     raise HTTPException(status_code=404, detail="File not found")
 
+  media_type, _ = guess_type(path.name)
   return FileResponse(
     path=str(path),
-    media_type="video/mp4",
+    media_type=media_type or "application/octet-stream",
     filename=filename,
   )

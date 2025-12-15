@@ -6,8 +6,7 @@ import {
   type NoxtubizerJobResult,
 } from "../api"
 import { FileBlock } from "@/shared/ui"
-import AudioPlayer from "@/shared/ui/AudioPlayer"
-import VideoPlayer from "@/shared/ui/VideoPlayer"
+import { AudioPlayer, VideoPlayer } from "@/shared/ui"
 
 type Props = {
   job: Job<unknown, NoxtubizerJobResult>
@@ -39,7 +38,7 @@ export default function Result({ job }: Props) {
 
                 return (
                   <FileBlock title="Audio + Video" href={url}>
-                    <VideoPlayer url={url} filename={filename} hasAudio={true} height={400} />
+                    <VideoPlayer url={url} hasAudio={true} height={400} />
                   </FileBlock>
                 )
               })()
@@ -52,7 +51,7 @@ export default function Result({ job }: Props) {
 
                 return (
                   <FileBlock title="Video" href={url}>
-                    <VideoPlayer url={url} filename={filename} hasAudio={false} height={400} />
+                    <VideoPlayer url={url} hasAudio={false} height={400} />
                   </FileBlock>
                 )
               })()

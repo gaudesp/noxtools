@@ -1,6 +1,6 @@
 import { JobStatusGate } from "@/features/job-status"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
-import VideoPlayer from "@/shared/ui/VideoPlayer"
+import { VideoPlayer } from "@/shared/ui"
 import { FileBlock } from "@/shared/ui"
 import { type Job } from "@/entities/job"
 import {
@@ -36,7 +36,7 @@ export default function Result({ job }: Props) {
 
         return (
           <FileBlock title="Video" href={url}>
-            <VideoPlayer url={url} filename={filename} height={400} />
+            <VideoPlayer url={url} height={400} />
           </FileBlock>
         )
       }}

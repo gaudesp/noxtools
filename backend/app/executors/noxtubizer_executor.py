@@ -245,6 +245,9 @@ class NoxtubizerExecutor:
     audio_fmt = audio_fmt.lower()
     container = container.lower()
 
+    if container == "mp4" and audio_fmt == "wav":
+      return "aac"
+
     if container == "mp4" and audio_fmt == "ogg":
       return "aac"
 
