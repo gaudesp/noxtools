@@ -30,18 +30,24 @@ export default function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:px-6">
       <div
         className="absolute inset-0 bg-black/80"
-        onClick={onClose}
         aria-hidden
+        onClick={(e) => {
+          e.stopPropagation()
+          onClose()
+        }}
       />
 
-      <div className="relative z-10 flex w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl">
+      <div
+        className="relative z-10 flex w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         {header && (
           <header className="border-b border-slate-800 px-5 py-4">
             {header}
           </header>
         )}
 
-        <div className="px-5 py-4 flex-1">
+        <div className="flex-1 px-5 py-4">
           {children}
         </div>
 
