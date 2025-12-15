@@ -6,14 +6,13 @@ type UseJobStreamParams = {
   tool?: JobTool
 }
 
-export function useJobStream({ tool }: UseJobStreamParams = {}) {
+export default function useJobStream({ tool }: UseJobStreamParams = {}) {
   const [jobsMap, setJobsMap] = useState<Record<string, Job>>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const initializedRef = useRef<string | null>(null)
 
-  // Initial load
   useEffect(() => {
     if (initializedRef.current === tool) return
     initializedRef.current = tool ?? "__all__"
@@ -47,7 +46,6 @@ export function useJobStream({ tool }: UseJobStreamParams = {}) {
     }
   }, [tool])
 
-  // Stream
   useEffect(() => {
     const stream = createJobStream({
       onCreated(job) {

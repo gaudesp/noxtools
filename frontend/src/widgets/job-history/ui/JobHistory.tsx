@@ -1,6 +1,7 @@
 import type { Job } from "@/entities/job"
-import { Section, NoticeMessage, Table, Pagination, useNotifications } from "@/shared/ui"
-import { type JobHistoryStore } from "../model/types"
+import { Section, NoticeMessage, Pagination, useNotifications } from "@/shared/ui"
+import { JobTable } from "@/widgets/job-table"
+import type { JobHistoryStore } from "../model/types"
 
 type Props = {
   store: JobHistoryStore
@@ -54,28 +55,26 @@ export default function JobHistory({
         </div>
       )}
 
-      <Table
-        tasks={pagedItems}
+      <JobTable
+        jobs={pagedItems}
         total={total}
         pageSize={pageSize}
         currentPage={page}
+        loading={loading}
+        error={null}
         onPageChange={setPage}
-        onSelectTask={(task) => {
-          select(task.id)
-          onSelectJob(task)
+        onSelectJob={(job) => {
+          select(job.id)
+          onSelectJob(job)
         }}
-        onDeleteTask={async (task) => {
+        onDeleteJob={async (job) => {
           try {
-            await deleteJob(task.id)
+            await deleteJob(job.id)
             notify("Job deleted.", "success")
           } catch {
             notify("Failed to delete job.", "danger")
           }
         }}
-        loading={loading}
-        error={null}
-        bordered={false}
-        showHeader={false}
       />
     </Section>
   )
