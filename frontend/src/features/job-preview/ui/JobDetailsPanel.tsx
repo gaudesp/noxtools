@@ -16,7 +16,7 @@ type Props = {
   footer?: ReactNode
 }
 
-export default function JobPreview({
+export default function JobDetailsPanel({
   job,
   open,
   onClose,

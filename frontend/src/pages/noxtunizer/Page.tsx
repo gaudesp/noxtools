@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
 
+import { JobDetailsModal } from "@/features/job-preview"
 import { Form, Result } from "@/features/noxtunizer/ui"
 import { useNoxtunizerJobs } from "@/features/noxtunizer/model"
 
 import { JobHistory } from "@/widgets/job-history"
-import { JobPreviewModal } from "@/widgets/job-preview"
 
 export default function NoxtunizerPage() {
   const { setHeader, setFooter } = useLayout()
@@ -35,7 +35,7 @@ export default function NoxtunizerPage() {
         }}
       />
 
-      <JobPreviewModal
+      <JobDetailsModal
         jobId={store.selectedId}
         open={open}
         onClose={() => setOpen(false)}

@@ -1,5 +1,5 @@
 import { type ReactNode } from "react"
-import { JobPreview } from "@/features/job-preview"
+import { JobDetailsPanel } from "@/features/job-preview"
 import { useJobStream } from "@/entities/job"
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
   footer?: ReactNode
 }
 
-export default function JobPreviewModal({
+export default function JobDetailsModal({
   jobId,
   open,
   onClose,
@@ -23,8 +23,8 @@ export default function JobPreviewModal({
   if (!job) return null
 
   return (
-    <JobPreview job={job} open={open} onClose={onClose} footer={footer}>
+    <JobDetailsPanel job={job} open={open} onClose={onClose} footer={footer}>
       {renderResult(job)}
-    </JobPreview>
+    </JobDetailsPanel>
   )
 }

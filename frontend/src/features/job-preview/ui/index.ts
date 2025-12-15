@@ -1,1 +1,2 @@
-export { default as JobPreview } from "./JobPreview"
+export { default as JobDetailsPanel } from "./JobDetailsPanel"
+export { default as JobDetailsModal } from "./JobDetailsModal"
