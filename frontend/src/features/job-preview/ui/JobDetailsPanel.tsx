@@ -1,7 +1,7 @@
 import { type ReactNode } from "react"
 import { type Job } from "@/entities/job"
 import Modal from "@/shared/ui/Modal"
-import StatusBadge from "@/shared/ui/StatusBadge"
+import StatusBadge from "@/entities/job/ui/StatusBadge"
 
 const formatDate = (iso?: string): string => {
   if (!iso) return ""
