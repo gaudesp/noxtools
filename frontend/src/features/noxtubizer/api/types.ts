@@ -1,17 +1,40 @@
 import { type Job } from "@/entities/job"
 
-export type NoxtubizerMode = "audio" | "video" | "both"
+export interface CreateRequest {
+  url: string
+  mode: Mode
+  audio_quality?: AudioQuality
+  audio_format?: AudioFormat
+  video_quality?: VideoQuality
+  video_format?: VideoFormat
+}
 
-export type NoxtubizerAudioQuality =
+export interface CreateResponse {
+  job_id: string
+}
+
+export interface JobResult {
+  mode: Mode
+  source_title?: string
+  safe_title?: string
+  url?: string
+  audio?: AudioInfo
+  video?: VideoInfo
+  both?: BothInfo
+}
+
+export type Mode = "audio" | "video" | "both"
+
+export type AudioQuality =
   | "high"
   | "320kbps"
   | "256kbps"
   | "128kbps"
   | "64kbps"
 
-export type NoxtubizerAudioFormat = "mp3" | "m4a" | "ogg" | "wav"
+export type AudioFormat = "mp3" | "m4a" | "ogg" | "wav"
 
-export type NoxtubizerVideoQuality =
+export type VideoQuality =
   | "best"
   | "4320p"
   | "2160p"
@@ -22,16 +45,16 @@ export type NoxtubizerVideoQuality =
   | "360p"
   | "240p"
 
-export type NoxtubizerVideoFormat = "mp4" | "mkv"
+export type VideoFormat = "mp4" | "mkv"
 
-export interface NoxtubizerAudioInfo {
+export interface AudioInfo {
   filename: string
   format: string
   quality: string
   real_bitrate?: number
 }
 
-export interface NoxtubizerVideoInfo {
+export interface VideoInfo {
   filename: string
   format: string
   quality: string
@@ -39,7 +62,7 @@ export interface NoxtubizerVideoInfo {
   real_height?: number
 }
 
-export interface NoxtubizerBothInfo {
+export interface BothInfo {
   filename: string
   format: string
   audio_format: string
@@ -49,27 +72,4 @@ export interface NoxtubizerBothInfo {
   real_bitrate?: number
 }
 
-export interface NoxtubizerJobResult {
-  mode: NoxtubizerMode
-  source_title?: string
-  safe_title?: string
-  url?: string
-  audio?: NoxtubizerAudioInfo
-  video?: NoxtubizerVideoInfo
-  both?: NoxtubizerBothInfo
-}
-
-export type NoxtubizerJob = Job<NoxtubizerCreateRequest, NoxtubizerJobResult>
-
-export interface NoxtubizerCreateRequest {
-  url: string
-  mode: NoxtubizerMode
-  audio_quality?: NoxtubizerAudioQuality
-  audio_format?: NoxtubizerAudioFormat
-  video_quality?: NoxtubizerVideoQuality
-  video_format?: NoxtubizerVideoFormat
-}
-
-export interface NoxtubizerCreateResponse {
-  job_id: string
-}
+export type NoxtubizerJob = Job<CreateRequest, JobResult>

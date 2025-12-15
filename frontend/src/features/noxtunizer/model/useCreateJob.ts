@@ -1,13 +1,13 @@
 import { useState } from "react"
-import { createNoxtunizerJob, type NoxtunizerCreateRequest } from "../api"
+import { createJob, type CreateRequest } from "../api"
 import type { SubmitResult } from "@/shared/lib"
 
-export const defaultNoxtunizerFormState: NoxtunizerCreateRequest = {
+export const defaultForm: CreateRequest = {
   files: [],
 }
 
-export function useCreateNoxtunizerJob() {
-  const [form, setForm] = useState<NoxtunizerCreateRequest>(defaultNoxtunizerFormState)
+export function useCreateJob() {
+  const [form, setForm] = useState<CreateRequest>(defaultForm)
   const [isSubmitting, setSubmitting] = useState(false)
 
   async function submit(): Promise<SubmitResult> {
@@ -18,8 +18,8 @@ export function useCreateNoxtunizerJob() {
         return { status: "invalid", message: "Please upload at least one audio file." }
       }
 
-      await createNoxtunizerJob(form)
-      setForm(defaultNoxtunizerFormState)
+      await createJob(form)
+      setForm(defaultForm)
       return { status: "success" }
     } catch (err) {
       return { status: "error", error: err }
@@ -28,12 +28,12 @@ export function useCreateNoxtunizerJob() {
     }
   }
 
-  function updateForm(payload: Partial<NoxtunizerCreateRequest>) {
+  function updateForm(payload: Partial<CreateRequest>) {
     setForm((prev) => ({ ...prev, ...payload }))
   }
 
   function resetForm() {
-    setForm(defaultNoxtunizerFormState)
+    setForm(defaultForm)
   }
 
   return {

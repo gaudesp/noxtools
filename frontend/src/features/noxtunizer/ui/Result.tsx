@@ -1,6 +1,6 @@
 import { JobStatusGate } from "@/features/job-status"
 import { FileBlock, AudioPlayer } from "@/shared/ui"
-import { getNoxtunizerSourceUrl, type NoxtunizerJob } from "../api"
+import { getSourceUrl, type NoxtunizerJob } from "../api"
 
 function displayValue(value: unknown): string {
   if (value === null || value === undefined) return "—"
@@ -20,7 +20,7 @@ export default function Result({ job }: Props) {
           duration_label: "—",
         }
 
-        const sourceUrl = getNoxtunizerSourceUrl(job.id)
+        const sourceUrl = getSourceUrl(job.id)
 
         const blocks = [
           { label: "BPM", value: displayValue(result.bpm) },

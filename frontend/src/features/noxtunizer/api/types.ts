@@ -1,23 +1,24 @@
 import { type Job } from "@/entities/job"
 
-export interface NoxtunizerUploadItem {
-  job_id: string
-  filename: string
+export interface CreateRequest {
+  files: File[]
 }
 
-export interface NoxtunizerUploadResponse {
-  jobs: NoxtunizerUploadItem[]
+export interface CreateResponse {
+  jobs: UploadItem[]
 }
 
-export interface NoxtunizerJobResult {
+export interface JobResult {
   bpm: number | null
   key: string | null
   duration_seconds: number | null
   duration_label: string
 }
 
-export type NoxtunizerJob = Job<NoxtunizerCreateRequest, NoxtunizerJobResult>
-
-export interface NoxtunizerCreateRequest {
-  files: File[]
+export interface UploadItem {
+  job_id: string
+  filename: string
 }
+
+export type NoxtunizerJob = Job<CreateRequest, JobResult>
+

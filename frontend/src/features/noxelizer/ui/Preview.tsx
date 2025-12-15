@@ -1,14 +1,11 @@
 import { useMemo } from "react"
-import { getNoxelizerSourceUrl, type NoxelizerJob } from "../api"
-import { isJob } from "../model"
+import { getSourceUrl, type NoxelizerJob } from "../api"
 
 type Props = { job: NoxelizerJob }
 
 export default function Preview({ job }: Props) {
-  if (!isJob(job)) return null
-
   const source = useMemo(
-    () => getNoxelizerSourceUrl(job.id),
+    () => getSourceUrl(job.id),
     [job.id],
   )
 

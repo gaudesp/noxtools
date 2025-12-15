@@ -1,6 +1,6 @@
 import { JobStatusGate } from "@/features/job-status"
 import { NoticeMessage, AudioPlayer, FileBlock } from "@/shared/ui"
-import { getNoxsongizerDownloadUrl, type NoxsongizerJob } from "../api"
+import { getDownloadUrl, type NoxsongizerJob } from "../api"
 
 type StemType = "vocals" | "other" | "drums" | "bass"
 
@@ -51,7 +51,7 @@ export default function Result({ job }: Props) {
         return (
           <div className="grid gap-4 md:grid-cols-2">
             {orderedStems.map(({ label, filename }) => {
-              const url = getNoxsongizerDownloadUrl(job.id, filename)
+              const url = getDownloadUrl(job.id, filename)
 
               return (
                 <FileBlock title={label} href={url}>

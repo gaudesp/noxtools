@@ -4,7 +4,7 @@ import { JobDetailsModal } from "@/features/job-preview"
 import { Form, Result, useJobs } from "@/features/noxelizer"
 import { JobHistory } from "@/widgets/job-history"
 
-export default function NoxelizerPage() {
+export default function Page() {
   const { setHeader, setFooter } = useLayout()
   const store = useJobs()
 

@@ -1,6 +1,6 @@
 import { JobStatusGate } from "@/features/job-status"
 import { FileBlock, NoticeMessage, VideoPlayer } from "@/shared/ui"
-import { getNoxelizerDownloadUrl, type NoxelizerJob } from "../api"
+import { getDownloadUrl, type NoxelizerJob } from "../api"
 
 type Props = { job: NoxelizerJob }
 
@@ -24,7 +24,7 @@ export default function Result({ job }: Props) {
           )
         }
 
-        const url = getNoxelizerDownloadUrl(job.id, filename)
+        const url = getDownloadUrl(job.id, filename)
 
         return (
           <FileBlock title="Video" href={url}>

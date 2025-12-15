@@ -1,10 +1,6 @@
-import {
-  type NoxtubizerAudioFormat,
-  type NoxtubizerAudioQuality,
-  type NoxtubizerCreateRequest,
-} from "../../api"
+import { type AudioFormat, type AudioQuality, type CreateRequest } from "../../api"
 
-const audioQualityOptions: Array<{ value: NoxtubizerAudioQuality; label: string }> = [
+const audioQualityOptions: Array<{ value: AudioQuality; label: string }> = [
   { value: "high", label: "Best available" },
   { value: "320kbps", label: "320 kbps" },
   { value: "256kbps", label: "256 kbps" },
@@ -12,7 +8,7 @@ const audioQualityOptions: Array<{ value: NoxtubizerAudioQuality; label: string 
   { value: "64kbps", label: "64 kbps" },
 ]
 
-const audioFormatOptions: Array<{ value: NoxtubizerAudioFormat; label: string }> = [
+const audioFormatOptions: Array<{ value: AudioFormat; label: string }> = [
   { value: "mp3", label: "MP3" },
   { value: "m4a", label: "M4A" },
   { value: "ogg", label: "OGG" },
@@ -20,9 +16,9 @@ const audioFormatOptions: Array<{ value: NoxtubizerAudioFormat; label: string }>
 ]
 
 type Props = {
-  audioFormat: NoxtubizerAudioFormat
-  audioQuality: NoxtubizerAudioQuality
-  onChange: (payload: Partial<NoxtubizerCreateRequest>) => void
+  audioFormat: AudioFormat
+  audioQuality: AudioQuality
+  onChange: (payload: Partial<CreateRequest>) => void
 }
 
 export default function AudioField({
@@ -39,7 +35,7 @@ export default function AudioField({
         <select
           value={audioQuality}
           onChange={(e) =>
-            onChange({ audio_quality: e.target.value as NoxtubizerAudioQuality })
+            onChange({ audio_quality: e.target.value as AudioQuality })
           }
           disabled={isWav}
           className={`w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm ${
@@ -59,7 +55,7 @@ export default function AudioField({
         <select
           value={audioFormat}
           onChange={(e) => {
-            const next = e.target.value as NoxtubizerAudioFormat
+            const next = e.target.value as AudioFormat
             onChange({
               audio_format: next,
               audio_quality: next === "wav" ? "high" : audioQuality,

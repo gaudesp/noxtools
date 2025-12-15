@@ -1,6 +1,6 @@
 import { JobStatusGate } from "@/features/job-status"
 import { NoticeMessage, FileBlock, AudioPlayer, VideoPlayer } from "@/shared/ui"
-import { getNoxtubizerDownloadUrl, type NoxtubizerJob } from "../api"
+import { getDownloadUrl, type NoxtubizerJob } from "../api"
 
 type Props = { job: NoxtubizerJob }
 
@@ -26,7 +26,7 @@ export default function Result({ job }: Props) {
             {result.mode === "both" && result.both?.filename && (
               (() => {
                 const filename = result.both.filename
-                const url = getNoxtubizerDownloadUrl(job.id, filename)
+                const url = getDownloadUrl(job.id, filename)
 
                 return (
                   <FileBlock title="Audio + Video" href={url}>
@@ -39,7 +39,7 @@ export default function Result({ job }: Props) {
             {result.mode === "video" && result.video?.filename && (
               (() => {
                 const filename = result.video.filename
-                const url = getNoxtubizerDownloadUrl(job.id, filename)
+                const url = getDownloadUrl(job.id, filename)
 
                 return (
                   <FileBlock title="Video" href={url}>
@@ -52,7 +52,7 @@ export default function Result({ job }: Props) {
             {result.mode === "audio" && result.audio?.filename && (
               (() => {
                 const filename = result.audio.filename
-                const url = getNoxtubizerDownloadUrl(job.id, filename)
+                const url = getDownloadUrl(job.id, filename)
 
                 return (
                   <FileBlock title="Audio" href={url}>

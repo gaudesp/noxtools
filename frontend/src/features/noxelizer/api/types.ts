@@ -1,6 +1,17 @@
 import { type Job } from "@/entities/job"
 
-export interface NoxelizerJobResult {
+export interface CreateRequest {
+  files: File[]
+  fps?: number
+  duration?: number
+  final_hold?: number
+}
+
+export interface CreateResponse {
+  job_id: string
+}
+
+export interface JobResult {
   video?: string
   frames_written?: number
   fps?: number
@@ -9,15 +20,4 @@ export interface NoxelizerJobResult {
   codec?: string
 }
 
-export type NoxelizerJob = Job<NoxelizerCreateRequest, NoxelizerJobResult>
-
-export interface NoxelizerCreateRequest {
-  files: File[]
-  fps?: number
-  duration?: number
-  final_hold?: number
-}
-
-export interface NoxelizerCreateResponse {
-  job_id: string
-}
+export type NoxelizerJob = Job<CreateRequest, JobResult>

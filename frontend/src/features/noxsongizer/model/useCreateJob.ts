@@ -1,13 +1,13 @@
 import { useState } from "react"
-import { createNoxsongizerJob, type NoxsongizerCreateRequest } from "../api"
+import { createJob, type CreateRequest } from "../api"
 import type { SubmitResult } from "@/shared/lib"
 
-export const defaultNoxsongizerFormState: NoxsongizerCreateRequest = {
+export const defaultForm: CreateRequest = {
   files: [],
 }
 
 export function useCreateJob() {
-  const [form, setForm] = useState<NoxsongizerCreateRequest>(defaultNoxsongizerFormState)
+  const [form, setForm] = useState<CreateRequest>(defaultForm)
   const [isSubmitting, setSubmitting] = useState(false)
 
   async function submit(): Promise<SubmitResult> {
@@ -18,8 +18,8 @@ export function useCreateJob() {
         return { status: "invalid", message: "Please upload at least one audio file." }
       }
 
-      await createNoxsongizerJob(form)
-      setForm(defaultNoxsongizerFormState)
+      await createJob(form)
+      setForm(defaultForm)
       return { status: "success" }
     } catch (err) {
       return { status: "error", error: err }
@@ -28,12 +28,12 @@ export function useCreateJob() {
     }
   }
 
-  function updateForm(payload: Partial<NoxsongizerCreateRequest>) {
+  function updateForm(payload: Partial<CreateRequest>) {
     setForm((prev) => ({ ...prev, ...payload }))
   }
 
   function resetForm() {
-    setForm(defaultNoxsongizerFormState)
+    setForm(defaultForm)
   }
 
   return {

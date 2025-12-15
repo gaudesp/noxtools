@@ -1,20 +1,20 @@
 import { type Job } from "@/entities/job"
 
-export interface NoxsongizerJobResult {
+export interface CreateRequest {
+  files: File[]
+}
+
+export interface CreateResponse {
+  jobs: UploadItem[]
+}
+
+export interface JobResult {
   stems?: string[]
 }
 
-export type NoxsongizerJob = Job<NoxsongizerCreateRequest, NoxsongizerJobResult>
-
-export interface NoxsongizerUploadItem {
+export interface UploadItem {
   job_id: string
   filename: string
 }
 
-export interface NoxsongizerCreateRequest {
-  files: File[]
-}
-
-export interface NoxsongizerCreateResponse {
-  jobs: NoxsongizerUploadItem[]
-}
+export type NoxsongizerJob = Job<CreateRequest, JobResult>

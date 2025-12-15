@@ -1,10 +1,10 @@
 import {
-  type NoxtubizerVideoFormat,
-  type NoxtubizerVideoQuality,
-  type NoxtubizerCreateRequest,
+  type VideoFormat,
+  type VideoQuality,
+  type CreateRequest,
 } from "../../api"
 
-const videoQualityOptions: Array<{ value: NoxtubizerVideoQuality; label: string }> = [
+const videoQualityOptions: Array<{ value: VideoQuality; label: string }> = [
   { value: "best", label: "Best available" },
   { value: "4320p", label: "4320p (8K)" },
   { value: "2160p", label: "2160p (4K)" },
@@ -16,15 +16,15 @@ const videoQualityOptions: Array<{ value: NoxtubizerVideoQuality; label: string 
   { value: "240p", label: "240p" },
 ]
 
-const videoFormatOptions: Array<{ value: NoxtubizerVideoFormat; label: string }> = [
+const videoFormatOptions: Array<{ value: VideoFormat; label: string }> = [
   { value: "mp4", label: "MP4" },
   { value: "mkv", label: "MKV" },
 ]
 
 type Props = {
-  videoFormat: NoxtubizerVideoFormat
-  videoQuality: NoxtubizerVideoQuality
-  onChange: (payload: Partial<NoxtubizerCreateRequest>) => void
+  videoFormat: VideoFormat
+  videoQuality: VideoQuality
+  onChange: (payload: Partial<CreateRequest>) => void
 }
 
 export default function VideoField({
@@ -39,7 +39,7 @@ export default function VideoField({
         <select
           value={videoQuality}
           onChange={(e) =>
-            onChange({ video_quality: e.target.value as NoxtubizerVideoQuality })
+            onChange({ video_quality: e.target.value as VideoQuality })
           }
           className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm focus:border-violet-500"
         >
@@ -56,7 +56,7 @@ export default function VideoField({
         <select
           value={videoFormat}
           onChange={(e) =>
-            onChange({ video_format: e.target.value as NoxtubizerVideoFormat })
+            onChange({ video_format: e.target.value as VideoFormat })
           }
           className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm focus:border-violet-500"
         >

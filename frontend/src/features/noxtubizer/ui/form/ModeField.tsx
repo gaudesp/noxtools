@@ -1,7 +1,7 @@
-import { type NoxtubizerMode } from "../../api"
+import { type Mode } from "../../api"
 
 interface Option {
-  value: NoxtubizerMode
+  value: Mode
   label: string
   description: string
 }
@@ -13,8 +13,8 @@ const options: Option[] = [
 ]
 
 type Props = {
-  value: NoxtubizerMode
-  onChange: (mode: NoxtubizerMode) => void
+  value: Mode
+  onChange: (mode: Mode) => void
 }
 
 export default function ModeField({ value, onChange }: Props) {

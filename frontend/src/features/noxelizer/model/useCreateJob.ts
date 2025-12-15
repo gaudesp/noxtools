@@ -1,13 +1,13 @@
 import { useState } from "react"
-import { createNoxelizerJob, type NoxelizerCreateRequest } from "../api"
+import { createJob, type CreateRequest } from "../api"
 import type { SubmitResult } from "@/shared/lib"
 
-export const defaultNoxelizerFormState: NoxelizerCreateRequest = {
+export const defaultForm: CreateRequest = {
   files: [],
 }
 
 export function useCreateJob() {
-  const [form, setForm] = useState<NoxelizerCreateRequest>(defaultNoxelizerFormState)
+  const [form, setForm] = useState<CreateRequest>(defaultForm)
   const [isSubmitting, setSubmitting] = useState(false)
 
   async function submit(): Promise<SubmitResult> {
@@ -18,8 +18,8 @@ export function useCreateJob() {
         return { status: "invalid", message: "Please upload at least one image." }
       }
       
-      await createNoxelizerJob(form)
-      setForm(defaultNoxelizerFormState)
+      await createJob(form)
+      setForm(defaultForm)
       return { status: "success" }
     } catch (err) {
       return { status: "error", error: err }
@@ -28,12 +28,12 @@ export function useCreateJob() {
     }
   }
 
-  function updateForm(payload: Partial<NoxelizerCreateRequest>) {
+  function updateForm(payload: Partial<CreateRequest>) {
     setForm((prev) => ({ ...prev, ...payload }))
   }
 
   function resetForm() {
-    setForm(defaultNoxelizerFormState)
+    setForm(defaultForm)
   }
 
   return { submit, updateForm, resetForm, isSubmitting }

@@ -1,10 +1,10 @@
-import { type PaginatedJobs, type ListJobsParams, listJobs } from "@/entities/job"
+import { type PaginatedJobs, type ListJobsParams, listJobs as listEntityJobs } from "@/entities/job"
 import { API_BASE_URL, handleResponse } from "@/shared/api"
-import type { NoxtunizerCreateRequest, NoxtunizerUploadResponse } from "./types"
+import type { CreateRequest, CreateResponse } from "./types"
 
-export async function createNoxtunizerJob(
-  payload: NoxtunizerCreateRequest,
-): Promise<NoxtunizerUploadResponse> {
+export async function createJob(
+  payload: CreateRequest,
+): Promise<CreateResponse> {
   const form = new FormData()
   payload.files.forEach((file) => form.append("files", file))
 
@@ -13,15 +13,15 @@ export async function createNoxtunizerJob(
     body: form,
   })
 
-  return handleResponse<NoxtunizerUploadResponse>(res)
+  return handleResponse<CreateResponse>(res)
 }
 
-export async function listNoxtunizerJobs(
+export async function listJobs(
   params: Omit<ListJobsParams, "tool"> = {},
 ): Promise<PaginatedJobs> {
-  return listJobs({ ...params, tool: "noxtunizer" })
+  return listEntityJobs({ ...params, tool: "noxtunizer" })
 }
 
-export function getNoxtunizerSourceUrl(jobId: string): string {
+export function getSourceUrl(jobId: string): string {
   return `${API_BASE_URL}/noxtunizer/source/${jobId}`
 }

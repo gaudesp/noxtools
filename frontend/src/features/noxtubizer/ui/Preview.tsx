@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import type { NoxtubizerJob, NoxtubizerMode } from "../api/types"
+import type { NoxtubizerJob, Mode } from "../api/types"
 
 type Props = { job: NoxtubizerJob }
 
@@ -7,7 +7,7 @@ export default function Preview({ job }: Props) {
   const mode = job.result?.mode ?? job.params?.mode
   if (!mode) return null
 
-  const palette: Record<NoxtubizerMode, {
+  const palette: Record<Mode, {
     wrapper: string
     label: string
     icon: ReactNode

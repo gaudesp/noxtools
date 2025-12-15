@@ -1,10 +1,10 @@
 import { API_BASE_URL, handleResponse } from "@/shared/api"
-import { type PaginatedJobs, type ListJobsParams, listJobs } from "@/entities/job"
-import type { NoxelizerCreateRequest, NoxelizerCreateResponse } from "./types"
+import { type PaginatedJobs, type ListJobsParams, listJobs as listEntityJobs } from "@/entities/job"
+import type { CreateRequest, CreateResponse } from "./types"
 
-export async function createNoxelizerJob(
-  payload: NoxelizerCreateRequest,
-): Promise<NoxelizerCreateResponse> {
+export async function createJob(
+  payload: CreateRequest,
+): Promise<CreateResponse> {
   const form = new FormData()
 
   payload.files.forEach((file) => form.append("files", file))
@@ -18,19 +18,19 @@ export async function createNoxelizerJob(
     body: form,
   })
 
-  return handleResponse<NoxelizerCreateResponse>(res)
+  return handleResponse<CreateResponse>(res)
 }
 
-export async function listNoxelizerJobs(
+export async function listToolJobs(
   params: Omit<ListJobsParams, "tool"> = {},
 ): Promise<PaginatedJobs> {
-  return listJobs({ ...params, tool: "noxelizer" })
+  return listEntityJobs({ ...params, tool: "noxelizer" })
 }
 
-export function getNoxelizerDownloadUrl(jobId: string, filename: string): string {
+export function getDownloadUrl(jobId: string, filename: string): string {
   return `${API_BASE_URL}/noxelizer/download/${jobId}/${encodeURIComponent(filename)}`
 }
 
-export function getNoxelizerSourceUrl(jobId: string): string {
+export function getSourceUrl(jobId: string): string {
   return `${API_BASE_URL}/noxelizer/source/${jobId}`
 }

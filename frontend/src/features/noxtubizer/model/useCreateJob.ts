@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { createNoxtubizerJob, type NoxtubizerCreateRequest } from "../api"
+import { createJob, type CreateRequest } from "../api"
 import type { SubmitResult } from "@/shared/lib"
 
-export const defaultNoxtubizerFormState: NoxtubizerCreateRequest = {
+export const defaultForm: CreateRequest = {
   url: "",
   mode: "audio",
   audio_quality: "high",
@@ -11,8 +11,8 @@ export const defaultNoxtubizerFormState: NoxtubizerCreateRequest = {
   video_format: "mp4",
 }
 
-export function useCreateNoxtubizerJob() {
-  const [form, setForm] = useState<NoxtubizerCreateRequest>(defaultNoxtubizerFormState)
+export function useCreateJob() {
+  const [form, setForm] = useState<CreateRequest>(defaultForm)
   const [isSubmitting, setSubmitting] = useState(false)
 
   async function submit(): Promise<SubmitResult> {
@@ -24,8 +24,8 @@ export function useCreateNoxtubizerJob() {
         return { status: "invalid", message: "Please paste a valid YouTube URL." }
       }
 
-      await createNoxtubizerJob({ ...form, url: trimmed })
-      setForm(defaultNoxtubizerFormState)
+      await createJob({ ...form, url: trimmed })
+      setForm(defaultForm)
       return { status: "success" }
     } catch (err) {
       return { status: "error", error: err }
@@ -34,12 +34,12 @@ export function useCreateNoxtubizerJob() {
     }
   }
 
-  function updateForm(payload: Partial<NoxtubizerCreateRequest>) {
+  function updateForm(payload: Partial<CreateRequest>) {
     setForm((prev) => ({ ...prev, ...payload }))
   }
 
   function resetForm() {
-    setForm(defaultNoxtubizerFormState)
+    setForm(defaultForm)
   }
 
   return {
