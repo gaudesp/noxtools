@@ -50,7 +50,7 @@ export interface NoxtubizerBothInfo {
 }
 
 export interface NoxtubizerJobResult {
-  mode?: NoxtubizerMode
+  mode: NoxtubizerMode
   source_title?: string
   safe_title?: string
   url?: string
@@ -59,7 +59,7 @@ export interface NoxtubizerJobResult {
   both?: NoxtubizerBothInfo
 }
 
-export type NoxtubizerJob = Job<unknown, NoxtubizerJobResult>
+export type NoxtubizerJob = Job<NoxtubizerCreateRequest, NoxtubizerJobResult>
 
 export interface NoxtubizerCreateRequest {
   url: string

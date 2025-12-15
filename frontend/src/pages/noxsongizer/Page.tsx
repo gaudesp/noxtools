@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
 import { JobDetailsModal } from "@/features/job-preview"
-import { Form, Result, useNoxsongizerJobs } from "@/features/noxsongizer"
+import { Form, Result, useJobs } from "@/features/noxsongizer"
 import { JobHistory } from "@/widgets/job-history"
 
 export default function NoxsongizerPage() {
   const { setHeader, setFooter } = useLayout()
-  const store = useNoxsongizerJobs()
+  const store = useJobs()
 
   const [open, setOpen] = useState(false)
 

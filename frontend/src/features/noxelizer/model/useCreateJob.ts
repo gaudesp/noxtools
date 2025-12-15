@@ -6,7 +6,7 @@ export const defaultNoxelizerFormState: NoxelizerCreateRequest = {
   files: [],
 }
 
-export function useCreateNoxelizerJob() {
+export function useCreateJob() {
   const [form, setForm] = useState<NoxelizerCreateRequest>(defaultNoxelizerFormState)
   const [isSubmitting, setSubmitting] = useState(false)
 

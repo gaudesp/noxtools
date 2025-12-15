@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
 import { JobDetailsModal } from "@/features/job-preview"
-import { Form, Result, useNoxtubizerJobs } from "@/features/noxtubizer"
+import { Form, Result, useJobs } from "@/features/noxtubizer"
 import { JobHistory } from "@/widgets/job-history"
 
 export default function NoxtubizerPage() {
   const { setHeader, setFooter } = useLayout()
-  const store = useNoxtubizerJobs()
+  const store = useJobs()
 
   const [open, setOpen] = useState(false)
 

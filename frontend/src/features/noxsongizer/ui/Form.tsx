@@ -1,12 +1,11 @@
 import { useState } from "react"
 import { Section, NoticeMessage, SubmitButton, ResetButton } from "@/shared/ui"
-import { useCreateNoxsongizerJob } from "../model"
+import { useCreateJob } from "../model"
 import { AudioUploadField } from "./form"
 import { useFormSubmit } from "@/shared/lib"
 
 export default function Form() {
-  const { submit, updateForm, resetForm, isSubmitting } =
-    useCreateNoxsongizerJob()
+  const { submit, updateForm, resetForm, isSubmitting } = useCreateJob()
   const { handleResult } = useFormSubmit()
 
   const [files, setFiles] = useState<File[]>([])

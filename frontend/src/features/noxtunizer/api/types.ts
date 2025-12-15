@@ -16,7 +16,7 @@ export interface NoxtunizerJobResult {
   duration_label: string
 }
 
-export type NoxtunizerJob = Job<unknown, NoxtunizerJobResult>
+export type NoxtunizerJob = Job<NoxtunizerCreateRequest, NoxtunizerJobResult>
 
 export interface NoxtunizerCreateRequest {
   files: File[]

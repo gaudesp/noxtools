@@ -1,9 +1,9 @@
 import { useJobStream, type Job } from "@/entities/job"
 import { usePagination, useSelection } from "@/shared/lib"
 
-export function useNoxsongizerJobs() {
+export function useJobs() {
   const { jobs, loading, error, deleteJob, getJobById } = useJobStream({
-    tool: "noxsongizer",
+    tool: "noxelizer",
   })
 
   const { pagedItems, total, page, pageSize, setPage } = usePagination<Job>({

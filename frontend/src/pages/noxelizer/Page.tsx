@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
 import { JobDetailsModal } from "@/features/job-preview"
-import { Form, Result, useNoxelizerJobs } from "@/features/noxelizer"
+import { Form, Result, useJobs } from "@/features/noxelizer"
 import { JobHistory } from "@/widgets/job-history"
 
 export default function NoxelizerPage() {
   const { setHeader, setFooter } = useLayout()
-  const store = useNoxelizerJobs()
+  const store = useJobs()
 
   const [open, setOpen] = useState(false)
 

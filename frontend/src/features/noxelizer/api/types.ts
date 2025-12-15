@@ -9,7 +9,7 @@ export interface NoxelizerJobResult {
   codec?: string
 }
 
-export type NoxelizerJob = Job<unknown, NoxelizerJobResult>
+export type NoxelizerJob = Job<NoxelizerCreateRequest, NoxelizerJobResult>
 
 export interface NoxelizerCreateRequest {
   files: File[]

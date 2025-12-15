@@ -6,7 +6,7 @@ export const defaultNoxsongizerFormState: NoxsongizerCreateRequest = {
   files: [],
 }
 
-export function useCreateNoxsongizerJob() {
+export function useCreateJob() {
   const [form, setForm] = useState<NoxsongizerCreateRequest>(defaultNoxsongizerFormState)
   const [isSubmitting, setSubmitting] = useState(false)
 

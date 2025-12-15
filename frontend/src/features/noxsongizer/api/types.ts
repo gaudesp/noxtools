@@ -4,7 +4,7 @@ export interface NoxsongizerJobResult {
   stems?: string[]
 }
 
-export type NoxsongizerJob = Job<unknown, NoxsongizerJobResult>
+export type NoxsongizerJob = Job<NoxsongizerCreateRequest, NoxsongizerJobResult>
 
 export interface NoxsongizerUploadItem {
   job_id: string

@@ -1,7 +1,7 @@
 import { useJobStream, type Job } from "@/entities/job"
 import { usePagination, useSelection } from "@/shared/lib"
 
-export function useNoxtunizerJobs() {
+export function useJobs() {
   const { jobs, loading, error, deleteJob, getJobById } = useJobStream({
     tool: "noxtunizer",
   })

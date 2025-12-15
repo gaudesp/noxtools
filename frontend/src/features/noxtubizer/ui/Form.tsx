@@ -1,12 +1,11 @@
 import { useState } from "react"
 import { Section, NoticeMessage, SubmitButton, ResetButton } from "@/shared/ui"
 import { useFormSubmit } from "@/shared/lib"
-import { useCreateNoxtubizerJob } from "../model"
+import { useCreateJob } from "../model"
 import { UrlField, ModeField, AudioField, VideoField } from "./form"
 
 export default function Form() {
-  const { form, updateForm, submit, resetForm, isSubmitting } =
-    useCreateNoxtubizerJob()
+  const { form, updateForm, submit, resetForm, isSubmitting } = useCreateJob()
   const { handleResult } = useFormSubmit()
 
   const [formError, setFormError] = useState<string | null>(null)
