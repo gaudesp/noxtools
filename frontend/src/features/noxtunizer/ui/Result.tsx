@@ -5,7 +5,7 @@ import {
   getNoxtunizerSourceUrl,
   type NoxtunizerJobResult,
 } from "../api"
-import AssetBlock from "@/shared/ui/AssetBlock"
+import { FileBlock } from "@/shared/ui"
 
 function displayValue(value: unknown): string {
   if (value === null || value === undefined) return "—"
@@ -37,9 +37,9 @@ export default function Result({ job }: Props) {
 
         return (
           <div className="space-y-4">
-            <AssetBlock title="Video">
+            <FileBlock title="Video">
               <AudioPlayer url={sourceUrl} />
-            </AssetBlock>
+            </FileBlock>
 
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 text-center">
               {blocks.map((block) => (

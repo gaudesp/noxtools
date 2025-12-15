@@ -1,5 +1,5 @@
 import { useState } from "react"
-import Section from "@/shared/ui/Section"
+import { Section } from "@/shared/ui"
 import NoticeMessage from "@/shared/ui/NoticeMessage"
 import { SubmitButton, ResetButton } from "@/shared/ui"
 import { useCreateNoxsongizerJob } from "../model"

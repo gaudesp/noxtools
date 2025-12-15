@@ -5,7 +5,7 @@ import {
   getNoxtubizerDownloadUrl,
   type NoxtubizerJobResult,
 } from "../api"
-import AssetBlock from "@/shared/ui/AssetBlock"
+import { FileBlock } from "@/shared/ui"
 import AudioPlayer from "@/shared/ui/AudioPlayer"
 import VideoPlayer from "@/shared/ui/VideoPlayer"
 
@@ -38,9 +38,9 @@ export default function Result({ job }: Props) {
                 const url = getNoxtubizerDownloadUrl(job.id, filename)
 
                 return (
-                  <AssetBlock title="Audio + Video" downloadUrl={url}>
+                  <FileBlock title="Audio + Video" href={url}>
                     <VideoPlayer url={url} filename={filename} hasAudio={true} height={400} />
-                  </AssetBlock>
+                  </FileBlock>
                 )
               })()
             )}
@@ -51,9 +51,9 @@ export default function Result({ job }: Props) {
                 const url = getNoxtubizerDownloadUrl(job.id, filename)
 
                 return (
-                  <AssetBlock title="Video" downloadUrl={url}>
+                  <FileBlock title="Video" href={url}>
                     <VideoPlayer url={url} filename={filename} hasAudio={false} height={400} />
-                  </AssetBlock>
+                  </FileBlock>
                 )
               })()
             )}
@@ -64,9 +64,9 @@ export default function Result({ job }: Props) {
                 const url = getNoxtubizerDownloadUrl(job.id, filename)
 
                 return (
-                  <AssetBlock title="Audio" downloadUrl={url}>
+                  <FileBlock title="Audio" href={url}>
                     <AudioPlayer url={url} />
-                  </AssetBlock>
+                  </FileBlock>
                 )
               })()
             )}
