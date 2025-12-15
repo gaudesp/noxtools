@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react"
 import { type Job, StatusBadge  } from "@/entities/job"
 import { API_BASE_URL } from "../api"
 import NoticeMessage from "./NoticeMessage"
-import DeleteConfirmModal from "./DeleteConfirmModal"
+import ConfirmModal from "./ConfirmModal"
 import Pagination from "./Pagination"
 
 const getNoxsongizerSourceUrl = (jobId: string) =>
@@ -299,15 +299,16 @@ export default function Table({
                       Delete
                     </button>
                   </div>
-                  <DeleteConfirmModal
+                  <ConfirmModal
                     open={confirmDeleteId === task.id}
-                    onCancel={(e?: MouseEvent) => {
-                      if (e) e.stopPropagation()
+                    title="Delete job?"
+                    message="This will remove the job and its related files."
+                    confirmLabel="Delete"
+                    onCancel={() => {
                       setConfirmDeleteId(null)
                     }}
-                    onConfirm={(e?: MouseEvent) => {
-                      if (e) e.stopPropagation()
-                      onDeleteTask && onDeleteTask(task)
+                    onConfirm={() => {
+                      onDeleteTask?.(task)
                       setConfirmDeleteId(null)
                     }}
                   />
