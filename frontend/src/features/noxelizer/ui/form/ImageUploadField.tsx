@@ -1,4 +1,4 @@
-import Uploader from "@/shared/ui/Uploader"
+import { Uploader } from "@/shared/ui"
 
 type Props = {
   files: File[]
