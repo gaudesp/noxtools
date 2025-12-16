@@ -179,7 +179,9 @@ class NoxelizerExecutor:
 
   def _render_with_ffmpeg(self, image: Frame, output_path: Path, animated_frames: int, hold_frames: int) -> int:
     """
-    Render frames to disk and encode with ffmpeg using H.264 (yuv420p) for broad browser compatibility.
+    Render frames to disk and encode with ffmpeg using H.264 (yuv420p).
+
+    Ensures even dimensions for codec compatibility.
     """
     frames_dir = Path(tempfile.mkdtemp(prefix="frames_", dir=output_path.parent))
     frames_written = 0
@@ -203,6 +205,8 @@ class NoxelizerExecutor:
         str(self.fps),
         "-i",
         str(frames_dir / "frame_%05d.png"),
+        "-vf",
+        "scale=trunc(iw/2)*2:trunc(ih/2)*2",
         "-c:v",
         "libx264",
         "-preset",
@@ -233,7 +237,6 @@ class NoxelizerExecutor:
     writer = cv2.VideoWriter(str(output_path), fourcc, self.fps, (image.shape[1], image.shape[0]))
     if not writer.isOpened():
       raise RuntimeError("Failed to open video writer (codec/extension mismatch?)")
-    self.codec = self.codec
 
     frames_written = 0
     try:
