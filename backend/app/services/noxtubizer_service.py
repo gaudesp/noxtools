@@ -83,7 +83,7 @@ class NoxtubizerService:
     """
     try:
       output_dir, outputs, result = self.executor.execute(job)
-    except Exception as exc:  # noqa: BLE001
+    except BaseException as exc:  # noqa: BLE001
       logger.exception(
         "Noxtubizer job failed",
         extra={"job_id": job.id, "mode": job.params.get("mode"), "url": job.params.get("url")},

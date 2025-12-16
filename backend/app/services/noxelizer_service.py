@@ -57,7 +57,7 @@ class NoxelizerService:
     """
     try:
       output_dir, outputs, meta = self.executor.execute(job)
-    except Exception as exc:  # noqa: BLE001
+    except BaseException as exc:  # noqa: BLE001
       self.job_service.mark_error(job.id, str(exc))
       return
 
