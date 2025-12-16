@@ -11,16 +11,23 @@ export default function JobActionsCell({
 }) {
   const [open, setOpen] = useState(false)
 
+  const isRunning = job.status === "running"
+
   return (
     <>
       <button
         type="button"
-        disabled={job.status === "running"}
+        aria-disabled={isRunning}
         onClick={(e) => {
           e.stopPropagation()
+          if (isRunning) return
           setOpen(true)
         }}
-        className="text-xs px-2 py-1 rounded border border-rose-700 text-rose-200"
+        className={`text-xs px-2 py-1 rounded border transition ${
+          isRunning
+            ? "border-rose-700 text-rose-300 opacity-50 cursor-not-allowed"
+            : "border-rose-700 text-rose-200 hover:bg-rose-900/30"
+        }`}
       >
         Delete
       </button>
