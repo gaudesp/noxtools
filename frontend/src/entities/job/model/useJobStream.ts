@@ -1,98 +1,55 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useSyncExternalStore } from "react"
+import { deleteJob } from "../api"
+import {
+  getJobsSnapshot,
+  normalizeJobQuery,
+  removeJobFromCache,
+  subscribeToJobs,
+} from "./jobStore"
 import { type Job, type JobTool } from "./types"
-import { listJobs, deleteJob, createJobStream } from "../api"
 
 type UseJobStreamParams = {
   tool?: JobTool
+  limit?: number
+  offset?: number
 }
 
-export default function useJobStream({ tool }: UseJobStreamParams = {}) {
-  const [jobsMap, setJobsMap] = useState<Record<string, Job>>({})
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export default function useJobStream(params: UseJobStreamParams = {}) {
+  const query = useMemo(
+    () => normalizeJobQuery(params),
+    [params.limit, params.offset, params.tool],
+  )
 
-  const initializedRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    if (initializedRef.current === tool) return
-    initializedRef.current = tool ?? "__all__"
-
-    let cancelled = false
-
-    async function load() {
-      setLoading(true)
-      try {
-        const res = await listJobs({ tool, limit: 200, offset: 0 })
-        if (cancelled) return
-
-        const map: Record<string, Job> = {}
-        res.items.forEach((job) => {
-          map[job.id] = job
-        })
-        setJobsMap(map)
-        setError(null)
-      } catch {
-        if (!cancelled) setError("Backend unreachable.")
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    load()
-
-    return () => {
-      cancelled = true
-      initializedRef.current = null
-    }
-  }, [tool])
-
-  useEffect(() => {
-    const stream = createJobStream({
-      onCreated(job) {
-        if (tool && job.tool !== tool) return
-        setJobsMap((prev) => ({ ...prev, [job.id]: job }))
-      },
-      onUpdated(job) {
-        if (tool && job.tool !== tool) return
-        setJobsMap((prev) => ({ ...prev, [job.id]: job }))
-      },
-      onDeleted(jobId) {
-        setJobsMap((prev) => {
-          const next = { ...prev }
-          delete next[jobId]
-          return next
-        })
-      },
-      onError() {
-        setError("Backend unreachable.")
-      },
-    })
-
-    return () => {
-      stream.close()
-    }
-  }, [tool])
+  const snapshot = useSyncExternalStore(
+    useCallback((listener) => subscribeToJobs(query, listener), [query]),
+    useCallback(() => getJobsSnapshot(query), [query]),
+    useCallback(() => getJobsSnapshot(query), [query]),
+  )
 
   const jobs = useMemo(() => {
-    return Object.values(jobsMap).sort((a, b) =>
+    return Object.values(snapshot.jobsMap).sort((a, b) =>
       b.created_at.localeCompare(a.created_at),
     )
-  }, [jobsMap])
+  }, [snapshot.jobsMap])
 
-  function getJobById(id: string | null): Job | null {
-    if (!id) return null
-    return jobsMap[id] ?? null
-  }
+  const getJobById = useCallback(
+    (id: string | null): Job | null => {
+      if (!id) return null
+      return snapshot.jobsMap[id] ?? null
+    },
+    [snapshot.jobsMap],
+  )
 
-  async function removeJob(jobId: string) {
+  const removeJob = useCallback(async (jobId: string) => {
     await deleteJob(jobId)
-  }
+    removeJobFromCache(jobId)
+  }, [])
 
   return {
     jobs,
     total: jobs.length,
-    loading,
-    error,
+    loading: snapshot.loading,
+    error: snapshot.error,
     deleteJob: removeJob,
     getJobById,
   }
