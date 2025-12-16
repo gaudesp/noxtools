@@ -83,6 +83,16 @@ export default function Sidebar() {
           Noxtunizer
         </NavLink>
       </nav>
+
+      <nav className="mt-auto space-y-1 pt-4.5 mb-1 border-t border-slate-800">
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) => itemClass(isActive)}
+        >
+          {icons.alljobs}
+          Dashboard
+        </NavLink>
+      </nav>
     </aside>
   )
 }
