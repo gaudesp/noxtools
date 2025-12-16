@@ -13,8 +13,8 @@ export default function Page() {
   useEffect(() => {
     setHeader({
       title: "Noxtunizer",
-      description: "Convert audio into instrumental tracks.",
-      eyebrow: "Audio to instrumental",
+      description: "Extract BPM, key and durability from any track.",
+      eyebrow: "Musical analysis",
     })
 
     setFooter(store.pagedItems, store.loading)

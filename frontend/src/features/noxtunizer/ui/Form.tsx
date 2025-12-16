@@ -31,7 +31,7 @@ export default function Form() {
   return (
     <Section
       title="Upload your audio"
-      description="Audio files are analyzed to extract BPM, key and duration."
+      description="Audio files are analyzed to extract musical attributes. Upload one or multiple files."
     >
       <div className="space-y-5">
         {formError && (

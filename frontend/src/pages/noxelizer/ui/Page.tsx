@@ -13,7 +13,7 @@ export default function Page() {
   useEffect(() => {
     setHeader({
       title: "Noxelizer",
-      description: "Transform images into smooth depixelization reveal videos.",
+      description: "Generate smooth depixelization videos that reveal an image over time.",
       eyebrow: "Image to video",
     })
 

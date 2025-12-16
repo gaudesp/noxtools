@@ -42,8 +42,8 @@ export default function Page() {
   useEffect(() => {
     setHeader({
       title: "Dashboard",
-      description: "Unified view of all NoxTools jobs.",
-      eyebrow: "Overview",
+      description: "Overall view of jobs across all tools.",
+      eyebrow: "Global overview",
     })
   }, [setHeader])
 
@@ -69,8 +69,8 @@ export default function Page() {
         onSelectJob={() => {
           setOpen(true)
         }}
-        title="All jobs"
-        description="Combined history across every NoxTools workflow."
+        title="Task history"
+        description="Latest tasks. Click a row to open the preview."
       />
 
       <JobDetailsModal

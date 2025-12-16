@@ -32,7 +32,7 @@ export default function Form() {
   return (
     <Section
       title="Upload your images"
-      description="Images are processed to generate a progressive reveal over time."
+      description="Images are animated into a depixelization video. Upload one or multiple files."
     >
       <div className="space-y-5">
         {formError && (
