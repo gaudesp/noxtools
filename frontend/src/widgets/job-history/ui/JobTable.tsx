@@ -4,9 +4,12 @@ import type { JobTableContext, JobTableProps } from "../model/types"
 
 import {
   JobStatusCell,
+  JobToolCell,
   JobPreviewCell,
   JobFileCell,
   JobCreatedCell,
+  JobStartedCell,
+  JobCompletedCell,
   JobActionsCell,
 } from "./cells"
 
@@ -15,12 +18,27 @@ export default function JobTable({
   loading,
   onSelectJob,
   onDeleteJob,
+  toolColor,
+  showToolColumn = false,
 }: JobTableProps) {
   const columns: TableColumn<Job, JobTableContext>[] = [
-    { key: "status", header: "Status", width: 120, render: (job) => <JobStatusCell job={job} /> },
+    ...(showToolColumn && toolColor
+      ? [{
+          key: "tool",
+          header: "Tool",
+          width: 140,
+          render: (job, ctx) =>
+            ctx.toolColor ? (
+              <JobToolCell job={job} toolColor={ctx.toolColor} />
+            ) : null,
+        } as TableColumn<Job, JobTableContext>]
+      : []),
+    { key: "status", header: "Status", width: 100, render: (job) => <JobStatusCell job={job} /> },
     { key: "preview", header: "Preview", width: 80, render: (job) => <JobPreviewCell job={job} /> },
     { key: "file", header: "File", width: "auto", render: (job) => <JobFileCell job={job} /> },
-    { key: "created", header: "Created", width: 180, render: (job) => <JobCreatedCell job={job} /> },
+    { key: "created", header: "Created", width: 160, render: (job) => <JobCreatedCell job={job} /> },
+    { key: "started", header: "Started", width: 160, render: (job) => <JobStartedCell job={job} /> },
+    { key: "completed", header: "Completed", width: 160, render: (job) => <JobCompletedCell job={job} /> },
     {
       key: "actions",
       header: "",
@@ -37,7 +55,7 @@ export default function JobTable({
       keyExtractor={(job) => job.id}
       loading={loading}
       onRowClick={onSelectJob}
-      context={{ onDeleteJob }}
+      context={{ onDeleteJob, toolColor }}
       emptyState="No jobs to display."
     />
   )

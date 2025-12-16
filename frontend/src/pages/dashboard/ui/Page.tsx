@@ -4,10 +4,30 @@ import { JobDetailsModal, useJobStream, type Job } from "@/entities/job"
 import { usePagination, useSelection } from "@/shared/lib"
 import { JobHistory } from "@/widgets/job-history"
 
-import { Result as NoxsongizerResult, type NoxsongizerJob } from "@/features/noxsongizer"
-import { Result as NoxelizerResult, type NoxelizerJob } from "@/features/noxelizer"
-import { Result as NoxtubizerResult, type NoxtubizerJob } from "@/features/noxtubizer"
-import { Result as NoxtunizerResult, type NoxtunizerJob } from "@/features/noxtunizer"
+import {
+  Preview as NoxsongizerPreview,
+  Result as NoxsongizerResult,
+  toolColor as NoxsongizerToolColor,
+  type NoxsongizerJob,
+} from "@/features/noxsongizer"
+import {
+  Preview as NoxelizerPreview,
+  Result as NoxelizerResult,
+  toolColor as NoxelizerToolColor,
+  type NoxelizerJob,
+} from "@/features/noxelizer"
+import {
+  Preview as NoxtubizerPreview,
+  Result as NoxtubizerResult,
+  toolColor as NoxtubizerToolColor,
+  type NoxtubizerJob,
+} from "@/features/noxtubizer"
+import {
+  Preview as NoxtunizerPreview,
+  Result as NoxtunizerResult,
+  toolColor as NoxtunizerToolColor,
+  type NoxtunizerJob,
+} from "@/features/noxtunizer"
 
 function renderJobResult(job: Job) {
   switch (job.tool) {
@@ -19,6 +39,21 @@ function renderJobResult(job: Job) {
       return <NoxtubizerResult job={job as NoxtubizerJob} />
     case "noxtunizer":
       return <NoxtunizerResult job={job as NoxtunizerJob} />
+    default:
+      return null
+  }
+}
+
+function renderJobPreview(job: Job) {
+  switch (job.tool) {
+    case "noxsongizer":
+      return <NoxsongizerPreview job={job as NoxsongizerJob} />
+    case "noxelizer":
+      return <NoxelizerPreview job={job as NoxelizerJob} />
+    case "noxtubizer":
+      return <NoxtubizerPreview job={job as NoxtubizerJob} />
+    case "noxtunizer":
+      return <NoxtunizerPreview job={job as NoxtunizerJob} />
     default:
       return null
   }
@@ -71,6 +106,7 @@ export default function Page() {
         }}
         title="Task history"
         description="Latest tasks. Click a row to open the preview."
+        showToolColumn
       />
 
       <JobDetailsModal
@@ -81,6 +117,24 @@ export default function Page() {
           clear()
         }}
         renderResult={(job) => renderJobResult(job as Job)}
+        renderPreview={(job) => renderJobPreview(job as Job)}
+        toolColor={(tool) => {
+          switch (tool) {
+            case "noxsongizer":
+              return NoxsongizerToolColor
+            case "noxelizer":
+              return NoxelizerToolColor
+            case "noxtubizer":
+              return NoxtubizerToolColor
+            case "noxtunizer":
+              return NoxtunizerToolColor
+          }
+        }}
+        onDeleteJob={async (job) => {
+          await deleteJob(job.id)
+          setOpen(false)
+          clear()
+        }}
       />
     </div>
   )

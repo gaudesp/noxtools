@@ -1,13 +1,18 @@
 import type { Job } from "@/entities/job"
-import { Section, NoticeMessage, Pagination, useNotifications } from "@/shared/ui"
+import { Section, NoticeMessage, Pagination } from "@/shared/ui"
 import JobTable from "./JobTable"
 import type { JobHistoryStore } from "../model/types"
+import { toolColor as noxsongizerColor } from "@/features/noxsongizer/config"
+import { toolColor as noxelizerColor } from "@/features/noxelizer/config"
+import { toolColor as noxtubizerColor } from "@/features/noxtubizer/config"
+import { toolColor as noxtunizerColor } from "@/features/noxtunizer/config"
 
 type Props = {
   store: JobHistoryStore
   onSelectJob: (job: Job) => void
   title?: string
   description?: string
+  showToolColumn?: boolean
 }
 
 export default function JobHistory({
@@ -15,8 +20,22 @@ export default function JobHistory({
   onSelectJob,
   title = "Task history",
   description = "Latest tasks. Click a row to open the preview.",
+  showToolColumn = false,
 }: Props) {
-  const { notify } = useNotifications()
+  const toolColor = (tool: Job["tool"]) => {
+    switch (tool) {
+      case "noxsongizer":
+        return noxsongizerColor
+      case "noxelizer":
+        return noxelizerColor
+      case "noxtubizer":
+        return noxtubizerColor
+      case "noxtunizer":
+        return noxtunizerColor
+      default:
+        return undefined
+    }
+  }
 
   const {
     pagedItems,
@@ -67,14 +86,9 @@ export default function JobHistory({
           select(job.id)
           onSelectJob(job)
         }}
-        onDeleteJob={async (job) => {
-          try {
-            await deleteJob(job.id)
-            notify("Job deleted.", "success")
-          } catch {
-            notify("Failed to delete job.", "danger")
-          }
-        }}
+        toolColor={toolColor}
+        showToolColumn={showToolColumn}
+        onDeleteJob={(job) => deleteJob(job.id)}
       />
     </Section>
   )

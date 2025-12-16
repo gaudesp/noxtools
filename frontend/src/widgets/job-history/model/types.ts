@@ -14,6 +14,7 @@ export type JobHistoryStore = {
 
 export type JobTableContext = {
   onDeleteJob?: (job: Job) => void
+  toolColor?: (tool: Job["tool"]) => string | undefined
 }
 
 export type JobTableProps = {
@@ -27,4 +28,6 @@ export type JobTableProps = {
   onPageChange: (page: number) => void
   onSelectJob?: (job: Job) => void
   onDeleteJob?: (job: Job) => void
+  toolColor?: (tool: Job["tool"]) => string | undefined
+  showToolColumn?: boolean
 }

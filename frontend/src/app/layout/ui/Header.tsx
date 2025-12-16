@@ -4,14 +4,15 @@ type Props = {
   title: string
   description: string
   eyebrow?: string
+  eyebrowClassName?: string
   actions?: ReactNode
 }
 
-export default function Header({ title, description, eyebrow, actions }: Props) {
+export default function Header({ title, description, eyebrow, eyebrowClassName, actions }: Props) {
   return (
     <div className="flex flex-col gap-3">
       {eyebrow ? (
-        <div className="inline-flex items-center rounded-full bg-violet-500/10 px-3 py-1 text-[11px] uppercase tracking-wide text-violet-200 ring-1 ring-inset ring-violet-400/30 w-max">
+        <div className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] uppercase tracking-wide ring-1 ring-inset w-max ${eyebrowClassName ?? "border-white/20 bg-white/10 text-white ring-white/20"}`}>
           {eyebrow}
         </div>
       ) : null}

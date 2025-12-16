@@ -38,7 +38,7 @@ export default function Modal({
       />
 
       <div
-        className="relative z-10 flex w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl"
+        className="relative z-10 flex w-full max-w-3xl max-h-[900px] flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {header && (
@@ -47,7 +47,7 @@ export default function Modal({
           </header>
         )}
 
-        <div className="flex-1 px-5 py-4">
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4">
           {children}
         </div>
 

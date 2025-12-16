@@ -1,5 +1,5 @@
 import { type ReactNode } from "react"
-import type { Job } from "../model/types"
+import type { Job, JobTool } from "../model/types"
 import JobDetailsPanel from "./JobDetailsPanel"
 
 type Props = {
@@ -8,6 +8,9 @@ type Props = {
   onClose: () => void
   renderResult: (job: any) => ReactNode
   footer?: ReactNode
+  renderPreview?: (job: any) => ReactNode
+  onDeleteJob?: (job: Job) => void | Promise<void>
+  toolColor?: (tool: JobTool) => string | undefined
 }
 
 export default function JobDetailsModal({
@@ -16,11 +19,22 @@ export default function JobDetailsModal({
   onClose,
   renderResult,
   footer,
+  renderPreview,
+  onDeleteJob,
+  toolColor,
 }: Props) {
   if (!job) return null
 
   return (
-    <JobDetailsPanel job={job} open={open} onClose={onClose} footer={footer}>
+    <JobDetailsPanel
+      job={job}
+      open={open}
+      onClose={onClose}
+      footer={footer}
+      renderPreview={renderPreview}
+      onDeleteJob={onDeleteJob}
+      toolColor={toolColor}
+    >
       {renderResult(job)}
     </JobDetailsPanel>
   )

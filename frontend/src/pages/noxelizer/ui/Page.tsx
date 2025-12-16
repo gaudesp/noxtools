@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useLayout } from "@/app/layout"
 import { JobDetailsModal } from "@/entities/job"
-import { Form, Result, useJobs } from "@/features/noxelizer"
+import { Form, Preview, Result, useJobs, toolColor, toolEyebrow, toolDescription, toolName } from "@/features/noxelizer"
 import { JobHistory } from "@/widgets/job-history"
 
 export default function Page() {
@@ -12,9 +12,10 @@ export default function Page() {
 
   useEffect(() => {
     setHeader({
-      title: "Noxelizer",
-      description: "Generate smooth depixelization videos that reveal an image over time.",
-      eyebrow: "Image to video",
+      title: toolName,
+      description: toolDescription,
+      eyebrow: toolEyebrow,
+      eyebrowClassName: toolColor,
     })
 
     setFooter(store.jobs, store.loading)
@@ -35,8 +36,18 @@ export default function Page() {
       <JobDetailsModal
         job={store.selectedItem}
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          setOpen(false)
+          store.clear()
+        }}
         renderResult={(job) => <Result job={job} />}
+        renderPreview={(job) => <Preview job={job} />}
+        toolColor={() => toolColor}
+        onDeleteJob={async (job) => {
+          await store.deleteJob(job.id)
+          setOpen(false)
+          store.clear()
+        }}
       />
     </div>
   )
