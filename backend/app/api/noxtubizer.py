@@ -6,7 +6,6 @@ from mimetypes import guess_type
 from pathlib import Path
 from typing import Literal
 
-import logging
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, HttpUrl
@@ -18,7 +17,6 @@ from app.services.job_service import JobService
 from app.services.noxtubizer_service import NoxtubizerJobRequest, NoxtubizerService
 
 router = APIRouter(prefix="/api/noxtubizer", tags=["noxtubizer"])
-logger = logging.getLogger(__name__)
 
 
 def get_job_service(session: Session = Depends(get_session)) -> JobService:
@@ -65,18 +63,6 @@ def create_job(
   try:
     job = service.create_job(NoxtubizerJobRequest(**payload.model_dump()))
   except ValueError as exc:
-    logger.warning(
-      "Noxtubizer request rejected: %s",
-      exc,
-      extra={
-        "url": str(payload.url),
-        "mode": payload.mode,
-        "audio_quality": payload.audio_quality,
-        "audio_format": payload.audio_format,
-        "video_quality": payload.video_quality,
-        "video_format": payload.video_format,
-      },
-    )
     raise HTTPException(status_code=400, detail=str(exc))
   return CreateJobResponse(job_id=job.id)
 
