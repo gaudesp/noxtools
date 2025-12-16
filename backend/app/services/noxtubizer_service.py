@@ -11,6 +11,7 @@ from app.executors.noxtubizer_executor import NoxtubizerExecutor
 from app.models.job import Job, JobTool, JobUpdate
 from app.services.job_cleanup import JobCleanupService
 from app.services.job_service import JobService
+from app.services.youtube_url_sanitizer import YouTubeUrlSanitizer
 
 
 class NoxtubizerJobRequest(BaseModel):
@@ -33,6 +34,7 @@ class NoxtubizerService:
     self.job_service = job_service
     self.BASE_OUTPUT.mkdir(parents=True, exist_ok=True)
     self.executor = NoxtubizerExecutor(base_output=self.BASE_OUTPUT)
+    self.url_sanitizer = YouTubeUrlSanitizer()
 
   def create_job(self, payload: NoxtubizerJobRequest) -> Job:
     """
@@ -92,7 +94,8 @@ class NoxtubizerService:
     next_params = dict(params)
     mode = str(next_params.get("mode") or "").lower()
     next_params["mode"] = mode
-    next_params["url"] = str(next_params.get("url") or "").strip()
+    raw_url = str(next_params.get("url") or "").strip()
+    next_params["url"] = self.url_sanitizer.canonical_single_video_url(raw_url)
 
     if mode in ("audio", "both"):
       next_params["audio_quality"] = next_params.get("audio_quality") or "high"
