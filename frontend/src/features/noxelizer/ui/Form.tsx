@@ -30,7 +30,10 @@ export default function Form() {
   }
 
   return (
-    <Section title="Upload your images">
+    <Section
+      title="Upload your images"
+      description="Images are processed to generate a progressive reveal over time."
+    >
       <div className="space-y-5">
         {formError && (
           <NoticeMessage

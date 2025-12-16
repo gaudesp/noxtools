@@ -35,8 +35,15 @@ export default function VideoField({
   return (
     <div className="grid md:grid-cols-2 gap-4">
       <div>
-        <label className="block text-sm font-semibold mb-2">Video quality</label>
+        <label
+          htmlFor="video-quality"
+          className="block text-sm font-semibold mb-2"
+        >
+          Video quality
+        </label>
         <select
+          id="video-quality"
+          name="video_quality"
           value={videoQuality}
           onChange={(e) =>
             onChange({ video_quality: e.target.value as VideoQuality })
@@ -52,8 +59,15 @@ export default function VideoField({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold mb-2">Video format</label>
+        <label
+          htmlFor="video-format"
+          className="block text-sm font-semibold mb-2"
+        >
+          Video format
+        </label>
         <select
+          id="video-format"
+          name="video_format"
           value={videoFormat}
           onChange={(e) =>
             onChange({ video_format: e.target.value as VideoFormat })

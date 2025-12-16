@@ -31,8 +31,15 @@ export default function AudioField({
   return (
     <div className="grid md:grid-cols-2 gap-4">
       <div>
-        <label className="block text-sm font-semibold mb-2">Audio quality</label>
+        <label
+          htmlFor="audio-quality"
+          className="block text-sm font-semibold mb-2"
+        >
+          Audio quality
+        </label>
         <select
+          id="audio-quality"
+          name="audio_quality"
           value={audioQuality}
           onChange={(e) =>
             onChange({ audio_quality: e.target.value as AudioQuality })
@@ -51,8 +58,15 @@ export default function AudioField({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold mb-2">Audio format</label>
+        <label
+          htmlFor="audio-format"
+          className="block text-sm font-semibold mb-2"
+        >
+          Audio format
+        </label>
         <select
+          id="audio-format"
+          name="audio_format"
           value={audioFormat}
           onChange={(e) => {
             const next = e.target.value as AudioFormat

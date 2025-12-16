@@ -6,8 +6,15 @@ type Props = {
 export default function UrlField({ value, onChange }: Props) {
   return (
     <div>
-      <label className="block text-sm font-semibold mb-2">YouTube URL</label>
+      <label
+        htmlFor="youtube-url"
+        className="block text-sm font-semibold mb-2"
+      >
+        YouTube URL
+      </label>
       <input
+        id="youtube-url"
+        name="url"
         type="url"
         value={value}
         onChange={(e) => onChange(e.target.value)}
