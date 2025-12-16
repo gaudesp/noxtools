@@ -60,7 +60,7 @@ class NoxsongizerService:
       output_dir, stems = self.executor.execute(job)
     except BaseException as exc:  # noqa: BLE001
       self.job_service.mark_error(job.id, str(exc))
-      JobCleanupService().cleanup_job_files(job, output_base=self.executor.base_output)
+      JobCleanupService().cleanup_job_files(job, output_base=self.executor.base_output, keep_input=True)
       return
 
     self.job_service.mark_completed(
