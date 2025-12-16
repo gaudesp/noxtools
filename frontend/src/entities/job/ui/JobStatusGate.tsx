@@ -1,7 +1,15 @@
 import { type ReactNode } from "react"
 import { NoticeMessage } from "@/shared/ui"
-import type { Job } from "@/entities/job"
-import type { JobStatusMessages } from "../model/types"
+import type { Job } from "../model/types"
+
+type JobStatusMessages = {
+  pending: string
+  running: string
+  error: {
+    title: string
+    message: string
+  }
+}
 
 type Props<R> = {
   job: Job<unknown, R>

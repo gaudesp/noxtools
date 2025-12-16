@@ -1,4 +1,4 @@
-import type { Job, JobStatus, JobTool } from "../model"
+import type { Job, JobStatus, JobTool } from "../model/types"
 
 export interface PaginatedJobs<T = Job> {
   items: T[]

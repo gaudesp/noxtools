@@ -3,4 +3,4 @@ export type { PaginatedJobs, ListJobsParams } from "./api"
 
 export { useJobStream } from "./model"
 export { listJobs, getJob, deleteJob, createJobStream } from "./api"
-export { StatusBadge } from "./ui"
+export { StatusBadge, JobStatusGate, JobDetailsModal, JobDetailsPanel } from "./ui"

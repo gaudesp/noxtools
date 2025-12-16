@@ -1,6 +1,6 @@
 import type { Job } from "@/entities/job"
 import { Section, NoticeMessage, Pagination, useNotifications } from "@/shared/ui"
-import { JobTable } from "@/widgets/job-table"
+import JobTable from "./JobTable"
 import type { JobHistoryStore } from "../model/types"
 
 type Props = {

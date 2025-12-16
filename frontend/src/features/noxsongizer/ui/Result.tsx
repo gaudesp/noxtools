@@ -1,5 +1,5 @@
-import { JobStatusGate } from "@/features/job-status"
 import { NoticeMessage, AudioPlayer, FileBlock } from "@/shared/ui"
+import { JobStatusGate } from "@/entities/job"
 import { getDownloadUrl, type NoxsongizerJob } from "../api"
 
 type StemType = "vocals" | "other" | "drums" | "bass"

@@ -1,2 +1,2 @@
-export * from "./types"
-export * from "./client"
+export { createJob, listJobs, getSourceUrl } from "./client"
+export type { CreateRequest, CreateResponse, JobResult, NoxtunizerJob } from "./types"

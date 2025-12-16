@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { type Job, type JobTool } from "."
+import { type Job, type JobTool } from "./types"
 import { listJobs, deleteJob, createJobStream } from "../api"
 
 type UseJobStreamParams = {

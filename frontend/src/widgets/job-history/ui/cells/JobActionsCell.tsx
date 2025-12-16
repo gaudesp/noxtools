@@ -1,6 +1,6 @@
 import { useState } from "react"
 import type { Job } from "@/entities/job"
-import { ConfirmModal } from "@/shared/ui/modal"
+import { ConfirmModal } from "@/shared/ui"
 
 export default function JobActionsCell({
   job,

@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
-import type { Job } from "@/entities/job"
 
 export type LayoutHeader = {
   title: string
@@ -8,15 +7,21 @@ export type LayoutHeader = {
   actions?: ReactNode
 }
 
+export type LayoutJobStatus = "pending" | "running" | "done" | "error"
+
+export type LayoutJobSummary = {
+  status: LayoutJobStatus
+}
+
 export type LayoutFooter = {
-  jobs: Job[]
+  jobs: LayoutJobSummary[]
   loading?: boolean
 }
 
 type LayoutStore = LayoutHeader &
   LayoutFooter & {
     setHeader: (data: LayoutHeader) => void
-    setFooter: (jobs: Job[], loading?: boolean) => void
+    setFooter: (jobs: LayoutJobSummary[], loading?: boolean) => void
   }
 
 const Store = createContext<LayoutStore | null>(null)
@@ -36,7 +41,7 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
     setHeader(data)
   }, [])
 
-  const setFooterData = useCallback((jobs: Job[], loading?: boolean) => {
+  const setFooterData = useCallback((jobs: LayoutJobSummary[], loading?: boolean) => {
     setFooter({ jobs, loading })
   }, [])
 

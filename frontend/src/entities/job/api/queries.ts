@@ -1,5 +1,5 @@
 import { API_BASE_URL, handleResponse } from "@/shared/api"
-import type { Job } from "../model"
+import type { Job } from "../model/types"
 import type { ListJobsParams, PaginatedJobs } from "./types"
 
 export async function listJobs(

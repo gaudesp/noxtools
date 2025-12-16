@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import { useLayout } from "@/app/layout"
-import { JobDetailsModal } from "@/features/job-preview"
-import { Form, Result, useJobs } from "@/features/noxtubizer"
+import { useLayout } from "@/shared/providers/layout"
+import { JobDetailsModal } from "@/entities/job"
+import { Form, Result, useJobs } from "@/features/noxtunizer"
 import { JobHistory } from "@/widgets/job-history"
 
 export default function Page() {
@@ -12,9 +12,9 @@ export default function Page() {
 
   useEffect(() => {
     setHeader({
-      title: "Noxtubizer",
-      description: "Download audio, video, or both from YouTube with exact quality and format control.",
-      eyebrow: "YouTube downloader",
+      title: "Noxtunizer",
+      description: "Convert audio into instrumental tracks.",
+      eyebrow: "Audio to instrumental",
     })
 
     setFooter(store.pagedItems, store.loading)

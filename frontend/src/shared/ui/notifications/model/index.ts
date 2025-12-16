@@ -1,3 +1,3 @@
-export * from "./state"
-export * from "./store"
-export * from "./types"
+export { useNotificationState } from "./state"
+export { NotificationsProvider, useNotifications } from "./store"
+export type { Notification, NotificationType } from "./types"

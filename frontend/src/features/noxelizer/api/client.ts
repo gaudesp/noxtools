@@ -21,7 +21,7 @@ export async function createJob(
   return handleResponse<CreateResponse>(res)
 }
 
-export async function listToolJobs(
+export async function listJobs(
   params: Omit<ListJobsParams, "tool"> = {},
 ): Promise<PaginatedJobs> {
   return listEntityJobs({ ...params, tool: "noxelizer" })

@@ -1,6 +1,6 @@
 import { type ReactNode } from "react"
-import { JobDetailsPanel } from "@/features/job-preview"
-import { useJobStream } from "@/entities/job"
+import useJobStream from "../model/useJobStream"
+import JobDetailsPanel from "./JobDetailsPanel"
 
 type Props = {
   jobId: string | null

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import { useLayout } from "@/app/layout"
-import { JobDetailsModal } from "@/features/job-preview"
-import { Form, Result, useJobs } from "@/features/noxelizer"
+import { useLayout } from "@/shared/providers/layout"
+import { JobDetailsModal } from "@/entities/job"
+import { Form, Result, useJobs } from "@/features/noxsongizer"
 import { JobHistory } from "@/widgets/job-history"
 
 export default function Page() {
@@ -12,9 +12,9 @@ export default function Page() {
 
   useEffect(() => {
     setHeader({
-      title: "Noxelizer",
-      description: "Transform images into smooth depixelization reveal videos.",
-      eyebrow: "Image to video",
+      title: "Noxsongizer",
+      description: "Split a song into separate audio stems (vocals, bass, drums and other).",
+      eyebrow: "Audio separation",
     })
 
     setFooter(store.pagedItems, store.loading)

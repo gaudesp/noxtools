@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "@/shared/api"
-import type { Job } from "../model"
+import type { Job } from "../model/types"
 
 export type JobStreamEvent =
   | { type: "job_created"; job: Job }

@@ -1,5 +1,5 @@
 import NotificationItem from "./NotificationItem"
-import { type Notification } from "../model"
+import { type Notification } from "../model/types"
 
 export default function NotificationList({
   items,

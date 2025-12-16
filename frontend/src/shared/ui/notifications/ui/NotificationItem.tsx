@@ -1,4 +1,4 @@
-import { type Notification } from "../model"
+import { type Notification } from "../model/types"
 
 export default function NotificationItem({
   notification,

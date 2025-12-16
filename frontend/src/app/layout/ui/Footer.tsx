@@ -1,12 +1,12 @@
 import { useMemo } from "react"
-import type { Job } from "@/entities/job"
+import type { LayoutJobSummary, LayoutJobStatus } from "@/shared/providers/layout"
 
 type Props = {
-  jobs: Job[]
+  jobs: LayoutJobSummary[]
   loading?: boolean
 }
 
-const TONE: Record<string, string> = {
+const TONE: Record<LayoutJobStatus, string> = {
   pending: "border-amber-400/30 bg-amber-500/10 text-amber-100",
   running: "border-sky-400/30 bg-sky-500/10 text-sky-100",
   done: "border-emerald-400/30 bg-emerald-500/10 text-emerald-100",
@@ -20,7 +20,7 @@ export default function Footer({ jobs, loading }: Props) {
         acc[job.status] = (acc[job.status] || 0) + 1
         return acc
       },
-      { pending: 0, running: 0, done: 0, error: 0 } as Record<string, number>,
+      { pending: 0, running: 0, done: 0, error: 0 } as Record<LayoutJobStatus, number>,
     )
   }, [jobs])
 

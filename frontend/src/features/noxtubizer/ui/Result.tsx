@@ -1,4 +1,4 @@
-import { JobStatusGate } from "@/features/job-status"
+import { JobStatusGate } from "@/entities/job"
 import { NoticeMessage, FileBlock, AudioPlayer, VideoPlayer } from "@/shared/ui"
 import { getDownloadUrl, type NoxtubizerJob } from "../api"
 

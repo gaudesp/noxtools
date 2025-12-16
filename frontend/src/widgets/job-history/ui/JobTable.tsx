@@ -1,6 +1,6 @@
 import type { Job } from "@/entities/job"
-import type { JobTableContext } from "../model/types"
-import { Table } from "@/shared/ui/table"
+import { Table, type TableColumn } from "@/shared/ui"
+import type { JobTableContext, JobTableProps } from "../model/types"
 
 import {
   JobStatusCell,
@@ -10,10 +10,7 @@ import {
   JobActionsCell,
 } from "./cells"
 
-import type { TableColumn } from "@/shared/ui/table"
-import type { JobTableProps } from "../model/types"
-
-export function JobTable({
+export default function JobTable({
   jobs,
   loading,
   onSelectJob,
