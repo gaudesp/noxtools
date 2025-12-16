@@ -11,23 +11,26 @@ from app.models.job import Job
 class JobCleanupService:
   """Handles best-effort cleanup of job-related filesystem artifacts."""
 
-  def cleanup_job_files(self, job: Job, *, output_base: Path | None = None) -> None:
+  def cleanup_job_files(
+    self,
+    job: Job,
+    *,
+    output_base: Path | None = None,
+    keep_input: bool = True,
+  ) -> None:
     """
-    Remove filesystem artifacts associated with a job.
+    Cleanup filesystem artifacts associated with a job.
 
-    This method cleans up:
-    - the per-job input directory (uploads/<job_id>) if input_path is set
-    - the per-job output directory in two cases:
-        - if output_path is set (job completed successfully)
-        - if output_path is not set but output_base is provided
-          (job failed after output directory creation)
+    By default, input files are preserved to allow preview, debugging,
+    and potential job re-runs.
 
     Args:
-      job: Job whose filesystem artifacts should be removed.
-      output_base: Base output directory of the executor (e.g. media/<tool>/outputs),
-                   required to cleanup output directories for failed jobs.
+      job: Job whose filesystem artifacts should be cleaned.
+      output_base: Base output directory of the executor, required to
+        cleanup output directories when output_path has not been persisted.
+      keep_input: Whether to keep the job input files.
     """
-    if job.input_path:
+    if not keep_input and job.input_path:
       self._safe_remove(Path(job.input_path).parent)
 
     if job.output_path:
