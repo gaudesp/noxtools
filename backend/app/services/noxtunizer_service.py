@@ -48,7 +48,7 @@ class NoxtunizerService:
     """
     try:
       output_dir, outputs, result = self.executor.execute(job)
-    except Exception as exc:  # noqa: BLE001
+    except BaseException as exc:  # noqa: BLE001
       self.job_service.mark_error(job.id, str(exc))
       return
 
