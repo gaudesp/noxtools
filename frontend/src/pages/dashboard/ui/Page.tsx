@@ -48,9 +48,9 @@ export default function Page() {
   }, [setHeader])
 
   useEffect(() => {
-    setFooter(pagedItems, loading)
+    setFooter(jobs, loading)
     return () => setFooter([], false)
-  }, [pagedItems, loading, setFooter])
+  }, [jobs, loading, setFooter])
 
   return (
     <div className="flex flex-col gap-8">

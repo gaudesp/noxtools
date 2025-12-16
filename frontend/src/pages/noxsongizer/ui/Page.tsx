@@ -17,9 +17,9 @@ export default function Page() {
       eyebrow: "Audio separation",
     })
 
-    setFooter(store.pagedItems, store.loading)
+    setFooter(store.jobs, store.loading)
     return () => setFooter([], false)
-  }, [store.pagedItems, store.loading, setHeader, setFooter])
+  }, [store.jobs, store.loading, setHeader, setFooter])
 
   return (
     <div className="flex flex-col gap-8">
