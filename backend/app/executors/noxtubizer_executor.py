@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 import json
-import logging
 import shutil
 import subprocess
 from pathlib import Path
 from typing import List, Tuple
 
 from app.models.job import Job
-
-logger = logging.getLogger(__name__)
 
 
 class NoxtubizerExecutor:
@@ -225,7 +222,6 @@ class NoxtubizerExecutor:
       return {}
 
   def _run(self, cmd: list[str]) -> None:
-    logger.info("RUN", extra={"cmd": " ".join(cmd)})
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0:
       raise RuntimeError((proc.stderr or "").strip() or f"{cmd[0]} failed")
@@ -283,8 +279,8 @@ class NoxtubizerExecutor:
           shutil.rmtree(path, ignore_errors=True)
         else:
           path.unlink(missing_ok=True)
-      except Exception as exc:
-        logger.warning("Failed to clean %s: %s", path, exc)
+      except Exception:
+        pass
 
   def _probe_video_file(self, path: Path) -> int | None:
     cmd = [

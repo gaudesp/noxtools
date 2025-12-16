@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from typing import Literal
 
@@ -12,8 +11,6 @@ from app.executors.noxtubizer_executor import NoxtubizerExecutor
 from app.models.job import Job, JobTool, JobUpdate
 from app.services.job_cleanup import JobCleanupService
 from app.services.job_service import JobService
-
-logger = logging.getLogger(__name__)
 
 
 class NoxtubizerJobRequest(BaseModel):
@@ -42,41 +39,13 @@ class NoxtubizerService:
     Persist a new Noxtubizer job using the provided options.
     """
     params = self._normalize_params(payload.model_dump())
-    logger.info(
-      "Noxtubizer create_job requested",
-      extra={
-        "url": params.get("url"),
-        "mode": params.get("mode"),
-        "audio_quality": params.get("audio_quality"),
-        "audio_format": params.get("audio_format"),
-        "video_quality": params.get("video_quality"),
-        "video_format": params.get("video_format"),
-      },
-    )
-    try:
-      self._validate_params(params)
-    except Exception as exc:
-      logger.warning(
-        "Noxtubizer validation failed: %s",
-        exc,
-        extra={
-          "url": payload.url,
-          "mode": payload.mode,
-          "audio_quality": params.get("audio_quality"),
-          "audio_format": params.get("audio_format"),
-          "video_quality": params.get("video_quality"),
-          "video_format": params.get("video_format"),
-          "error": str(exc),
-        },
-      )
-      raise
-    job = self.job_service.create_job(
+    self._validate_params(params)
+
+    return self.job_service.create_job(
       tool=JobTool.NOXTUBIZER,
       input_filename=params["url"],
-      params=params,
-      max_attempts=2,
+      params=params
     )
-    return job
 
   def process_job(self, job: Job) -> None:
     """
