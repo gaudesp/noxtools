@@ -13,8 +13,8 @@ export default function Page() {
   useEffect(() => {
     setHeader({
       title: "Noxtubizer",
-      description: "Extract audio from a YouTube video and convert it to MP3.",
-      eyebrow: "YouTube audio",
+      description: "Download audio, video, or both from YouTube with exact quality and format control.",
+      eyebrow: "YouTube downloader",
     })
 
     setFooter(store.pagedItems, store.loading)

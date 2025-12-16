@@ -26,7 +26,7 @@ export default function Form() {
   return (
     <Section
       title="Configure your download"
-      description="YouTube videos are fetched and converted according to the selected options."
+      description="YouTube videos are fetched and converted according to the selected options. Paste a YouTube URL."
     >
       <div className="space-y-5">
         {formError && (
