@@ -10,6 +10,7 @@ from pydantic import BaseModel, HttpUrl
 
 from app.executors.noxtubizer_executor import NoxtubizerExecutor
 from app.models.job import Job, JobTool, JobUpdate
+from app.services.job_cleanup import JobCleanupService
 from app.services.job_service import JobService
 
 logger = logging.getLogger(__name__)
@@ -84,11 +85,8 @@ class NoxtubizerService:
     try:
       output_dir, outputs, result = self.executor.execute(job)
     except BaseException as exc:  # noqa: BLE001
-      logger.exception(
-        "Noxtubizer job failed",
-        extra={"job_id": job.id, "mode": job.params.get("mode"), "url": job.params.get("url")},
-      )
       self.job_service.mark_error(job.id, str(exc))
+      JobCleanupService().cleanup_job_files(job, output_base=self.executor.base_output)
       return
 
     self.job_service.mark_completed(

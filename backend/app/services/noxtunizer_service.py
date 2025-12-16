@@ -10,6 +10,7 @@ from fastapi import UploadFile
 
 from app.executors.noxtunizer_executor import NoxtunizerExecutor
 from app.models.job import Job, JobTool, JobUpdate
+from app.services.job_cleanup import JobCleanupService
 from app.services.job_service import JobService
 
 
@@ -50,6 +51,7 @@ class NoxtunizerService:
       output_dir, outputs, result = self.executor.execute(job)
     except BaseException as exc:  # noqa: BLE001
       self.job_service.mark_error(job.id, str(exc))
+      JobCleanupService().cleanup_job_files(job, output_base=self.executor.base_output)
       return
 
     self.job_service.mark_completed(
