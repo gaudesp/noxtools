@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import type { JobStatus } from "@/entities/job"
 
 export type LayoutHeader = {
   title: string
@@ -7,7 +8,7 @@ export type LayoutHeader = {
   actions?: ReactNode
 }
 
-export type LayoutJobStatus = "pending" | "running" | "done" | "error"
+export type LayoutJobStatus = JobStatus
 
 export type LayoutJobSummary = {
   status: LayoutJobStatus

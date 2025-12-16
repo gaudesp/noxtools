@@ -1,5 +1,5 @@
 import { useNotifications } from "@/shared/ui"
-import { ApiError } from "@/shared/api/http"
+import { ApiError } from "@/shared/api"
 
 export type SubmitStatus = "success" | "invalid" | "error"
 

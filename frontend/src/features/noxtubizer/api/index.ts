@@ -5,4 +5,8 @@ export type {
   JobResult,
   NoxtubizerJob,
   Mode,
+  AudioQuality,
+  AudioFormat,
+  VideoFormat,
+  VideoQuality,
 } from "./types"

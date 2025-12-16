@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import type { LayoutJobSummary, LayoutJobStatus } from "@/app/layout/model"
+import type { LayoutJobSummary, LayoutJobStatus } from "@/app/layout"
 
 type Props = {
   jobs: LayoutJobSummary[]
