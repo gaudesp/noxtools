@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from mimetypes import guess_type
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Form
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlmodel import Session
@@ -29,17 +29,9 @@ def get_noxelizer_service(job_service: JobService = Depends(get_job_service)) ->
   return NoxelizerService(job_service)
 
 
-class UploadItem(BaseModel):
-  """Single upload job descriptor."""
-
+class CreateJobResponse(BaseModel):
+  """Response envelope for a newly created job."""
   job_id: str
-  filename: str
-
-
-class UploadResponse(BaseModel):
-  """Response containing created jobs for uploaded files."""
-
-  jobs: List[UploadItem]
 
 
 @router.get("/health")
@@ -48,18 +40,25 @@ def health() -> dict:
   return {"status": "ok", "service": "noxelizer"}
 
 
-@router.post("/upload", response_model=UploadResponse)
-async def upload_files(
+@router.post("/jobs", response_model=CreateJobResponse)
+async def create_job(
   files: List[UploadFile] = File(...),
+  fps: Optional[int] = Form(None),
+  duration: Optional[float] = Form(None),
+  final_hold: Optional[float] = Form(None),
   service: NoxelizerService = Depends(get_noxelizer_service),
-) -> UploadResponse:
+) -> CreateJobResponse:
   """
-  Upload one or more image files and enqueue jobs for depixelization videos.
+  Create a Noxelizer job from a regular form submission.
   """
-  jobs = service.create_jobs_from_uploads(files)
-  return UploadResponse(
-    jobs=[UploadItem(job_id=job.id, filename=file.filename) for job, file in jobs],
-  )
+  jobs = service.create_jobs(files)
+
+  if not jobs:
+    raise HTTPException(status_code=400, detail="No valid file provided")
+
+  job, _file = jobs[0]
+
+  return CreateJobResponse(job_id=job.id)
 
 
 @router.get("/source/{job_id}")
@@ -101,8 +100,9 @@ def download_video(
   if not path.exists():
     raise HTTPException(status_code=404, detail="File not found")
 
+  media_type, _ = guess_type(path.name)
   return FileResponse(
     path=str(path),
-    media_type="video/mp4",
+    media_type=media_type or "application/octet-stream",
     filename=filename,
   )
