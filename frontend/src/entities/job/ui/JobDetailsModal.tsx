@@ -1,9 +1,9 @@
 import { type ReactNode } from "react"
-import useJobStream from "../model/useJobStream"
+import type { Job } from "../model/types"
 import JobDetailsPanel from "./JobDetailsPanel"
 
 type Props = {
-  jobId: string | null
+  job: Job | null
   open: boolean
   onClose: () => void
   renderResult: (job: any) => ReactNode
@@ -11,15 +11,12 @@ type Props = {
 }
 
 export default function JobDetailsModal({
-  jobId,
+  job,
   open,
   onClose,
   renderResult,
   footer,
 }: Props) {
-  const { getJobById } = useJobStream()
-  const job = getJobById(jobId)
-
   if (!job) return null
 
   return (

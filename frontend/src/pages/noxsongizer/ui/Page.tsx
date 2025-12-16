@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useLayout } from "@/shared/providers/layout"
+import { useLayout } from "@/app/layout"
 import { JobDetailsModal } from "@/entities/job"
 import { Form, Result, useJobs } from "@/features/noxsongizer"
 import { JobHistory } from "@/widgets/job-history"
@@ -33,7 +33,7 @@ export default function Page() {
       />
 
       <JobDetailsModal
-        jobId={store.selectedId}
+        job={store.selectedItem}
         open={open}
         onClose={() => setOpen(false)}
         renderResult={(job) => <Result job={job} />}
