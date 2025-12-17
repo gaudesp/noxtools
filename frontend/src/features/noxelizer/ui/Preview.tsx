@@ -5,7 +5,7 @@ type Props = { job: NoxelizerJob }
 
 export default function Preview({ job }: Props) {
   const source = useMemo(
-    () => getSourceUrl(job.id),
+    () => getSourceUrl(job.id, { variant: "thumb" }),
     [job.id],
   )
 
