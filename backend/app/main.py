@@ -6,9 +6,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import jobs, noxsongizer, noxelizer, noxtubizer, noxtunizer
-from app.db import engine, init_db
+from app.db import engine, init_db, get_session
 from app.events.job_events import job_event_bus
 from app.models.job import JobTool
+from app.services.job_cleanup import JobCleanupService
 from app.services.noxsongizer_service import NoxsongizerService
 from app.services.noxelizer_service import NoxelizerService
 from app.services.noxtunizer_service import NoxtunizerService
@@ -56,8 +57,18 @@ job_worker.register_executor(
 
 @app.on_event("startup")
 def on_startup() -> None:
-  """Initialize database, event loop binding, and start worker."""
+  """
+  Initialize database, recover orphan jobs, bind event loop, and start worker.
+  """
   init_db()
+
+  session_gen = get_session()
+  session = next(session_gen)
+  try:
+    JobCleanupService().recover_running_jobs(session=session)
+  finally:
+    session.close()
+
   job_event_bus.set_loop(asyncio.get_event_loop())
   job_worker.start()
 
