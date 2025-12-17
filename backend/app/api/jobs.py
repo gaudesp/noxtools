@@ -97,6 +97,54 @@ def delete_job(
     raise HTTPException(status_code=409, detail="Cannot delete a running job")
 
   cleanup = JobCleanupService()
-  cleanup.cleanup_job_files(job)
+  cleanup.cleanup_job_files(job, keep_input=False)
   job_service.delete_job(job_id)
   return {"status": "deleted", "job_id": job_id}
+
+
+@router.post("/{job_id}/retry", response_model=JobRead)
+def retry_job(
+  job_id: str,
+  job_service: JobService = Depends(get_job_service),
+) -> JobRead:
+  """
+  Retry a previously failed or aborted job.
+  """
+  job = job_service.get_job(job_id)
+  if not job:
+    raise HTTPException(status_code=404, detail="Job not found")
+  if job.status not in (JobStatus.ERROR, JobStatus.ABORTED):
+    raise HTTPException(status_code=409, detail="Only failed or aborted jobs can be retried")
+
+  try:
+    updated = job_service.retry_job(job_id)
+  except ValueError as exc:
+    raise HTTPException(status_code=409, detail=str(exc))
+
+  if not updated:
+    raise HTTPException(status_code=404, detail="Job not found")
+  return updated
+
+
+@router.post("/{job_id}/cancel", response_model=JobRead)
+def cancel_job(
+  job_id: str,
+  job_service: JobService = Depends(get_job_service),
+) -> JobRead:
+  """
+  Cancel an in-flight job, marking it as aborted and clearing outputs.
+  """
+  job = job_service.get_job(job_id)
+  if not job:
+    raise HTTPException(status_code=404, detail="Job not found")
+  if job.status != JobStatus.RUNNING:
+    raise HTTPException(status_code=409, detail="Only running jobs can be cancelled")
+
+  try:
+    updated = job_service.mark_aborted(job_id, message="Job cancelled by user", cleanup_outputs=False)
+  except ValueError as exc:
+    raise HTTPException(status_code=409, detail=str(exc))
+
+  if not updated:
+    raise HTTPException(status_code=404, detail="Job not found")
+  return updated

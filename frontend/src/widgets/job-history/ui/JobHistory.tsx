@@ -46,6 +46,8 @@ export default function JobHistory({
     streamError,
     loading,
     deleteJob,
+    cancelJob,
+    retryJob,
     select,
   } = store
 
@@ -89,6 +91,8 @@ export default function JobHistory({
         toolColor={toolColor}
         showToolColumn={showToolColumn}
         onDeleteJob={(job) => deleteJob(job.id)}
+        onCancelJob={(job) => cancelJob(job.id)}
+        onRetryJob={(job) => retryJob(job.id)}
       />
     </Section>
   )

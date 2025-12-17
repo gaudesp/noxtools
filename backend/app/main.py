@@ -39,19 +39,19 @@ app.include_router(jobs.router)
 job_worker = JobWorker(engine)
 job_worker.register_executor(
   JobTool.NOXSONGIZER,
-  lambda job, svc: NoxsongizerService(svc).process_job(job),
+  lambda job, svc, token: NoxsongizerService(svc).process_job(job, token),
 )
 job_worker.register_executor(
   JobTool.NOXELIZER,
-  lambda job, svc: NoxelizerService(svc).process_job(job),
+  lambda job, svc, token: NoxelizerService(svc).process_job(job, token),
 )
 job_worker.register_executor(
   JobTool.NOXTUBIZER,
-  lambda job, svc: NoxtubizerService(svc).process_job(job),
+  lambda job, svc, token: NoxtubizerService(svc).process_job(job, token),
 )
 job_worker.register_executor(
   JobTool.NOXTUNIZER,
-  lambda job, svc: NoxtunizerService(svc).process_job(job),
+  lambda job, svc, token: NoxtunizerService(svc).process_job(job, token),
 )
 
 

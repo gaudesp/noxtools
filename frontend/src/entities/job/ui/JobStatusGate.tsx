@@ -9,6 +9,10 @@ type JobStatusMessages = {
     title: string
     message: string
   }
+  aborted: {
+    title: string
+    message: string
+  }
 }
 
 type Props<R> = {
@@ -24,6 +28,10 @@ const DEFAULT_MESSAGES: JobStatusMessages = {
     title: "Job failed",
     message: "An error occurred while executing the job.",
   },
+  aborted: {
+    title: "Job aborted",
+    message: "Processing was interrupted before completion.",
+  },
 }
 
 export default function JobStatusGate<R>({
@@ -37,6 +45,10 @@ export default function JobStatusGate<R>({
     error: {
       ...DEFAULT_MESSAGES.error,
       ...messages.error,
+    },
+    aborted: {
+      ...DEFAULT_MESSAGES.aborted,
+      ...messages.aborted,
     },
   }
 
@@ -61,6 +73,17 @@ export default function JobStatusGate<R>({
         message={merged.error.message}
         details={job.error_message}
         tone="danger"
+      />
+    )
+  }
+
+  if (job.status === "aborted") {
+    return (
+      <NoticeMessage
+        title={merged.aborted.title}
+        message={merged.aborted.message}
+        details={job.error_message}
+        tone="warning"
       />
     )
   }

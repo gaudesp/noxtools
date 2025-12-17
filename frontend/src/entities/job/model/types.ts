@@ -3,6 +3,7 @@ export type JobStatus =
   | "running"
   | "done"
   | "error"
+  | "aborted"
 
 export type JobTool =
   | "noxsongizer"

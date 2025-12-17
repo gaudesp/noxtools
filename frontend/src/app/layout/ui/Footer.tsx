@@ -11,6 +11,7 @@ const TONE: Record<LayoutJobStatus, string> = {
   running: "border-sky-400/30 bg-sky-500/10 text-sky-100",
   done: "border-emerald-400/30 bg-emerald-500/10 text-emerald-100",
   error: "border-rose-400/30 bg-rose-500/10 text-rose-100",
+  aborted: "border-zinc-400/30 bg-zinc-500/10 text-zinc-100",
 }
 
 export default function Footer({ jobs, loading }: Props) {
@@ -20,7 +21,7 @@ export default function Footer({ jobs, loading }: Props) {
         acc[job.status] = (acc[job.status] || 0) + 1
         return acc
       },
-      { pending: 0, running: 0, done: 0, error: 0 } as Record<LayoutJobStatus, number>,
+      { pending: 0, running: 0, done: 0, error: 0, aborted: 0 } as Record<LayoutJobStatus, number>,
     )
   }, [jobs])
 
@@ -29,6 +30,7 @@ export default function Footer({ jobs, loading }: Props) {
     { label: "Running", value: counts.running, tone: TONE.running },
     { label: "Done", value: counts.done, tone: TONE.done },
     { label: "Errors", value: counts.error, tone: TONE.error },
+    { label: "Aborted", value: counts.aborted, tone: TONE.aborted },
   ]
 
   return (

@@ -24,6 +24,7 @@ class JobStatus(str, Enum):
   RUNNING = "running"
   DONE = "done"
   ERROR = "error"
+  ABORTED = "aborted"
 
 
 class JobTool(str, Enum):

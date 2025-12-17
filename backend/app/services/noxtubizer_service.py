@@ -9,9 +9,9 @@ from pydantic import BaseModel, HttpUrl
 
 from app.executors.noxtubizer_executor import NoxtubizerExecutor
 from app.models.job import Job, JobTool, JobUpdate
-from app.services.job_cleanup import JobCleanupService
 from app.services.job_service import JobService
 from app.services.youtube_url_sanitizer import YouTubeUrlSanitizer
+from app.workers.job_worker import CancellationToken, JobCancelled
 
 
 class NoxtubizerJobRequest(BaseModel):
@@ -49,15 +49,17 @@ class NoxtubizerService:
       params=params
     )
 
-  def process_job(self, job: Job) -> None:
+  def process_job(self, job: Job, cancel_token: CancellationToken) -> None:
     """
     Execute the Noxtubizer workflow and persist outputs.
     """
+    cancel_token.raise_if_cancelled()
     try:
-      output_dir, outputs, result = self.executor.execute(job)
+      output_dir, outputs, result = self.executor.execute(job, cancel_token=cancel_token)
+    except JobCancelled:
+      return
     except BaseException as exc:  # noqa: BLE001
       self.job_service.mark_error(job.id, str(exc))
-      JobCleanupService().cleanup_job_files(job, output_base=self.executor.base_output, keep_input=True)
       return
 
     self.job_service.mark_completed(

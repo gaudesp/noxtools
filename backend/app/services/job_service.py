@@ -169,6 +169,10 @@ class JobService:
     Returns:
       The updated job, or None if not found.
     """
+    existing = self.get_job(job_id)
+    if not existing or existing.status == JobStatus.ABORTED:
+      return existing
+
     update = JobUpdate(
       status=JobStatus.DONE,
       output_path=output_path,
@@ -191,10 +195,109 @@ class JobService:
     Returns:
       The updated job, or None if not found.
     """
+    existing = self.get_job(job_id)
+    if not existing:
+      return None
+
+    if existing.status == JobStatus.ABORTED:
+      return existing
+
+    try:
+      from app.services.job_cleanup import JobCleanupService
+
+      JobCleanupService().cleanup_job_files(existing, keep_input=True)
+    except Exception:
+      pass
+
     update = JobUpdate(
       status=JobStatus.ERROR,
       error_message=message,
       completed_at=_utcnow(),
+      locked_at=None,
+      locked_by=None,
+    )
+    return self._update_and_emit(job_id, update)
+
+  def mark_aborted(
+    self,
+    job_id: str,
+    *,
+    message: Optional[str] = None,
+    cleanup_outputs: bool = True,
+  ) -> Optional[Job]:
+    """
+    Mark a running job as aborted, clear outputs, and release locks.
+
+    Args:
+      job_id: Identifier of the job to abort.
+      message: Optional explanation for the abort.
+
+    Returns:
+      The updated job, or None if not found.
+
+    Raises:
+      ValueError: If the job is not currently running.
+    """
+    job = self.get_job(job_id)
+    if not job:
+      return None
+    if job.status != JobStatus.RUNNING:
+      raise ValueError("Only running jobs can be aborted")
+
+    if cleanup_outputs:
+      try:
+        from app.services.job_cleanup import JobCleanupService
+
+        JobCleanupService().cleanup_job_files(job, keep_input=True)
+      except Exception:
+        pass
+
+    update = JobUpdate(
+      status=JobStatus.ABORTED,
+      error_message=message,
+      completed_at=_utcnow(),
+      locked_at=None,
+      locked_by=None,
+      output_path=None,
+      output_files=[],
+      result={},
+    )
+    return self._update_and_emit(job_id, update)
+
+  def retry_job(self, job_id: str) -> Optional[Job]:
+    """
+    Reset a failed or aborted job back to pending.
+
+    Args:
+      job_id: Identifier of the job to retry.
+
+    Returns:
+      The updated job, or None if not found.
+
+    Raises:
+      ValueError: If the job is not retryable.
+    """
+    job = self.get_job(job_id)
+    if not job:
+      return None
+    if job.status not in (JobStatus.ERROR, JobStatus.ABORTED):
+      raise ValueError("Only errored or aborted jobs can be retried")
+
+    try:
+      from app.services.job_cleanup import JobCleanupService
+
+      JobCleanupService().cleanup_job_files(job, keep_input=True)
+    except Exception:
+      pass
+
+    update = JobUpdate(
+      status=JobStatus.PENDING,
+      output_path=None,
+      output_files=[],
+      result={},
+      error_message=None,
+      started_at=None,
+      completed_at=None,
       locked_at=None,
       locked_by=None,
     )

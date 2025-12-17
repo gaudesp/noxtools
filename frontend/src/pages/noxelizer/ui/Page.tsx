@@ -48,6 +48,12 @@ export default function Page() {
           setOpen(false)
           store.clear()
         }}
+        onCancelJob={async (job) => {
+          await store.cancelJob(job.id)
+        }}
+        onRetryJob={async (job) => {
+          await store.retryJob(job.id)
+        }}
       />
     </div>
   )

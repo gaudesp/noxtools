@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react"
-import { deleteJob } from "../api"
+import { cancelJob as cancelJobRequest, deleteJob, retryJob as retryJobRequest } from "../api"
 import {
   getJobsSnapshot,
   normalizeJobQuery,
   removeJobFromCache,
+  upsertJobInCache,
   subscribeToJobs,
 } from "./jobStore"
 import { type Job, type JobTool } from "./types"
@@ -45,12 +46,24 @@ export default function useJobStream(params: UseJobStreamParams = {}) {
     removeJobFromCache(jobId)
   }, [])
 
+  const cancel = useCallback(async (jobId: string) => {
+    const job = await cancelJobRequest(jobId)
+    upsertJobInCache(job)
+  }, [])
+
+  const retry = useCallback(async (jobId: string) => {
+    const job = await retryJobRequest(jobId)
+    upsertJobInCache(job)
+  }, [])
+
   return {
     jobs,
     total: jobs.length,
     loading: snapshot.loading,
     error: snapshot.error,
     deleteJob: removeJob,
+    cancelJob: cancel,
+    retryJob: retry,
     getJobById,
   }
 }

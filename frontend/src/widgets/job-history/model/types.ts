@@ -9,11 +9,15 @@ export type JobHistoryStore = {
   streamError: string | null
   loading: boolean
   deleteJob: (id: string) => Promise<void>
+  cancelJob: (id: string) => Promise<void>
+  retryJob: (id: string) => Promise<void>
   select: (id: string) => void
 }
 
 export type JobTableContext = {
   onDeleteJob?: (job: Job) => void
+  onCancelJob?: (job: Job) => void
+  onRetryJob?: (job: Job) => void
   toolColor?: (tool: Job["tool"]) => string | undefined
 }
 
@@ -28,6 +32,8 @@ export type JobTableProps = {
   onPageChange: (page: number) => void
   onSelectJob?: (job: Job) => void
   onDeleteJob?: (job: Job) => void
+  onCancelJob?: (job: Job) => void
+  onRetryJob?: (job: Job) => void
   toolColor?: (tool: Job["tool"]) => string | undefined
   showToolColumn?: boolean
 }

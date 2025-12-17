@@ -21,10 +21,7 @@ export function useNotificationState() {
     (message: string, type: NotificationType = "info") => {
       const id = crypto.randomUUID()
       setItems((prev) => [{ id, message, type }, ...prev])
-
-      if (type === "success" || type === "info") {
-        timeouts.current[id] = window.setTimeout(() => remove(id), 10_000)
-      }
+      timeouts.current[id] = window.setTimeout(() => remove(id), 10_000)
     },
     [remove],
   )

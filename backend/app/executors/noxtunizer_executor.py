@@ -6,10 +6,12 @@ import json
 import os
 import shutil
 import subprocess
+import time
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
 from app.models.job import Job
+from app.workers.job_worker import CancellationToken, JobCancelled
 
 
 class NoxtunizerExecutor:
@@ -23,10 +25,13 @@ class NoxtunizerExecutor:
     self.base_output = base_output or Path("media/noxtunizer/outputs")
     self.base_output.mkdir(parents=True, exist_ok=True)
 
-  def execute(self, job: Job) -> Tuple[Path, list[str], dict]:
+  def execute(self, job: Job, cancel_token: CancellationToken | None = None) -> Tuple[Path, list[str], dict]:
     """
     Run Essentia on the given job input.
     """
+    if cancel_token:
+      cancel_token.raise_if_cancelled()
+
     if not job.input_path:
       raise ValueError("Input file is missing")
 
@@ -38,7 +43,7 @@ class NoxtunizerExecutor:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     raw_json = output_dir / "essentia_output.json"
-    completed = self._run_extractor(input_file, raw_json)
+    completed = self._run_extractor(input_file, raw_json, cancel_token=cancel_token)
 
     if completed.returncode != 0:
       stderr = (completed.stderr or "").strip()
@@ -56,7 +61,12 @@ class NoxtunizerExecutor:
     result = self._reduce_output(payload)
     return output_dir, [raw_json.name], result
 
-  def _run_extractor(self, input_file: Path, output_json: Path) -> subprocess.CompletedProcess[str]:
+  def _run_extractor(
+    self,
+    input_file: Path,
+    output_json: Path,
+    cancel_token: CancellationToken | None = None,
+  ) -> subprocess.CompletedProcess[str]:
     """
     Invoke the Essentia CLI.
     """
@@ -71,13 +81,7 @@ class NoxtunizerExecutor:
       str(input_file),
       str(output_json),
     ]
-    return subprocess.run(
-      cmd,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE,
-      text=True,
-      check=False,
-    )
+    return self._run_with_cancellation(cmd, cancel_token)
   
   def _normalize_key(self, key: str | None) -> str | None:
     if not key or not isinstance(key, str):
@@ -186,3 +190,38 @@ class NoxtunizerExecutor:
         return None
       current = current.get(key)
     return current
+
+  def _run_with_cancellation(
+    self,
+    cmd: list[str],
+    cancel_token: CancellationToken | None = None,
+  ) -> subprocess.CompletedProcess[str]:
+    proc = subprocess.Popen(
+      cmd,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      text=True,
+    )
+
+    try:
+      while True:
+        if cancel_token and cancel_token.cancelled:
+          proc.terminate()
+          try:
+            proc.wait(timeout=5)
+          except Exception:
+            proc.kill()
+          raise JobCancelled()
+
+        retcode = proc.poll()
+        if retcode is not None:
+          stdout, stderr = proc.communicate()
+          return subprocess.CompletedProcess(cmd, retcode, stdout, stderr)
+
+        time.sleep(0.25)
+    finally:
+      if cancel_token and cancel_token.stopped and proc.poll() is None:
+        try:
+          proc.terminate()
+        except Exception:
+          pass

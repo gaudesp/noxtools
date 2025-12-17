@@ -5,6 +5,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 from typing import Iterable, Tuple
 
@@ -13,6 +14,7 @@ import numpy as np
 import numpy.typing as npt
 
 from app.models.job import Job
+from app.workers.job_worker import CancellationToken, JobCancelled
 
 Frame = npt.NDArray[np.uint8]
 
@@ -53,7 +55,7 @@ class NoxelizerExecutor:
     self._validate_config()
     self.base_output.mkdir(parents=True, exist_ok=True)
 
-  def execute(self, job: Job) -> Tuple[Path, list[str], dict]:
+  def execute(self, job: Job, cancel_token: CancellationToken | None = None) -> Tuple[Path, list[str], dict]:
     """
     Generate a depixelization video for the job's input image.
 
@@ -63,6 +65,9 @@ class NoxelizerExecutor:
     Returns:
       Tuple of (output_dir, output_files, result_metadata).
     """
+    if cancel_token:
+      cancel_token.raise_if_cancelled()
+
     if not job.input_path:
       raise ValueError("Input file is missing")
 
@@ -80,7 +85,7 @@ class NoxelizerExecutor:
     tmp_file.close()
     frames_written = 0
     try:
-      frames_written = self._render_video(input_file, temp_path)
+      frames_written = self._render_video(input_file, temp_path, cancel_token=cancel_token)
       if frames_written <= 0:
         raise RuntimeError("No frames were written to the video")
       temp_path.replace(final_path)
@@ -129,7 +134,12 @@ class NoxelizerExecutor:
     stem = input_file.stem or "noxelizer_output"
     return f"[Pixelate] {stem}{self.suffix}"
 
-  def _render_video(self, image_path: Path, output_path: Path) -> int:
+  def _render_video(
+    self,
+    image_path: Path,
+    output_path: Path,
+    cancel_token: CancellationToken | None = None,
+  ) -> int:
     image = cv2.imread(str(image_path))
     if image is None:
       raise ValueError("Unable to read input image")
@@ -141,17 +151,39 @@ class NoxelizerExecutor:
     animated_frames = max(1, round(self.fps * self.duration))
     hold_frames = max(0, round(self.fps * self.final_hold))
 
-    if self._has_ffmpeg():
-      return self._render_with_ffmpeg(image, output_path, animated_frames, hold_frames)
-    return self._render_with_cv2(image, output_path, animated_frames, hold_frames)
+    if cancel_token:
+      cancel_token.raise_if_cancelled()
 
-  def _generate_frames(self, image: Frame, frame_count: int) -> Iterable[Frame]:
+    if self._has_ffmpeg():
+      return self._render_with_ffmpeg(
+        image,
+        output_path,
+        animated_frames,
+        hold_frames,
+        cancel_token=cancel_token,
+      )
+    return self._render_with_cv2(
+      image,
+      output_path,
+      animated_frames,
+      hold_frames,
+      cancel_token=cancel_token,
+    )
+
+  def _generate_frames(
+    self,
+    image: Frame,
+    frame_count: int,
+    cancel_token: CancellationToken | None = None,
+  ) -> Iterable[Frame]:
     """Yield progressively sharper pixelated frames over the requested count."""
     if frame_count <= 1:
       yield self._pixelate(image, self.min_pix)
       return
 
     for idx in range(frame_count):
+      if cancel_token:
+        cancel_token.raise_if_cancelled()
       progress = idx / (frame_count - 1)
       pixel_value = round(self.max_pix - (self.max_pix - self.min_pix) * progress)
       pixel_value = max(1, min(self.max_pix, max(self.min_pix, pixel_value)))
@@ -177,7 +209,14 @@ class NoxelizerExecutor:
     """Return True if ffmpeg is available on PATH."""
     return shutil.which("ffmpeg") is not None
 
-  def _render_with_ffmpeg(self, image: Frame, output_path: Path, animated_frames: int, hold_frames: int) -> int:
+  def _render_with_ffmpeg(
+    self,
+    image: Frame,
+    output_path: Path,
+    animated_frames: int,
+    hold_frames: int,
+    cancel_token: CancellationToken | None = None,
+  ) -> int:
     """
     Render frames to disk and encode with ffmpeg using H.264 (yuv420p).
 
@@ -186,13 +225,15 @@ class NoxelizerExecutor:
     frames_dir = Path(tempfile.mkdtemp(prefix="frames_", dir=output_path.parent))
     frames_written = 0
     try:
-      for idx, frame in enumerate(self._generate_frames(image, animated_frames)):
+      for idx, frame in enumerate(self._generate_frames(image, animated_frames, cancel_token=cancel_token)):
         frame_path = frames_dir / f"frame_{idx:05d}.png"
         if not cv2.imwrite(str(frame_path), frame):
           raise RuntimeError("Failed to write frame to disk")
         frames_written += 1
 
       for i in range(hold_frames):
+        if cancel_token:
+          cancel_token.raise_if_cancelled()
         frame_path = frames_dir / f"frame_{frames_written + i:05d}.png"
         if not cv2.imwrite(str(frame_path), image):
           raise RuntimeError("Failed to write final hold frame")
@@ -219,7 +260,10 @@ class NoxelizerExecutor:
         "+faststart",
         str(output_path),
       ]
-      completed = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+      if cancel_token:
+        cancel_token.raise_if_cancelled()
+
+      completed = self._run_with_cancellation(cmd, cancel_token)
       if completed.returncode != 0:
         stderr = (completed.stderr or "").strip()
         raise RuntimeError(stderr or "ffmpeg failed to encode video")
@@ -231,7 +275,14 @@ class NoxelizerExecutor:
       except Exception:
         pass
 
-  def _render_with_cv2(self, image: Frame, output_path: Path, animated_frames: int, hold_frames: int) -> int:
+  def _render_with_cv2(
+    self,
+    image: Frame,
+    output_path: Path,
+    animated_frames: int,
+    hold_frames: int,
+    cancel_token: CancellationToken | None = None,
+  ) -> int:
     """Encode video directly with OpenCV when ffmpeg is unavailable."""
     fourcc = cv2.VideoWriter_fourcc(*self.codec)
     writer = cv2.VideoWriter(str(output_path), fourcc, self.fps, (image.shape[1], image.shape[0]))
@@ -240,12 +291,51 @@ class NoxelizerExecutor:
 
     frames_written = 0
     try:
-      for frame in self._generate_frames(image, animated_frames):
+      for frame in self._generate_frames(image, animated_frames, cancel_token=cancel_token):
+        if cancel_token:
+          cancel_token.raise_if_cancelled()
         writer.write(frame)
         frames_written += 1
       for _ in range(hold_frames):
+        if cancel_token:
+          cancel_token.raise_if_cancelled()
         writer.write(image)
         frames_written += 1
     finally:
       writer.release()
     return frames_written
+
+  def _run_with_cancellation(
+    self,
+    cmd: list[str],
+    cancel_token: CancellationToken | None = None,
+  ) -> subprocess.CompletedProcess[str]:
+    proc = subprocess.Popen(
+      cmd,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      text=True,
+    )
+
+    try:
+      while True:
+        if cancel_token and cancel_token.cancelled:
+          proc.terminate()
+          try:
+            proc.wait(timeout=5)
+          except Exception:
+            proc.kill()
+          raise JobCancelled()
+
+        retcode = proc.poll()
+        if retcode is not None:
+          stdout, stderr = proc.communicate()
+          return subprocess.CompletedProcess(cmd, retcode, stdout, stderr)
+
+        time.sleep(0.25)
+    finally:
+      if cancel_token and cancel_token.stopped and proc.poll() is None:
+        try:
+          proc.terminate()
+        except Exception:
+          pass
