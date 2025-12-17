@@ -61,7 +61,7 @@ function renderJobPreview(job: Job) {
 
 export default function Page() {
   const { setHeader, setFooter } = useLayout()
-  const { jobs, loading, error, deleteJob, getJobById } = useJobStream()
+  const { jobs, loading, error, deleteJob, cancelJob, retryJob, getJobById } = useJobStream()
 
   const { pagedItems, total, page, pageSize, setPage } = usePagination<Job>({
     items: jobs,
@@ -99,6 +99,8 @@ export default function Page() {
           streamError: error,
           loading,
           deleteJob,
+          cancelJob,
+          retryJob,
           select: (id: string) => select(id),
         }}
         onSelectJob={() => {
@@ -134,6 +136,12 @@ export default function Page() {
           await deleteJob(job.id)
           setOpen(false)
           clear()
+        }}
+        onCancelJob={async (job) => {
+          await cancelJob(job.id)
+        }}
+        onRetryJob={async (job) => {
+          await retryJob(job.id)
         }}
       />
     </div>

@@ -9,6 +9,7 @@ const STYLES: Record<JobStatus, string> = {
   running: "bg-sky-500/15 text-sky-100 border border-sky-400/40",
   done: "bg-emerald-500/15 text-emerald-100 border border-emerald-400/40",
   error: "bg-rose-500/15 text-rose-100 border border-rose-400/40",
+  aborted: "bg-zinc-500/15 text-zinc-100 border border-zinc-400/40",
 }
 
 export default function StatusBadge({ status }: Props) {

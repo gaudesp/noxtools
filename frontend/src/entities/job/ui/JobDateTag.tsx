@@ -23,7 +23,7 @@ const TONE_CLASSNAMES: Record<Tone, string> = {
   info: "border-sky-400/50 bg-sky-500/15 text-sky-100",
   success: "border-emerald-400/50 bg-emerald-500/15 text-emerald-100",
   danger: "border-rose-400/50 bg-rose-500/15 text-rose-100",
-  neutral: "border-slate-400/50 bg-slate-500/15 text-slate-100",
+  neutral: "border-zinc-400/50 bg-zinc-500/15 text-zinc-100",
 }
 
 const ALIGN_CLASSNAMES = {
@@ -79,7 +79,7 @@ export default function JobDateTags({
     { date: startedAt, tone: "info", align: "center", label: "Started :" },
     {
       date: completedAt,
-      tone: status === "error" ? "danger" : "success",
+      tone: status === "error" ? "danger" : status === "aborted" ? "neutral" : "success",
       align: "end",
       label: "Completed :",
     },

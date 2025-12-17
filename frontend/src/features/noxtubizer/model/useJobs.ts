@@ -2,7 +2,7 @@ import { useJobStream, type Job } from "@/entities/job"
 import { usePagination, useSelection } from "@/shared/lib"
 
 export function useJobs() {
-  const { jobs, loading, error, deleteJob, getJobById } = useJobStream({
+  const { jobs, loading, error, deleteJob, cancelJob, retryJob, getJobById } = useJobStream({
     tool: "noxtubizer",
   })
 
@@ -20,6 +20,8 @@ export function useJobs() {
     loading,
     streamError: error,
     deleteJob,
+    cancelJob,
+    retryJob,
     pagedItems,
     total,
     page,

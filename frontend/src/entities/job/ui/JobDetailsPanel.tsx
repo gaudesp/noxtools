@@ -1,7 +1,7 @@
 import { type ReactNode } from "react"
 import type { Job, JobTool } from "../model/types"
 import StatusBadge from "./StatusBadge"
-import JobDeleteButton from "./JobDeleteButton"
+import JobActions from "./JobActions"
 import JobMetaTags from "./JobMetaTags"
 import JobDateTags from "./JobDateTag"
 import { Modal } from "@/shared/ui"
@@ -14,6 +14,8 @@ type Props = {
   footer?: ReactNode
   renderPreview?: (job: Job) => ReactNode
   onDeleteJob?: (job: Job) => void | Promise<void>
+  onCancelJob?: (job: Job) => void | Promise<void>
+  onRetryJob?: (job: Job) => void | Promise<void>
   toolColor?: (tool: JobTool) => string | undefined
 }
 
@@ -25,6 +27,8 @@ export default function JobDetailsPanel({
   footer,
   renderPreview,
   onDeleteJob,
+  onCancelJob,
+  onRetryJob,
   toolColor,
 }: Props) {
   const resolvedFooter = footer ?? (
@@ -50,19 +54,22 @@ export default function JobDetailsPanel({
 
             <div className="min-w-0 space-y-1">
               <p className="truncate text-sm font-semibold text-white">
-                {job.input_filename || "Unnamed input"}
+                {job.id}
               </p>
               <p className="truncate text-xs text-slate-400">
-                {job.id}
+                {job.input_filename || "Unnamed input"}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <StatusBadge status={job.status} />
-            {onDeleteJob && (
-              <JobDeleteButton job={job} onDelete={onDeleteJob} />
-            )}
+            <JobActions
+              job={job}
+              onDelete={onDeleteJob}
+              onCancel={onCancelJob}
+              onRetry={onRetryJob}
+            />
             <button
               type="button"
               className="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-slate-800"

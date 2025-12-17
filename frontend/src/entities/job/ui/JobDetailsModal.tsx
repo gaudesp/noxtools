@@ -10,6 +10,8 @@ type Props = {
   footer?: ReactNode
   renderPreview?: (job: any) => ReactNode
   onDeleteJob?: (job: Job) => void | Promise<void>
+  onCancelJob?: (job: Job) => void | Promise<void>
+  onRetryJob?: (job: Job) => void | Promise<void>
   toolColor?: (tool: JobTool) => string | undefined
 }
 
@@ -21,6 +23,8 @@ export default function JobDetailsModal({
   footer,
   renderPreview,
   onDeleteJob,
+  onCancelJob,
+  onRetryJob,
   toolColor,
 }: Props) {
   if (!job) return null
@@ -33,6 +37,8 @@ export default function JobDetailsModal({
       footer={footer}
       renderPreview={renderPreview}
       onDeleteJob={onDeleteJob}
+      onCancelJob={onCancelJob}
+      onRetryJob={onRetryJob}
       toolColor={toolColor}
     >
       {renderResult(job)}

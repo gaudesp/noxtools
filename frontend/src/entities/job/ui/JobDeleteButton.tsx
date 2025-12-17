@@ -9,6 +9,7 @@ type Props = {
 
 export default function JobDeleteButton({ job, onDelete }: Props) {
   const [open, setOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const { notify } = useNotifications()
 
   const isRunning = job.status === "running"
@@ -36,19 +37,23 @@ export default function JobDeleteButton({ job, onDelete }: Props) {
         open={open}
         title="Delete job?"
         message="This will remove the job and its related files."
-        confirmLabel="Delete"
+        confirmLabel={deleting ? "Deleting..." : "Delete"}
         onCancel={() => setOpen(false)}
         onConfirm={async () => {
+          if (deleting) return
           if (!onDelete) {
             setOpen(false)
             return
           }
+          setDeleting(true)
           try {
             await onDelete(job)
             notify("Job deleted.", "success")
           } catch (err) {
             console.error(err)
             notify("Failed to delete job.", "danger")
+          } finally {
+            setDeleting(false)
           }
           setOpen(false)
         }}

@@ -5,10 +5,12 @@ from __future__ import annotations
 import shutil
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 from typing import List, Tuple
 
 from app.models.job import Job
+from app.workers.job_worker import CancellationToken, JobCancelled
 
 
 class NoxsongizerExecutor:
@@ -33,7 +35,7 @@ class NoxsongizerExecutor:
     self.base_output = base_output or Path("media/noxsongizer/outputs")
     self.base_output.mkdir(parents=True, exist_ok=True)
 
-  def execute(self, job: Job) -> Tuple[Path, List[str]]:
+  def execute(self, job: Job, cancel_token: CancellationToken | None = None) -> Tuple[Path, List[str]]:
     """
     Run Demucs for the given job.
 
@@ -47,6 +49,9 @@ class NoxsongizerExecutor:
       ValueError: If input_path is missing or file does not exist.
       RuntimeError: If Demucs fails or outputs cannot be processed.
     """
+    if cancel_token:
+      cancel_token.raise_if_cancelled()
+
     if not job.input_path:
       raise ValueError("Input file is missing")
 
@@ -60,7 +65,7 @@ class NoxsongizerExecutor:
     input_stem = input_file.stem or "output"
     temp_dir = Path(tempfile.mkdtemp(prefix=f"{job.id}_", dir=str(self.base_output)))
     try:
-      completed = self._run_demucs(input_file, temp_dir)
+      completed = self._run_demucs(input_file, temp_dir, cancel_token)
       if completed.returncode != 0:
         stderr = (completed.stderr or "").strip()
         raise RuntimeError(stderr or "Demucs failed")
@@ -77,7 +82,12 @@ class NoxsongizerExecutor:
     finally:
       self._cleanup(temp_dir)
 
-  def _run_demucs(self, input_file: Path, output_dir: Path) -> subprocess.CompletedProcess[str]:
+  def _run_demucs(
+    self,
+    input_file: Path,
+    output_dir: Path,
+    cancel_token: CancellationToken | None = None,
+  ) -> subprocess.CompletedProcess[str]:
     """
     Invoke Demucs and return the completed process.
 
@@ -93,13 +103,7 @@ class NoxsongizerExecutor:
       str(output_dir),
       str(input_file),
     ]
-    return subprocess.run(
-      cmd,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE,
-      text=True,
-      check=False,
-    )
+    return self._run_with_cancellation(cmd, cancel_token)
 
   def _locate_demucs_outputs(self, input_file: Path, base_dir: Path) -> Path | None:
     """
@@ -154,3 +158,41 @@ class NoxsongizerExecutor:
         shutil.rmtree(path)
     except Exception:
       pass
+
+  def _run_with_cancellation(
+    self,
+    cmd: list[str],
+    cancel_token: CancellationToken | None = None,
+  ) -> subprocess.CompletedProcess[str]:
+    """
+    Run a subprocess while allowing cooperative cancellation.
+    """
+    proc = subprocess.Popen(
+      cmd,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      text=True,
+    )
+
+    try:
+      while True:
+        if cancel_token and cancel_token.cancelled:
+          proc.terminate()
+          try:
+            proc.wait(timeout=5)
+          except Exception:
+            proc.kill()
+          raise JobCancelled()
+
+        retcode = proc.poll()
+        if retcode is not None:
+          stdout, stderr = proc.communicate()
+          return subprocess.CompletedProcess(cmd, retcode, stdout, stderr)
+
+        time.sleep(0.25)
+    finally:
+      if cancel_token and cancel_token.stopped and proc.poll() is None:
+        try:
+          proc.terminate()
+        except Exception:
+          pass

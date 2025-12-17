@@ -192,3 +192,7 @@ export function getJobsSnapshot(query: JobsListQuery): JobsSnapshot {
 export function removeJobFromCache(jobId: string) {
   handleDelete(jobId)
 }
+
+export function upsertJobInCache(job: Job) {
+  handleUpsert(job)
+}

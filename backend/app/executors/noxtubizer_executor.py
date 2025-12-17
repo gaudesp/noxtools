@@ -5,10 +5,12 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import time
 from pathlib import Path
 from typing import List, Tuple
 
 from app.models.job import Job
+from app.workers.job_worker import CancellationToken, JobCancelled
 
 
 class NoxtubizerExecutor:
@@ -56,7 +58,7 @@ class NoxtubizerExecutor:
     self.base_output = base_output or Path("media/noxtubizer/outputs")
     self.base_output.mkdir(parents=True, exist_ok=True)
 
-  def execute(self, job: Job) -> Tuple[Path, List[str], dict]:
+  def execute(self, job: Job, cancel_token: CancellationToken | None = None) -> Tuple[Path, List[str], dict]:
     params = job.params or {}
     url = str(params.get("url") or "").strip()
     mode = str(params.get("mode") or "").lower()
@@ -74,7 +76,7 @@ class NoxtubizerExecutor:
     output_dir = self.base_output / job.id
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    meta = self._probe(url)
+    meta = self._probe(url, cancel_token=cancel_token)
     raw_title = meta.get("title") or job.input_filename or url
     safe_title = self._sanitize(raw_title)
 
@@ -88,6 +90,9 @@ class NoxtubizerExecutor:
 
     audio_path: Path | None = None
     video_path: Path | None = None
+
+    if cancel_token:
+      cancel_token.raise_if_cancelled()
 
     if mode in ("audio", "both"):
       before = self._snapshot(output_dir)
@@ -107,7 +112,7 @@ class NoxtubizerExecutor:
       if audio_format != "wav" and bitrate:
         cmd.extend(["--audio-quality", bitrate])
 
-      self._run(cmd)
+      self._run(cmd, cancel_token=cancel_token)
 
       created = self._detect_new_file(output_dir, before, "Audio")
       audio_path = output_dir / f"[Audio] {safe_title}.{audio_format}"
@@ -134,7 +139,7 @@ class NoxtubizerExecutor:
       selector = self._video_selector(video_quality)
 
       cmd = ["yt-dlp", "-f", selector, "-o", str(temp) + ".%(ext)s", url]
-      self._run(cmd)
+      self._run(cmd, cancel_token=cancel_token)
 
       created = self._detect_new_file(output_dir, before, "Video")
       created_ext = created.suffix.lstrip(".").lower()
@@ -155,7 +160,7 @@ class NoxtubizerExecutor:
           "-an",
           str(video_path),
         ]
-        self._run(remux_cmd)
+        self._run(remux_cmd, cancel_token=cancel_token)
 
       if mode == "video":
         outputs.append(video_path.name)
@@ -186,7 +191,7 @@ class NoxtubizerExecutor:
         str(final_output),
       ]
 
-      self._run(merge_cmd)
+      self._run(merge_cmd, cancel_token=cancel_token)
 
       outputs.append(final_output.name)
       result["both"] = {
@@ -211,9 +216,9 @@ class NoxtubizerExecutor:
 
     return output_dir, outputs, result
 
-  def _probe(self, url: str) -> dict:
+  def _probe(self, url: str, cancel_token: CancellationToken | None = None) -> dict:
     cmd = ["yt-dlp", "-j", "--skip-download", "--no-warnings", "--ignore-errors", url]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = self._run_capture(cmd, cancel_token=cancel_token)
     if proc.returncode != 0:
       return {}
     try:
@@ -221,10 +226,56 @@ class NoxtubizerExecutor:
     except Exception:
       return {}
 
-  def _run(self, cmd: list[str]) -> None:
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    if proc.returncode != 0:
-      raise RuntimeError((proc.stderr or "").strip() or f"{cmd[0]} failed")
+  def _run(self, cmd: list[str], cancel_token: CancellationToken | None = None) -> None:
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+      retcode, _, stderr = self._wait_process(proc, cancel_token)
+      if retcode != 0:
+        raise RuntimeError((stderr or "").strip() or f"{cmd[0]} failed")
+    finally:
+      if cancel_token and cancel_token.stopped and proc.poll() is None:
+        try:
+          proc.terminate()
+        except Exception:
+          pass
+
+  def _run_capture(self, cmd: list[str], cancel_token: CancellationToken | None = None) -> subprocess.CompletedProcess[str]:
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+      retcode, stdout, stderr = self._wait_process(proc, cancel_token)
+      return subprocess.CompletedProcess(cmd, retcode, stdout, stderr)
+    finally:
+      if cancel_token and cancel_token.stopped and proc.poll() is None:
+        try:
+          proc.terminate()
+        except Exception:
+          pass
+
+  def _wait_process(
+    self,
+    proc: subprocess.Popen,
+    cancel_token: CancellationToken | None = None,
+  ) -> tuple[int, str, str]:
+    """
+    Wait for a subprocess while draining pipes and honoring cancellation.
+    """
+    stdout = ""
+    stderr = ""
+    while True:
+      if cancel_token and cancel_token.cancelled:
+        proc.terminate()
+        try:
+          proc.wait(timeout=5)
+        except Exception:
+          proc.kill()
+        raise JobCancelled()
+      try:
+        out, err = proc.communicate(timeout=0.5)
+        stdout += out or ""
+        stderr += err or ""
+        return proc.returncode or 0, stdout, stderr
+      except subprocess.TimeoutExpired:
+        continue
 
   def _map_audio_format(self, fmt: str) -> str:
     if fmt == "ogg":

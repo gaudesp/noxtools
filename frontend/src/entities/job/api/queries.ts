@@ -28,3 +28,13 @@ export async function deleteJob(jobId: string): Promise<void> {
     throw new Error(text || `Failed to delete job ${jobId}`)
   }
 }
+
+export async function retryJob(jobId: string): Promise<Job> {
+  const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/retry`, { method: "POST" })
+  return handleResponse<Job>(res)
+}
+
+export async function cancelJob(jobId: string): Promise<Job> {
+  const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/cancel`, { method: "POST" })
+  return handleResponse<Job>(res)
+}

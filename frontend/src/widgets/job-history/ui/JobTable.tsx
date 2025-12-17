@@ -18,6 +18,8 @@ export default function JobTable({
   loading,
   onSelectJob,
   onDeleteJob,
+  onCancelJob,
+  onRetryJob,
   toolColor,
   showToolColumn = false,
 }: JobTableProps) {
@@ -42,9 +44,16 @@ export default function JobTable({
     {
       key: "actions",
       header: "",
-      width: 120,
+      width: 200,
       align: "right",
-      render: (job, ctx) => <JobActionsCell job={job} onDelete={ctx.onDeleteJob} />,
+      render: (job, ctx) => (
+        <JobActionsCell
+          job={job}
+          onDelete={ctx.onDeleteJob}
+          onCancel={ctx.onCancelJob}
+          onRetry={ctx.onRetryJob}
+        />
+      ),
     },
   ]
 
@@ -55,7 +64,7 @@ export default function JobTable({
       keyExtractor={(job) => job.id}
       loading={loading}
       onRowClick={onSelectJob}
-      context={{ onDeleteJob, toolColor }}
+      context={{ onDeleteJob, onCancelJob, onRetryJob, toolColor }}
       emptyState="No jobs to display."
     />
   )
