@@ -28,47 +28,75 @@ type Props = {
 
 export default function AudioPreviewButton({ id, sourceUrl }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const cleanupRef = useRef<(() => void) | null>(null)
+
   const [isPlaying, setIsPlaying] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const [status, setStatus] = useState<"idle" | "loading" | "ready">("idle")
 
   useEffect(() => {
-    const audio = new Audio(sourceUrl)
+    setStatus("idle")
+    setIsPlaying(false)
+    setHasError(false)
+
+    return () => cleanupRef.current?.()
+  }, [id, sourceUrl])
+
+  function initAudio(): HTMLAudioElement {
+    if (audioRef.current) return audioRef.current
+
+    const audio = new Audio()
+    audio.preload = "none"
+    audio.src = sourceUrl
+
     audioRef.current = audio
     activeAudios.set(id, audio)
 
     const onPlay = () => setIsPlaying(true)
     const onPause = () => setIsPlaying(false)
     const onEnd = () => setIsPlaying(false)
-    const onErr = () => setHasError(true)
+    const onCanPlay = () => setStatus("ready")
+    const onError = () => {
+      setHasError(true)
+      setStatus("idle")
+      setIsPlaying(false)
+    }
 
     audio.addEventListener("play", onPlay)
     audio.addEventListener("pause", onPause)
     audio.addEventListener("ended", onEnd)
-    audio.addEventListener("error", onErr)
+    audio.addEventListener("canplay", onCanPlay)
+    audio.addEventListener("error", onError)
 
-    return () => {
+    cleanupRef.current = () => {
       audio.pause()
       audio.src = ""
       activeAudios.delete(id)
       audio.removeEventListener("play", onPlay)
       audio.removeEventListener("pause", onPause)
       audio.removeEventListener("ended", onEnd)
-      audio.removeEventListener("error", onErr)
+      audio.removeEventListener("canplay", onCanPlay)
+      audio.removeEventListener("error", onError)
       audioRef.current = null
+      cleanupRef.current = null
     }
-  }, [sourceUrl, id])
+
+    return audio
+  }
 
   function toggle(e: MouseEvent<HTMLButtonElement>) {
     e.stopPropagation()
-    const audio = audioRef.current
-    if (!audio) return
-
     setHasError(false)
+
+    const audio = audioRef.current ?? initAudio()
 
     if (audio.paused) {
       pauseOthers(id)
+      setStatus("loading")
+
       audio.play().catch(() => {
         setHasError(true)
+        setStatus("idle")
         setIsPlaying(false)
       })
     } else {
@@ -76,15 +104,32 @@ export default function AudioPreviewButton({ id, sourceUrl }: Props) {
     }
   }
 
+  const isLoading = status === "loading"
+
   return (
     <button
       type="button"
       onClick={toggle}
       aria-pressed={isPlaying}
-      title={hasError ? "Unable to play audio" : "Play / pause source"}
-      className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-50 hover:border-violet-400 transition"
+      aria-busy={isLoading}
+      disabled={isLoading}
+      title={
+        hasError
+          ? "Unable to play audio"
+          : isLoading
+            ? "Loading preview…"
+            : "Play / pause source"
+      }
+      className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-50 hover:border-violet-400 transition disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      <PlayPauseIcon playing={isPlaying} />
+      {isLoading ? (
+        <svg className="w-4 h-4 animate-spin text-slate-100" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+        </svg>
+      ) : (
+        <PlayPauseIcon playing={isPlaying} />
+      )}
     </button>
   )
 }
