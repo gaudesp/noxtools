@@ -1,6 +1,5 @@
 import { JobStatusGate } from "@/entities/job"
-import { FileBlock, AudioPlayer } from "@/shared/ui"
-import { getSourceUrl, type NoxtunizerJob } from "../api"
+import { type NoxtunizerJob } from "../api"
 
 function displayValue(value: unknown): string {
   if (value === null || value === undefined) return "—"
@@ -20,8 +19,6 @@ export default function Result({ job }: Props) {
           duration_label: "—",
         }
 
-        const sourceUrl = getSourceUrl(job.id)
-
         const blocks = [
           { label: "BPM", value: displayValue(result.bpm) },
           { label: "KEY", value: displayValue(result.key) },
@@ -30,10 +27,6 @@ export default function Result({ job }: Props) {
 
         return (
           <div className="space-y-4">
-            <FileBlock title="Audio">
-              <AudioPlayer url={sourceUrl} />
-            </FileBlock>
-
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 text-center">
               {blocks.map((block) => (
                 <div

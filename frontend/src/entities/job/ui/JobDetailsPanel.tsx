@@ -1,12 +1,10 @@
 import { type ReactNode } from "react"
-import type { Job } from "../model/types"
+import type { Job, JobTool } from "../model/types"
 import StatusBadge from "./StatusBadge"
+import JobDeleteButton from "./JobDeleteButton"
+import JobMetaTags from "./JobMetaTags"
+import JobDateTags from "./JobDateTag"
 import { Modal } from "@/shared/ui"
-
-const formatDate = (iso?: string): string => {
-  if (!iso) return ""
-  return new Date(iso).toLocaleString()
-}
 
 type Props = {
   job: Job
@@ -14,6 +12,9 @@ type Props = {
   onClose: () => void
   children: ReactNode
   footer?: ReactNode
+  renderPreview?: (job: Job) => ReactNode
+  onDeleteJob?: (job: Job) => void | Promise<void>
+  toolColor?: (tool: JobTool) => string | undefined
 }
 
 export default function JobDetailsPanel({
@@ -22,25 +23,46 @@ export default function JobDetailsPanel({
   onClose,
   children,
   footer,
+  renderPreview,
+  onDeleteJob,
+  toolColor,
 }: Props) {
+  const resolvedFooter = footer ?? (
+    <JobMetaTags
+      job={job}
+      toolColor={toolColor}
+      showDates={false}
+    />
+  )
+
   return (
     <Modal
       open={open}
       onClose={onClose}
       header={
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1">
-            <h2 className="text-sm font-semibold text-white">
-              Task preview
-            </h2>
-            <p className="text-xs text-slate-400">
-              {job.tool.toUpperCase()} •{" "}
-              {job.input_filename || "Unnamed input"}
-            </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            {renderPreview && (
+              <div className="shrink-0">
+                {renderPreview(job)}
+              </div>
+            )}
+
+            <div className="min-w-0 space-y-1">
+              <p className="truncate text-sm font-semibold text-white">
+                {job.input_filename || "Unnamed input"}
+              </p>
+              <p className="truncate text-xs text-slate-400">
+                {job.id}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
             <StatusBadge status={job.status} />
+            {onDeleteJob && (
+              <JobDeleteButton job={job} onDelete={onDeleteJob} />
+            )}
             <button
               type="button"
               className="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-slate-800"
@@ -51,19 +73,16 @@ export default function JobDetailsPanel({
           </div>
         </div>
       }
-      footer={footer}
+      footer={resolvedFooter}
     >
-      <div className="grid grid-cols-1 gap-3 text-xs text-slate-500 md:grid-cols-3">
-        <p>Created: {formatDate(job.created_at)}</p>
-        {job.started_at && (
-          <p>Started: {formatDate(job.started_at)}</p>
-        )}
-        {job.completed_at && (
-          <p>Completed: {formatDate(job.completed_at)}</p>
-        )}
-      </div>
+      <JobDateTags
+        createdAt={job.created_at}
+        startedAt={job.started_at}
+        completedAt={job.completed_at}
+        status={job.status}
+      />
 
-      <div className="mt-6">
+      <div className="mt-4">
         {children}
       </div>
     </Modal>

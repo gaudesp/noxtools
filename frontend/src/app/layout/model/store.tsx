@@ -5,6 +5,7 @@ export type LayoutHeader = {
   title: string
   description: string
   eyebrow?: string
+  eyebrowClassName?: string
   actions?: ReactNode
 }
 

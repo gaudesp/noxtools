@@ -6,7 +6,6 @@ export default function JobFileCell({ job }: { job: Job }) {
       <p className="truncate text-slate-100">
         {job.input_filename || "Unknown file"}
       </p>
-      <p className="text-[11px] uppercase text-slate-500">{job.tool}</p>
     </div>
   )
 }
