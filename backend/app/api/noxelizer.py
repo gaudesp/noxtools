@@ -6,13 +6,14 @@ from mimetypes import guess_type
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Form
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Form, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlmodel import Session
 
 from app.db import get_session
 from app.models.job import JobTool
+from app.services.image_variant_service import ImageVariantService
 from app.services.job_service import JobService
 from app.services.noxelizer_service import NoxelizerService
 
@@ -24,7 +25,9 @@ def get_job_service(session: Session = Depends(get_session)) -> JobService:
   return JobService(session)
 
 
-def get_noxelizer_service(job_service: JobService = Depends(get_job_service)) -> NoxelizerService:
+def get_noxelizer_service(
+  job_service: JobService = Depends(get_job_service),
+) -> NoxelizerService:
   """Dependency injector for NoxelizerService."""
   return NoxelizerService(job_service)
 
@@ -48,34 +51,49 @@ async def create_job(
   final_hold: Optional[float] = Form(None),
   service: NoxelizerService = Depends(get_noxelizer_service),
 ) -> CreateJobResponse:
-  """
-  Create a Noxelizer job from a regular form submission.
-  """
+  """Create a Noxelizer job from a regular form submission."""
   jobs = service.create_jobs(files)
 
   if not jobs:
     raise HTTPException(status_code=400, detail="No valid file provided")
 
   job, _file = jobs[0]
-
   return CreateJobResponse(job_id=job.id)
 
 
 @router.get("/source/{job_id}")
 def download_source(
   job_id: str,
+  variant: Optional[str] = Query(
+    None,
+    description="Image variant to return (e.g. thumb). Defaults to original.",
+  ),
   job_service: JobService = Depends(get_job_service),
 ) -> FileResponse:
-  """Stream the original uploaded image for a given job."""
+  """Stream the uploaded image or one of its variants for a given job."""
   job = job_service.get_job(job_id)
   if not job or job.tool != JobTool.NOXELIZER:
     raise HTTPException(status_code=404, detail="Job not found")
+
   if not job.input_path:
     raise HTTPException(status_code=404, detail="Original file not found")
 
-  path = Path(job.input_path)
+  original_path = Path(job.input_path)
+  path = original_path
+
+  if variant:
+    try:
+      variant_path = ImageVariantService.variant_path(
+        original_path,
+        variant=variant,
+      )
+      if variant_path.exists() and variant_path.is_file():
+        path = variant_path
+    except KeyError:
+      pass
+
   if not path.exists() or not path.is_file():
-    raise HTTPException(status_code=404, detail="Original file not found")
+    raise HTTPException(status_code=404, detail="File not found")
 
   media_type, _ = guess_type(path.name)
   return FileResponse(
