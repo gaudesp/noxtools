@@ -31,6 +31,13 @@ export function getDownloadUrl(jobId: string, filename: string): string {
   return `${API_BASE_URL}/noxelizer/download/${jobId}/${encodeURIComponent(filename)}`
 }
 
-export function getSourceUrl(jobId: string): string {
-  return `${API_BASE_URL}/noxelizer/source/${jobId}`
+type SourceVariant = "thumb"
+
+export function getSourceUrl(
+  jobId: string,
+  opts: { variant?: SourceVariant } = {},
+): string {
+  const url = new URL(`${API_BASE_URL}/noxelizer/source/${jobId}`)
+  if (opts.variant) url.searchParams.set("variant", opts.variant)
+  return url.toString()
 }

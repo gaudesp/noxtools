@@ -10,6 +10,7 @@ from fastapi import UploadFile
 
 from app.executors.noxelizer_executor import NoxelizerExecutor
 from app.models.job import Job, JobTool, JobUpdate
+from app.services.image_variant_service import ImageVariantService
 from app.services.job_cleanup import JobCleanupService
 from app.services.job_service import JobService
 
@@ -45,6 +46,7 @@ class NoxelizerService:
       dest = self._write_upload_file(job.id, file)
       if dest:
         self.job_service.update_job(job.id, JobUpdate(input_path=str(dest)))
+        ImageVariantService.create_variant(dest, variant="thumb")
       refreshed = self.job_service.get_job(job.id)
       jobs_with_files.append((refreshed or job, file))
     return jobs_with_files
