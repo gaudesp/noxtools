@@ -33,7 +33,7 @@ class AbortPolicy:
 ABORT_POLICIES: dict[JobAbortReason, AbortPolicy] = {
   JobAbortReason.USER_CANCELLED: AbortPolicy(
     message="Job cancelled by user",
-    cleanup_outputs=False,
+    cleanup_outputs=True,
   ),
   JobAbortReason.SHUTDOWN: AbortPolicy(
     message="Job interrupted by server shutdown",
