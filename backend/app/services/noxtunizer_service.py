@@ -45,16 +45,8 @@ class NoxtunizerService:
     return jobs_with_files
 
   def process_job(self, job: Job, cancel_token: CancellationToken) -> JobExecutionResult:
-    """
-    Execute Essentia analysis for a given job and persist the reduced results.
-    """
     cancel_token.raise_if_cancelled()
-    output_dir, outputs, result = self.executor.execute(job, cancel_token=cancel_token)
-    return JobExecutionResult(
-      output_path=output_dir,
-      output_files=outputs,
-      result=result,
-    )
+    return self.executor.execute(job, cancel_token=cancel_token)
 
   def _write_upload_file(self, job_id: str, file: UploadFile) -> Optional[Path]:
     """

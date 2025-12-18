@@ -51,20 +51,8 @@ class NoxtubizerService:
     )
 
   def process_job(self, job: Job, cancel_token: CancellationToken) -> JobExecutionResult:
-    """
-    Execute the Noxtubizer workflow and persist outputs.
-    """
     cancel_token.raise_if_cancelled()
-    output_dir, outputs, result = self.executor.execute(job, cancel_token=cancel_token)
-    source_title = result.get("source_title")
-    if source_title and source_title != job.input_filename:
-      self.job_service.update_job(job.id, JobUpdate(input_filename=source_title))
-
-    return JobExecutionResult(
-      output_path=output_dir,
-      output_files=outputs,
-      result=result,
-    )
+    return self.executor.execute(job, cancel_token=cancel_token)
 
   def _validate_params(self, params: dict) -> None:
     """

@@ -53,19 +53,8 @@ class NoxelizerService:
     return jobs_with_files
 
   def process_job(self, job: Job, cancel_token: CancellationToken) -> JobExecutionResult:
-    """
-    Execute video rendering for a given job and persist resulting video.
-
-    Args:
-      job: Job entity with an uploaded input file.
-    """
     cancel_token.raise_if_cancelled()
-    output_dir, outputs, meta = self.executor.execute(job, cancel_token=cancel_token)
-    return JobExecutionResult(
-      output_path=output_dir,
-      output_files=outputs,
-      result=meta,
-    )
+    return self.executor.execute(job, cancel_token=cancel_token)
 
   def _write_upload_file(self, job_id: str, file: UploadFile) -> Optional[Path]:
     """

@@ -5,75 +5,86 @@ from __future__ import annotations
 import json
 import os
 import shutil
-import subprocess
-import time
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 
+from app.executors.base import BaseExecutor
 from app.models.job import Job
-from app.workers.job_worker import CancellationToken, JobCancelled
+from app.workers.job_worker import CancellationToken
+from app.workers.job_types import JobExecutionResult
 
 
-class NoxtunizerExecutor:
+class NoxtunizerExecutor(BaseExecutor):
   """
-  Runs Essentia's music extractor to analyze audio files
-  and returns BPM, key, duration.
+  Runs Essentia's music extractor to analyze audio files.
+
+  Extracts and normalizes:
+  - BPM
+  - Key
+  - Duration
   """
 
-  def __init__(self, *, extractor_bin: str | None = None, base_output: Path | None = None) -> None:
-    self.extractor_bin = extractor_bin or os.getenv("NOXTUNIZER_EXTRACTOR_BIN") or "/usr/local/bin/essentia_streaming_extractor_music"
-    self.base_output = base_output or Path("media/noxtunizer/outputs")
-    self.base_output.mkdir(parents=True, exist_ok=True)
+  def __init__(
+    self,
+    *,
+    extractor_bin: str | None = None,
+    base_output: Path | None = None,
+  ) -> None:
+    self.extractor_bin = (
+      extractor_bin
+      or os.getenv("NOXTUNIZER_EXTRACTOR_BIN")
+      or "/usr/local/bin/essentia_streaming_extractor_music"
+    )
+    super().__init__(base_output=base_output or Path("media/noxtunizer/outputs"))
 
-  def execute(self, job: Job, cancel_token: CancellationToken | None = None) -> Tuple[Path, list[str], dict]:
-    """
-    Run Essentia on the given job input.
-    """
+  def execute(
+    self,
+    job: Job,
+    *,
+    cancel_token: CancellationToken | None = None,
+  ) -> JobExecutionResult:
     if cancel_token:
       cancel_token.raise_if_cancelled()
 
-    if not job.input_path:
-      raise ValueError("Input file is missing")
+    input_file = self.ensure_input_file(job)
+    output_dir = self.prepare_output_dir(job)
 
-    input_file = Path(job.input_path)
-    if not input_file.exists():
-      raise ValueError("Input file not found on disk")
+    output_json = output_dir / "essentia_output.json"
 
-    output_dir = self.base_output / job.id
-    output_dir.mkdir(parents=True, exist_ok=True)
+    self._run_extractor(input_file, output_json, cancel_token=cancel_token)
 
-    raw_json = output_dir / "essentia_output.json"
-    completed = self._run_extractor(input_file, raw_json, cancel_token=cancel_token)
-
-    if completed.returncode != 0:
-      stderr = (completed.stderr or "").strip()
-      raise RuntimeError(stderr or "Essentia failed to analyze the audio")
-
-    if not raw_json.exists():
+    if not output_json.exists():
       raise RuntimeError("Essentia did not produce an output file")
 
     try:
-      with raw_json.open("r", encoding="utf-8") as fp:
+      with output_json.open("r", encoding="utf-8") as fp:
         payload = json.load(fp)
     except Exception as exc:
       raise RuntimeError("Failed to read Essentia output") from exc
 
     result = self._reduce_output(payload)
-    return output_dir, [raw_json.name], result
+
+    return JobExecutionResult(
+      output_path=output_dir,
+      output_files=[output_json.name],
+      result=result,
+    )
 
   def _run_extractor(
     self,
     input_file: Path,
     output_json: Path,
-    cancel_token: CancellationToken | None = None,
-  ) -> subprocess.CompletedProcess[str]:
-    """
-    Invoke the Essentia CLI.
-    """
-    binary_exists = shutil.which(self.extractor_bin) is not None or Path(self.extractor_bin).exists()
+    *,
+    cancel_token: CancellationToken | None,
+  ) -> None:
+    binary_exists = (
+      shutil.which(self.extractor_bin) is not None
+      or Path(self.extractor_bin).exists()
+    )
     if not binary_exists:
       raise RuntimeError(
-        f"Essentia binary '{self.extractor_bin}' not found. Install it or set NOXTUNIZER_EXTRACTOR_BIN."
+        f"Essentia binary '{self.extractor_bin}' not found. "
+        "Install it or set NOXTUNIZER_EXTRACTOR_BIN."
       )
 
     cmd = [
@@ -81,13 +92,48 @@ class NoxtunizerExecutor:
       str(input_file),
       str(output_json),
     ]
-    return self._run_with_cancellation(cmd, cancel_token)
-  
+
+    self.run_process(cmd, cancel_token=cancel_token)
+
+  def _reduce_output(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    bpm_raw = self._as_float(self._get(payload, ["rhythm", "bpm"]))
+    bpm_value = round(bpm_raw) if bpm_raw is not None else None
+
+    tonal = payload.get("tonal", {}) or {}
+    key_key = tonal.get("key_key") or tonal.get("chords_key")
+    key_scale = tonal.get("key_scale") or tonal.get("chords_scale")
+
+    key_key = self._normalize_key(key_key) if isinstance(key_key, str) else None
+    key_scale = self._normalize_scale(key_scale)
+
+    key_value = f"{key_key} {key_scale}" if key_key and key_scale else None
+
+    duration_seconds = self._as_float(
+      self._get(payload, ["metadata", "audio_properties", "length"])
+    )
+
+    return {
+      "bpm": bpm_value,
+      "key": key_value,
+      "duration_seconds": duration_seconds,
+      "duration_label": self._format_duration(duration_seconds),
+    }
+
+  def _normalize_scale(self, scale: Any) -> str | None:
+    if not isinstance(scale, str):
+      return None
+    s = scale.strip().lower()
+    if s == "major":
+      return "Major"
+    if s == "minor":
+      return "Minor"
+    return None
+
   def _normalize_key(self, key: str | None) -> str | None:
     if not key or not isinstance(key, str):
       return None
-    k = key.strip().upper()
 
+    k = key.strip().upper()
     mapping = {
       "BB": "Bb",
       "EB": "Eb",
@@ -112,50 +158,7 @@ class NoxtunizerExecutor:
 
     return k.capitalize()
 
-  def _reduce_output(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Reduce Essentia JSON into clean UI fields.
-    """
-    bpm_raw = self._as_float(self._get(payload, ["rhythm", "bpm"]))
-    bpm_value = round(bpm_raw) if bpm_raw is not None else None
-
-    tonal = payload.get("tonal", {}) or {}
-    key_key = tonal.get("key_key") or tonal.get("chords_key")
-    key_scale = tonal.get("key_scale") or tonal.get("chords_scale")
-
-    if isinstance(key_key, str):
-      key_key = self._normalize_key(key_key)
-    else:
-      key_key = None
-
-    if isinstance(key_scale, str):
-      s = key_scale.strip().lower()
-      if s == "major":
-        key_scale = "Major"
-      elif s == "minor":
-        key_scale = "Minor"
-      else:
-        key_scale = None
-    else:
-      key_scale = None
-
-    key_value = f"{key_key} {key_scale}" if key_key and key_scale else None
-
-    duration_seconds = self._as_float(self._get(payload, ["metadata", "audio_properties", "length"]))
-    duration_label = self._format_duration(duration_seconds)
-
-    return {
-      "bpm": bpm_value,
-      "key": key_value,
-      "duration_seconds": duration_seconds,
-      "duration_label": duration_label,
-    }
-
-
   def _as_float(self, value: Any) -> float | None:
-    """
-    Best-effort float conversion.
-    """
     if isinstance(value, (int, float)):
       return float(value)
     if isinstance(value, str):
@@ -168,9 +171,6 @@ class NoxtunizerExecutor:
     return None
 
   def _format_duration(self, seconds: float | None) -> str:
-    """
-    Format seconds into M:SS.
-    """
     if seconds is None:
       return "—"
     minutes = int(seconds // 60)
@@ -181,47 +181,9 @@ class NoxtunizerExecutor:
     return f"{minutes}:{secs:02d}"
 
   def _get(self, data: Dict[str, Any], path: list[str]) -> Any:
-    """
-    Safely descend nested dictionaries.
-    """
     current: Any = data
     for key in path:
       if not isinstance(current, dict):
         return None
       current = current.get(key)
     return current
-
-  def _run_with_cancellation(
-    self,
-    cmd: list[str],
-    cancel_token: CancellationToken | None = None,
-  ) -> subprocess.CompletedProcess[str]:
-    proc = subprocess.Popen(
-      cmd,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE,
-      text=True,
-    )
-
-    try:
-      while True:
-        if cancel_token and cancel_token.cancelled:
-          proc.terminate()
-          try:
-            proc.wait(timeout=5)
-          except Exception:
-            proc.kill()
-          raise JobCancelled()
-
-        retcode = proc.poll()
-        if retcode is not None:
-          stdout, stderr = proc.communicate()
-          return subprocess.CompletedProcess(cmd, retcode, stdout, stderr)
-
-        time.sleep(0.25)
-    finally:
-      if cancel_token and cancel_token.stopped and proc.poll() is None:
-        try:
-          proc.terminate()
-        except Exception:
-          pass
