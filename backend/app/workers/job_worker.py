@@ -10,8 +10,10 @@ from uuid import uuid4
 
 from sqlmodel import Session, select
 
-from app.models.job import Job, JobStatus, JobTool, JobUpdate, _utcnow
+from app.models.job import Job, JobStatus, JobTool, _utcnow
+from app.services.job_lifecycle_service import JobAbortReason, JobLifecycleService
 from app.services.job_service import JobService
+from app.workers.job_types import JobExecutionResult
 
 
 class JobCancelled(Exception):
@@ -48,7 +50,7 @@ class CancellationToken:
       raise JobCancelled()
 
 
-JobExecutor = Callable[[Job, JobService, CancellationToken], None]
+JobExecutor = Callable[[Job, JobService, CancellationToken], JobExecutionResult]
 
 
 class JobWorker:
@@ -73,6 +75,8 @@ class JobWorker:
     self.executors: Dict[JobTool, JobExecutor] = {}
     self._stop_event = threading.Event()
     self._thread: Optional[threading.Thread] = None
+    self._tokens_lock = threading.Lock()
+    self._active_tokens: Dict[str, CancellationToken] = {}
 
   def register_executor(self, tool: JobTool, executor: JobExecutor) -> None:
     self.executors[tool] = executor
@@ -84,9 +88,18 @@ class JobWorker:
     self._thread = threading.Thread(target=self._run_loop, daemon=True)
     self._thread.start()
 
-  def stop(self) -> None:
+  def stop(self, *, wait: bool = True, abort_running: bool = True) -> None:
+    """
+    Request worker shutdown, optionally aborting any in-flight jobs.
+
+    Args:
+      wait: Whether to wait briefly for the worker thread to exit.
+      abort_running: Whether to cancel and mark running jobs as aborted.
+    """
     self._stop_event.set()
-    if self._thread:
+    if abort_running:
+      self._abort_inflight_jobs()
+    if wait and self._thread:
       self._thread.join(timeout=2)
 
   def _run_loop(self) -> None:
@@ -99,6 +112,32 @@ class JobWorker:
         self._process_job(job.id)
       except Exception:
         time.sleep(self.poll_interval)
+
+  def _register_token(self, token: CancellationToken) -> None:
+    """Track active cancellation tokens so shutdown can cancel in-flight jobs."""
+    with self._tokens_lock:
+      self._active_tokens[token.job_id] = token
+
+  def _unregister_token(self, job_id: str) -> None:
+    """Remove a token from the active registry."""
+    with self._tokens_lock:
+      self._active_tokens.pop(job_id, None)
+
+  def _cancel_active_tokens(self) -> None:
+    """Cancel all active tokens to cooperatively stop executors."""
+    with self._tokens_lock:
+      tokens = list(self._active_tokens.values())
+    for token in tokens:
+      token.cancel()
+
+  def _abort_inflight_jobs(self) -> None:
+    """
+    Cancel active executors and mark running jobs as aborted for shutdown.
+    """
+    self._cancel_active_tokens()
+    with Session(self.engine) as session:
+      lifecycle = JobLifecycleService(session)
+      lifecycle.abort_running_jobs(reason=JobAbortReason.SHUTDOWN)
 
   def _acquire_next_job(self) -> Optional[Job]:
     with Session(self.engine) as session:
@@ -130,17 +169,19 @@ class JobWorker:
 
   def _process_job(self, job_id: str) -> None:
     with Session(self.engine) as session:
-      service = JobService(session)
+      lifecycle = JobLifecycleService(session)
+      service = lifecycle.job_service
       job = service.get_job(job_id)
       if not job:
         return
 
       executor = self.executors.get(job.tool)
       if not executor:
-        service.mark_error(job_id, f"No executor registered for tool '{job.tool}'")
+        lifecycle.fail(job_id, f"No executor registered for tool '{job.tool}'")
         return
 
       cancel_token = CancellationToken(job_id)
+      self._register_token(cancel_token)
       watcher = threading.Thread(
         target=self._watch_for_abort,
         args=(job_id, cancel_token),
@@ -148,87 +189,40 @@ class JobWorker:
       )
       watcher.start()
 
-      updated = service.mark_running(
+      if self._stop_event.is_set():
+        cancel_token.cancel()
+
+      updated = lifecycle.mark_running(
         job_id,
         worker_id=self.worker_id,
         attempt=(job.attempt or 0) + 1,
       )
       if not updated:
         cancel_token.stop()
+        self._unregister_token(job_id)
         return
+
+      if self._stop_event.is_set():
+        cancel_token.cancel()
 
       try:
-        executor(updated, service, cancel_token)
-
+        result = executor(updated, service, cancel_token)
+        if not isinstance(result, JobExecutionResult):
+          raise RuntimeError("Executor returned an invalid result payload")
+        lifecycle.complete(job_id, result)
       except JobCancelled:
-        cancel_token.stop()
-        aborted = service.update_job(
-          job_id,
-          JobUpdate(
-            status=JobStatus.ABORTED,
-            locked_at=None,
-            locked_by=None,
-          ),
-        )
-        if aborted:
-          try:
-            from app.services.job_cleanup import JobCleanupService
-
-            JobCleanupService().cleanup_job_files(aborted, keep_input=True)
-          except Exception:
-            pass
-        return
-
+        lifecycle.abort_for_cancellation(job_id, shutdown_requested=self._stop_event.is_set())
+      except KeyboardInterrupt:
+        lifecycle.abort_if_running(job_id, reason=JobAbortReason.SHUTDOWN)
       except Exception as exc:
-        cancel_token.stop()
-        try:
-          service.mark_error(job_id, str(exc))
-        except Exception:
-          self._force_unlock(service, job_id)
-        return
-
+        lifecycle.fail(job_id, str(exc))
       finally:
         cancel_token.stop()
+        self._unregister_token(job_id)
 
       refreshed = service.get_job(job_id)
       if refreshed and refreshed.status == JobStatus.RUNNING:
-        if cancel_token.cancelled:
-          aborted = service.update_job(
-            job_id,
-            JobUpdate(
-              status=JobStatus.ABORTED,
-              locked_at=None,
-              locked_by=None,
-            ),
-          )
-          if aborted:
-            try:
-              from app.services.job_cleanup import JobCleanupService
-
-              JobCleanupService().cleanup_job_files(aborted, keep_input=True)
-            except Exception:
-              pass
-        else:
-          try:
-            service.mark_error(
-              job_id,
-              "Executor completed without finalizing job status",
-            )
-          except Exception:
-            self._force_unlock(service, job_id)
-
-  def _force_unlock(self, service: JobService, job_id: str) -> None:
-    try:
-      service.update_job(
-        job_id,
-        JobUpdate(
-          status=JobStatus.ERROR,
-          locked_at=None,
-          locked_by=None,
-        ),
-      )
-    except Exception:
-      pass
+        lifecycle.fail(job_id, "Executor completed without finalizing job status")
 
   def _watch_for_abort(self, job_id: str, token: CancellationToken) -> None:
     while not token.stopped:

@@ -202,13 +202,6 @@ class JobService:
     if existing.status == JobStatus.ABORTED:
       return existing
 
-    try:
-      from app.services.job_cleanup import JobCleanupService
-
-      JobCleanupService().cleanup_job_files(existing, keep_input=True)
-    except Exception:
-      pass
-
     update = JobUpdate(
       status=JobStatus.ERROR,
       error_message=message,
@@ -223,7 +216,6 @@ class JobService:
     job_id: str,
     *,
     message: Optional[str] = None,
-    cleanup_outputs: bool = True,
   ) -> Optional[Job]:
     """
     Mark a running job as aborted, clear outputs, and release locks.
@@ -243,14 +235,6 @@ class JobService:
       return None
     if job.status != JobStatus.RUNNING:
       raise ValueError("Only running jobs can be aborted")
-
-    if cleanup_outputs:
-      try:
-        from app.services.job_cleanup import JobCleanupService
-
-        JobCleanupService().cleanup_job_files(job, keep_input=True)
-      except Exception:
-        pass
 
     update = JobUpdate(
       status=JobStatus.ABORTED,
@@ -282,13 +266,6 @@ class JobService:
       return None
     if job.status not in (JobStatus.ERROR, JobStatus.ABORTED):
       raise ValueError("Only errored or aborted jobs can be retried")
-
-    try:
-      from app.services.job_cleanup import JobCleanupService
-
-      JobCleanupService().cleanup_job_files(job, keep_input=True)
-    except Exception:
-      pass
 
     update = JobUpdate(
       status=JobStatus.PENDING,

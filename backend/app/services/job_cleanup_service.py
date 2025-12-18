@@ -5,13 +5,11 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from sqlmodel import Session, select
-
-from app.models.job import Job, JobStatus, JobTool
+from app.models.job import Job, JobTool
 
 
 class JobCleanupService:
-  """Handles best-effort cleanup and recovery of job-related filesystem artifacts."""
+  """Handles best-effort cleanup of job-related filesystem artifacts."""
 
   def cleanup_job_files(
     self,
@@ -35,30 +33,6 @@ class JobCleanupService:
       self._safe_remove(Path(job.output_path))
     elif resolved_output_base:
       self._safe_remove(resolved_output_base / job.id)
-
-  def recover_running_jobs(
-    self,
-    *,
-    session: Session,
-  ) -> None:
-    """
-    Recover jobs left in RUNNING state after an unexpected server shutdown.
-
-    Jobs are marked as ABORTED, outputs are cleaned, and inputs are preserved.
-    """
-    from app.services.job_service import JobService
-
-    job_service = JobService(session)
-
-    jobs = session.exec(
-      select(Job).where(Job.status == JobStatus.RUNNING)
-    ).all()
-
-    for job in jobs:
-      try:
-        job_service.mark_aborted(job.id, message="Job interrupted by server shutdown")
-      except ValueError:
-        continue
 
   def _safe_remove(self, path: Path) -> None:
     """Best-effort directory removal without raising upstream errors."""
