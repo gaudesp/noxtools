@@ -11,7 +11,8 @@ from fastapi import UploadFile
 from app.executors.noxsongizer_executor import NoxsongizerExecutor
 from app.models.job import Job, JobTool, JobUpdate
 from app.services.job_service import JobService
-from app.workers.job_worker import CancellationToken, JobCancelled
+from app.workers.job_worker import CancellationToken
+from app.workers.job_types import JobExecutionResult
 
 
 class NoxsongizerService:
@@ -49,7 +50,7 @@ class NoxsongizerService:
       jobs_with_files.append((refreshed or job, file))
     return jobs_with_files
 
-  def process_job(self, job: Job, cancel_token: CancellationToken) -> None:
+  def process_job(self, job: Job, cancel_token: CancellationToken) -> JobExecutionResult:
     """
     Execute Demucs for a given job and persist resulting stems.
 
@@ -57,17 +58,9 @@ class NoxsongizerService:
       job: Job entity with an uploaded input file.
     """
     cancel_token.raise_if_cancelled()
-    try:
-      output_dir, stems = self.executor.execute(job, cancel_token=cancel_token)
-    except JobCancelled:
-      return
-    except BaseException as exc:  # noqa: BLE001
-      self.job_service.mark_error(job.id, str(exc))
-      return
-
-    self.job_service.mark_completed(
-      job.id,
-      output_path=str(output_dir),
+    output_dir, stems = self.executor.execute(job, cancel_token=cancel_token)
+    return JobExecutionResult(
+      output_path=output_dir,
       output_files=stems,
       result={"stems": stems},
     )

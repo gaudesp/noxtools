@@ -9,7 +9,7 @@ from app.api import jobs, noxsongizer, noxelizer, noxtubizer, noxtunizer
 from app.db import engine, init_db, get_session
 from app.events.job_events import job_event_bus
 from app.models.job import JobTool
-from app.services.job_cleanup import JobCleanupService
+from app.services.job_lifecycle_service import JobAbortReason, JobLifecycleService
 from app.services.noxsongizer_service import NoxsongizerService
 from app.services.noxelizer_service import NoxelizerService
 from app.services.noxtunizer_service import NoxtunizerService
@@ -65,7 +65,7 @@ def on_startup() -> None:
   session_gen = get_session()
   session = next(session_gen)
   try:
-    JobCleanupService().recover_running_jobs(session=session)
+    JobLifecycleService(session).recover_running_jobs()
   finally:
     session.close()
 
@@ -76,4 +76,13 @@ def on_startup() -> None:
 @app.on_event("shutdown")
 def on_shutdown() -> None:
   """Stop background worker on application shutdown."""
-  job_worker.stop()
+  session_gen = get_session()
+  session = next(session_gen)
+  try:
+    JobLifecycleService(session).abort_running_jobs(
+      reason=JobAbortReason.SHUTDOWN,
+    )
+  finally:
+    session.close()
+
+  job_worker.stop(wait=False, abort_running=False)

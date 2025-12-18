@@ -14,7 +14,8 @@ from sqlmodel import Session
 from app.db import get_session
 from app.events.job_events import job_event_bus
 from app.models.job import JobRead, JobStatus, JobTool
-from app.services.job_cleanup import JobCleanupService
+from app.services.job_deletion_service import JobDeletionForbidden, JobDeletionService, JobNotFound
+from app.services.job_lifecycle_service import JobAbortReason, JobLifecycleService
 from app.services.job_service import JobService
 
 router = APIRouter(prefix="/api/jobs", tags=["jobs"], redirect_slashes=False)
@@ -23,6 +24,16 @@ router = APIRouter(prefix="/api/jobs", tags=["jobs"], redirect_slashes=False)
 def get_job_service(session: Session = Depends(get_session)) -> JobService:
   """Dependency injector for JobService."""
   return JobService(session)
+
+
+def get_job_lifecycle(session: Session = Depends(get_session)) -> JobLifecycleService:
+  """Dependency injector for JobLifecycleService."""
+  return JobLifecycleService(session)
+
+
+def get_job_deletion(session: Session = Depends(get_session)) -> JobDeletionService:
+  """Dependency injector for JobDeletionService."""
+  return JobDeletionService(session)
 
 
 class PaginatedJobs(BaseModel):
@@ -85,39 +96,36 @@ def get_job(job_id: str, job_service: JobService = Depends(get_job_service)) -> 
 @router.delete("/{job_id}")
 def delete_job(
   job_id: str,
-  job_service: JobService = Depends(get_job_service),
+  deletion: JobDeletionService = Depends(get_job_deletion),
 ) -> dict:
   """
   Delete a job if it is not running, and remove associated files.
   """
-  job = job_service.get_job(job_id)
-  if not job:
+  try:
+    deletion.delete_job_and_artifacts(job_id)
+  except JobNotFound:
     raise HTTPException(status_code=404, detail="Job not found")
-  if job.status == JobStatus.RUNNING:
-    raise HTTPException(status_code=409, detail="Cannot delete a running job")
-
-  cleanup = JobCleanupService()
-  cleanup.cleanup_job_files(job, keep_input=False)
-  job_service.delete_job(job_id)
+  except JobDeletionForbidden as exc:
+    raise HTTPException(status_code=409, detail=str(exc))
   return {"status": "deleted", "job_id": job_id}
 
 
 @router.post("/{job_id}/retry", response_model=JobRead)
 def retry_job(
   job_id: str,
-  job_service: JobService = Depends(get_job_service),
+  lifecycle: JobLifecycleService = Depends(get_job_lifecycle),
 ) -> JobRead:
   """
   Retry a previously failed or aborted job.
   """
-  job = job_service.get_job(job_id)
+  job = lifecycle.job_service.get_job(job_id)
   if not job:
     raise HTTPException(status_code=404, detail="Job not found")
   if job.status not in (JobStatus.ERROR, JobStatus.ABORTED):
     raise HTTPException(status_code=409, detail="Only failed or aborted jobs can be retried")
 
   try:
-    updated = job_service.retry_job(job_id)
+    updated = lifecycle.retry(job_id)
   except ValueError as exc:
     raise HTTPException(status_code=409, detail=str(exc))
 
@@ -129,19 +137,19 @@ def retry_job(
 @router.post("/{job_id}/cancel", response_model=JobRead)
 def cancel_job(
   job_id: str,
-  job_service: JobService = Depends(get_job_service),
+  lifecycle: JobLifecycleService = Depends(get_job_lifecycle),
 ) -> JobRead:
   """
   Cancel an in-flight job, marking it as aborted and clearing outputs.
   """
-  job = job_service.get_job(job_id)
+  job = lifecycle.job_service.get_job(job_id)
   if not job:
     raise HTTPException(status_code=404, detail="Job not found")
   if job.status != JobStatus.RUNNING:
     raise HTTPException(status_code=409, detail="Only running jobs can be cancelled")
 
   try:
-    updated = job_service.mark_aborted(job_id, message="Job cancelled by user", cleanup_outputs=False)
+    updated = lifecycle.abort(job_id, reason=JobAbortReason.USER_CANCELLED)
   except ValueError as exc:
     raise HTTPException(status_code=409, detail=str(exc))
 
