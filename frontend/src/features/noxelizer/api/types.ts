@@ -7,8 +7,13 @@ export interface CreateRequest {
   final_hold?: number
 }
 
-export interface CreateResponse {
+export interface UploadItem {
   job_id: string
+  filename?: string
+}
+
+export interface CreateResponse {
+  jobs: UploadItem[]
 }
 
 export interface JobResult {

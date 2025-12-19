@@ -8,7 +8,7 @@ from typing import Generator
 
 from sqlmodel import Session, SQLModel, create_engine
 
-from app.models.job import Job  # noqa: F401
+from app.jobs.model import Job  # noqa: F401
 
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./noxtools.db")

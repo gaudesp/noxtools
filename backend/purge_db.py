@@ -17,7 +17,7 @@ from pathlib import Path
 from sqlmodel import SQLModel, create_engine
 
 from app.db import DATABASE_URL
-from app.models import job  # noqa: F401
+from app.jobs import model as job_model  # noqa: F401
 
 
 def purge_database() -> None:

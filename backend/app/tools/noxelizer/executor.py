@@ -1,0 +1,369 @@
+"""Executor for generating depixelization reveal videos from images."""
+
+from __future__ import annotations
+
+import shutil
+import tempfile
+from pathlib import Path
+from typing import Iterable
+
+import cv2
+import numpy as np
+import numpy.typing as npt
+
+from app.errors import ExecutionError, StorageError
+from app.jobs.model import Job
+from app.jobs.schemas import JobExecutionResult
+from app.utils.files import ensure_path, safe_unlink
+from app.worker.cancellation import CancellationToken
+from app.worker.process import run_process
+
+Frame = npt.NDArray[np.uint8]
+
+
+class NoxelizerExecutor:
+  """
+  Build a depixelization reveal video from a single image.
+
+  Strategy:
+  - generate pixelated frames from max_pix → min_pix
+  - hold final sharp frame
+  - encode with ffmpeg if available, else OpenCV fallback
+  """
+
+  ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+
+  def __init__(
+    self,
+    *,
+    fps: int = 60,
+    duration: float = 15.0,
+    min_pix: int = 1,
+    max_pix: int = 120,
+    final_hold: float = 0.75,
+    codec: str = "mp4v",
+    suffix: str = ".mp4",
+    base_output: Path | None = None,
+  ) -> None:
+    self.fps = fps
+    self.duration = duration
+    self.min_pix = min_pix
+    self.max_pix = max_pix
+    self.final_hold = final_hold
+    self.codec = codec
+    self.suffix = self._normalize_suffix(suffix)
+
+    self._validate_config(
+      fps=self.fps,
+      duration=self.duration,
+      min_pix=self.min_pix,
+      max_pix=self.max_pix,
+      final_hold=self.final_hold,
+    )
+
+    self.base_output = base_output or Path("media/noxelizer/outputs")
+    self.base_output.mkdir(parents=True, exist_ok=True)
+
+  def execute(
+    self,
+    job: Job,
+    *,
+    cancel_token: CancellationToken | None = None,
+  ) -> JobExecutionResult:
+    if cancel_token:
+      cancel_token.raise_if_cancelled()
+
+    params = job.params or {}
+    fps, duration, final_hold = self._resolve_options(params)
+
+    input_file = ensure_path(
+      job.input_path,
+      missing_message="Input file is missing",
+      not_found_message="Input file not found on disk",
+    )
+    self._validate_input_file(input_file)
+
+    output_dir = self.base_output / job.id
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_name = self._build_output_name(input_file)
+    final_path = output_dir / output_name
+
+    tmp_path = self._create_temp_file(output_dir)
+
+    try:
+      frames_written = self._render_video(
+        input_file,
+        tmp_path,
+        fps=fps,
+        duration=duration,
+        final_hold=final_hold,
+        cancel_token=cancel_token,
+      )
+
+      if frames_written <= 0:
+        raise ExecutionError("No frames were written")
+
+      tmp_path.replace(final_path)
+
+    except Exception:
+      safe_unlink(tmp_path)
+      raise
+
+    return JobExecutionResult(
+      output_path=output_dir,
+      output_files=[output_name],
+      result={
+        "video": output_name,
+        "frames_written": frames_written,
+        "fps": fps,
+        "duration": duration,
+        "final_hold": final_hold,
+        "codec": self.codec,
+      },
+    )
+
+  def _render_video(
+    self,
+    image_path: Path,
+    output_path: Path,
+    *,
+    fps: int,
+    duration: float,
+    final_hold: float,
+    cancel_token: CancellationToken | None,
+  ) -> int:
+    image = cv2.imread(str(image_path))
+    if image is None:
+      raise ExecutionError("Unable to read input image")
+
+    height, width = image.shape[:2]
+    if height == 0 or width == 0:
+      raise ExecutionError("Invalid image dimensions")
+
+    animated_frames = max(1, round(fps * duration))
+    hold_frames = max(0, round(fps * final_hold))
+
+    if self._has_ffmpeg():
+      return self._render_with_ffmpeg(
+        image,
+        output_path,
+        animated_frames,
+        hold_frames,
+        fps=fps,
+        cancel_token=cancel_token,
+      )
+
+    return self._render_with_cv2(
+      image,
+      output_path,
+      animated_frames,
+      hold_frames,
+      fps=fps,
+      cancel_token=cancel_token,
+    )
+
+  def _generate_frames(
+    self,
+    image: Frame,
+    count: int,
+    *,
+    cancel_token: CancellationToken | None,
+  ) -> Iterable[Frame]:
+    if count <= 1:
+      yield self._pixelate(image, self.min_pix)
+      return
+
+    for idx in range(count):
+      if cancel_token:
+        cancel_token.raise_if_cancelled()
+
+      progress = idx / (count - 1)
+      pixel = round(self.max_pix - (self.max_pix - self.min_pix) * progress)
+      pixel = max(self.min_pix, min(self.max_pix, pixel))
+
+      yield self._pixelate(image, pixel)
+
+  def _pixelate(self, image: Frame, size: int) -> Frame:
+    if size <= 1:
+      return image
+
+    h, w = image.shape[:2]
+    sw = max(1, w // size)
+    sh = max(1, h // size)
+
+    down = cv2.resize(image, (sw, sh), interpolation=cv2.INTER_NEAREST)
+    return cv2.resize(down, (w, h), interpolation=cv2.INTER_NEAREST)
+
+  def _render_with_ffmpeg(
+    self,
+    image: Frame,
+    output_path: Path,
+    animated_frames: int,
+    hold_frames: int,
+    *,
+    fps: int,
+    cancel_token: CancellationToken | None,
+  ) -> int:
+    frames_dir = Path(tempfile.mkdtemp(prefix="frames_", dir=output_path.parent))
+    frames_written = 0
+
+    try:
+      for idx, frame in enumerate(
+        self._generate_frames(image, animated_frames, cancel_token=cancel_token)
+      ):
+        path = frames_dir / f"frame_{idx:05d}.png"
+        if not cv2.imwrite(str(path), frame):
+          raise StorageError("Failed to write frame")
+        frames_written += 1
+
+      for i in range(hold_frames):
+        if cancel_token:
+          cancel_token.raise_if_cancelled()
+        path = frames_dir / f"frame_{frames_written + i:05d}.png"
+        cv2.imwrite(str(path), image)
+        frames_written += 1
+
+      cmd = [
+        "ffmpeg",
+        "-y",
+        "-framerate", str(fps),
+        "-i", str(frames_dir / "frame_%05d.png"),
+        "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+        "-c:v", "libx264",
+        "-preset", "fast",
+        "-crf", "18",
+        "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
+        str(output_path),
+      ]
+
+      run_process(cmd, cancel_token=cancel_token)
+      self.codec = "h264"
+
+      return frames_written
+
+    finally:
+      shutil.rmtree(frames_dir, ignore_errors=True)
+
+  def _render_with_cv2(
+    self,
+    image: Frame,
+    output_path: Path,
+    animated_frames: int,
+    hold_frames: int,
+    *,
+    fps: int,
+    cancel_token: CancellationToken | None,
+  ) -> int:
+    fourcc = cv2.VideoWriter_fourcc(*self.codec)
+    writer = cv2.VideoWriter(
+      str(output_path),
+      fourcc,
+      fps,
+      (image.shape[1], image.shape[0]),
+    )
+
+    if not writer.isOpened():
+      raise StorageError("Failed to open video writer")
+
+    frames_written = 0
+    try:
+      for frame in self._generate_frames(image, animated_frames, cancel_token=cancel_token):
+        writer.write(frame)
+        frames_written += 1
+
+      for _ in range(hold_frames):
+        writer.write(image)
+        frames_written += 1
+
+    finally:
+      writer.release()
+
+    return frames_written
+
+  def _resolve_options(self, params: dict) -> tuple[int, float, float]:
+    fps = self._coerce_int(params.get("fps"), self.fps)
+    duration = self._coerce_float(params.get("duration"), self.duration)
+    final_hold = self._coerce_float(params.get("final_hold"), self.final_hold)
+
+    self._validate_config(
+      fps=fps,
+      duration=duration,
+      min_pix=self.min_pix,
+      max_pix=self.max_pix,
+      final_hold=final_hold,
+    )
+
+    return fps, duration, final_hold
+
+  def _validate_config(
+    self,
+    *,
+    fps: int,
+    duration: float,
+    min_pix: int,
+    max_pix: int,
+    final_hold: float,
+  ) -> None:
+    if fps <= 0:
+      raise ExecutionError("fps must be positive")
+    if duration <= 0:
+      raise ExecutionError("duration must be positive")
+    if min_pix < 1 or max_pix < 1:
+      raise ExecutionError("pixel size must be >= 1")
+    if max_pix < min_pix:
+      raise ExecutionError("max_pix must be >= min_pix")
+    if final_hold < 0:
+      raise ExecutionError("final_hold must be >= 0")
+
+  def _coerce_int(self, value, default: int) -> int:
+    if isinstance(value, bool):
+      return default
+    if isinstance(value, int):
+      return value
+    if isinstance(value, float) and value.is_integer():
+      return int(value)
+    if isinstance(value, str):
+      try:
+        return int(value)
+      except Exception:
+        return default
+    return default
+
+  def _coerce_float(self, value, default: float) -> float:
+    if isinstance(value, bool):
+      return default
+    if isinstance(value, (int, float)):
+      return float(value)
+    if isinstance(value, str):
+      try:
+        return float(value)
+      except Exception:
+        return default
+    return default
+
+  def _validate_input_file(self, path: Path) -> None:
+    if not path.exists():
+      raise ExecutionError("Input file not found")
+    if path.suffix.lower() not in self.ALLOWED_EXTENSIONS:
+      raise ExecutionError(f"Unsupported image extension: {path.suffix}")
+
+  def _build_output_name(self, input_file: Path) -> str:
+    stem = input_file.stem or "noxelizer"
+    return f"[Pixelate] {stem}{self.suffix}"
+
+  def _normalize_suffix(self, suffix: str) -> str:
+    return suffix if suffix.startswith(".") else f".{suffix}"
+
+  def _has_ffmpeg(self) -> bool:
+    return shutil.which("ffmpeg") is not None
+
+  def _create_temp_file(self, output_dir: Path) -> Path:
+    tmp = tempfile.NamedTemporaryFile(
+      dir=output_dir,
+      suffix=self.suffix,
+      delete=False,
+    )
+    path = Path(tmp.name)
+    tmp.close()
+    return path

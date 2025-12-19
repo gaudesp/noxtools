@@ -2,21 +2,33 @@
 
 import asyncio
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-
-from app.api import jobs, noxsongizer, noxelizer, noxtubizer, noxtunizer
-from app.db import engine, init_db, get_session
-from app.events.job_events import job_event_bus
-from app.models.job import JobTool
-from app.services.job_lifecycle_service import JobAbortReason, JobLifecycleService
-from app.services.noxsongizer_service import NoxsongizerService
-from app.services.noxelizer_service import NoxelizerService
-from app.services.noxtunizer_service import NoxtunizerService
-from app.services.noxtubizer_service import NoxtubizerService
-from app.workers.job_worker import JobWorker
+from fastapi.responses import JSONResponse
+from app.db import engine, get_session, init_db
+from app.errors import AppError
+from app.jobs import router as jobs_router
+from app.jobs.events import job_event_bus
+from app.jobs.lifecycle import JobAbortReason, JobLifecycleService
+from app.jobs.model import JobTool
+from app.tools.noxelizer.executor import NoxelizerExecutor
+from app.tools.noxelizer import router as noxelizer_router
+from app.tools.noxsongizer.executor import NoxsongizerExecutor
+from app.tools.noxsongizer import router as noxsongizer_router
+from app.tools.noxtubizer.executor import NoxtubizerExecutor
+from app.tools.noxtubizer import router as noxtubizer_router
+from app.tools.noxtunizer.executor import NoxtunizerExecutor
+from app.tools.noxtunizer import router as noxtunizer_router
+from app.utils.paths import output_base
+from app.worker import JobWorker
 
 app = FastAPI(title="Noxtools API")
+
+
+@app.exception_handler(AppError)
+async def app_error_handler(request: Request, exc: AppError):
+  """Convert domain errors into JSON HTTP responses."""
+  return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 origins = [
   "http://localhost:5173",
@@ -30,28 +42,42 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-app.include_router(noxsongizer.router)
-app.include_router(noxelizer.router)
-app.include_router(noxtubizer.router)
-app.include_router(noxtunizer.router)
-app.include_router(jobs.router)
+app.include_router(noxsongizer_router.router)
+app.include_router(noxelizer_router.router)
+app.include_router(noxtubizer_router.router)
+app.include_router(noxtunizer_router.router)
+app.include_router(jobs_router.router)
 
 job_worker = JobWorker(engine)
+
+_noxsongizer_executor = NoxsongizerExecutor(
+  base_output=output_base(JobTool.NOXSONGIZER)
+)
+_noxelizer_executor = NoxelizerExecutor(
+  base_output=output_base(JobTool.NOXELIZER)
+)
+_noxtubizer_executor = NoxtubizerExecutor(
+  base_output=output_base(JobTool.NOXTUBIZER)
+)
+_noxtunizer_executor = NoxtunizerExecutor(
+  base_output=output_base(JobTool.NOXTUNIZER)
+)
+
 job_worker.register_executor(
   JobTool.NOXSONGIZER,
-  lambda job, svc, token: NoxsongizerService(svc).process_job(job, token),
+  lambda job, svc, token: _noxsongizer_executor.execute(job, cancel_token=token),
 )
 job_worker.register_executor(
   JobTool.NOXELIZER,
-  lambda job, svc, token: NoxelizerService(svc).process_job(job, token),
+  lambda job, svc, token: _noxelizer_executor.execute(job, cancel_token=token),
 )
 job_worker.register_executor(
   JobTool.NOXTUBIZER,
-  lambda job, svc, token: NoxtubizerService(svc).process_job(job, token),
+  lambda job, svc, token: _noxtubizer_executor.execute(job, cancel_token=token),
 )
 job_worker.register_executor(
   JobTool.NOXTUNIZER,
-  lambda job, svc, token: NoxtunizerService(svc).process_job(job, token),
+  lambda job, svc, token: _noxtunizer_executor.execute(job, cancel_token=token),
 )
 
 

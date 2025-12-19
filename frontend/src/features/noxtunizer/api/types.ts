@@ -17,8 +17,7 @@ export interface JobResult {
 
 export interface UploadItem {
   job_id: string
-  filename: string
+  filename?: string
 }
 
 export type NoxtunizerJob = Job<CreateRequest, JobResult>
-
