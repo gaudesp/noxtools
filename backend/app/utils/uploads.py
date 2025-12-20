@@ -1,62 +1,18 @@
-"""Upload persistence helpers."""
+"""Upload validation helpers."""
 
 from __future__ import annotations
 
 import os
-import shutil
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Iterable
 
 from fastapi import UploadFile
 
-from app.errors import StorageError, ValidationError
+from app.errors import ValidationError
 
 
 class UploadValidationError(ValidationError):
   """Raised when an uploaded file fails validation."""
-
-
-def write_upload_file(base_dir: Path, job_id: str, file: UploadFile) -> Optional[Path]:
-  """
-  Persist an uploaded file to a per-job directory.
-
-  Args:
-    base_dir: Base directory for uploads of the given tool.
-    job_id: Job identifier.
-    file: Uploaded file to persist.
-
-  Returns:
-    Path to the stored file, or None on failure.
-  """
-  upload_dir = base_dir / job_id
-  upload_dir.mkdir(parents=True, exist_ok=True)
-  dest = upload_dir / file.filename
-  try:
-    with dest.open("wb") as buffer:
-      shutil.copyfileobj(file.file, buffer)
-  except Exception:
-    return None
-  return dest
-
-
-def persist_upload(
-  base_dir: Path,
-  job_id: str,
-  file: UploadFile,
-  *,
-  variant: str | None = None,
-) -> Path:
-  """Persist an upload and optionally generate a variant."""
-  dest = write_upload_file(base_dir, job_id, file)
-  if not dest:
-    raise StorageError("Failed to write upload to disk")
-
-  if variant:
-    from app.utils.images import create_image_variant
-
-    create_image_variant(dest, variant=variant)
-
-  return dest
 
 
 def validate_uploads(

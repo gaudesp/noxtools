@@ -1,2 +1,2 @@
-export type { Job, JobTool, JobStatus } from "./types"
+export type { Job, JobTool, JobStatus, JobResult } from "./types"
 export { default as useJobStream } from "./useJobStream"

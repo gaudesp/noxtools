@@ -1,4 +1,5 @@
 import type { TableProps } from "./types"
+import Spinner from "../feedback/Spinner"
 
 export function Table<T, TContext>({
   rows,
@@ -32,10 +33,7 @@ export function Table<T, TContext>({
           {loading && (
             <tr>
               <td colSpan={columns.length} className="px-4 py-6 text-center text-slate-400">
-                <span
-                  className="inline-block h-4 w-4 rounded-full border border-current border-t-transparent animate-spin"
-                  aria-hidden
-                />
+                <Spinner size="sm" className="text-slate-400" ariaLabel="Loading" />
               </td>
             </tr>
           )}

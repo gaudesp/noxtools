@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import FileResponse
 from sqlmodel import Session
 
@@ -32,16 +32,22 @@ def health() -> dict:
 
 @router.post("/jobs", response_model=JobsEnqueued)
 async def create_job(
-  files: list[UploadFile] = File(...),
+  files: list[UploadFile] = File(default=[]),
+  file_ids: list[str] | None = Form(default=None),
   job_service: JobService = Depends(get_job_service),
 ) -> JobsEnqueued:
   """Create Noxtunizer jobs."""
-  payload = NoxtunizerJobRequest(files=files)
+  payload = NoxtunizerJobRequest(files=files, file_ids=file_ids or [])
   params = validate_noxtunizer_request(payload)
   jobs = enqueue_noxtunizer_jobs(params, job_service)
   return JobsEnqueued(
     jobs=[
-      JobEnqueued(job_id=job.id, filename=job.input_filename) for job in jobs
+      JobEnqueued(
+        job_id=job.id,
+        filename=job.input_filename,
+        duplicate_of=duplicate_of,
+      )
+      for job, duplicate_of in jobs
     ],
   )
 

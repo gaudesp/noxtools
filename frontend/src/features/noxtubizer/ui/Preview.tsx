@@ -4,7 +4,7 @@ import type { NoxtubizerJob, Mode } from "../api/types"
 type Props = { job: NoxtubizerJob }
 
 export default function Preview({ job }: Props) {
-  const mode = job.result?.mode ?? job.params?.mode
+  const mode = job.result?.summary?.mode ?? job.params?.mode
   if (!mode) return null
 
   const palette: Record<Mode, {

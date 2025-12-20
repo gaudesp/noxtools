@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -30,6 +30,7 @@ class JobCreate(SQLModel):
   input_filename: Optional[str] = None
   input_path: Optional[str] = None
   params: dict[str, Any] = Field(default_factory=dict)
+  signature: Optional[str] = None
   max_attempts: int = Field(default=1, ge=1)
 
   model_config = ConfigDict(extra="forbid")
@@ -48,6 +49,7 @@ class JobRead(SQLModel):
   output_path: Optional[str] = None
   output_files: list[str] = Field(default_factory=list)
   params: dict[str, Any] = Field(default_factory=dict)
+  signature: Optional[str] = None
   result: dict[str, Any] = Field(default_factory=dict)
   error_message: Optional[str] = None
   created_at: datetime
@@ -73,6 +75,7 @@ class JobUpdate(SQLModel):
   output_path: Optional[str] = None
   output_files: Optional[list[str]] = None
   params: Optional[dict[str, Any]] = None
+  signature: Optional[str] = None
   result: Optional[dict[str, Any]] = None
   error_message: Optional[str] = None
   started_at: Optional[datetime] = None
@@ -99,6 +102,7 @@ class JobEnqueued(BaseModel):
 
   job_id: str
   filename: Optional[str] = None
+  duplicate_of: Optional[str] = None
 
 
 class JobsEnqueued(BaseModel):
@@ -108,9 +112,21 @@ class JobsEnqueued(BaseModel):
 
 
 @dataclass
+class JobOutputFile:
+  """Descriptor for an output file produced by an executor."""
+
+  path: Path
+  type: str
+  name: str | None = None
+  format: str | None = None
+  quality: str | int | None = None
+  label: str | None = None
+
+
+@dataclass
 class JobExecutionResult:
   """Normalized output payload returned by executors."""
 
-  output_path: Path
-  output_files: list[str]
-  result: dict[str, Any] | None = None
+  summary: dict[str, Any]
+  output_files: list[JobOutputFile] = field(default_factory=list)
+  cleanup_paths: list[Path] = field(default_factory=list)

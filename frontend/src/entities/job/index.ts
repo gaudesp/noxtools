@@ -1,4 +1,4 @@
-export type { Job, JobTool, JobStatus } from "./model"
+export type { Job, JobTool, JobStatus, JobResult } from "./model"
 export type { PaginatedJobs, ListJobsParams } from "./api"
 
 export { useJobStream } from "./model"

@@ -1,4 +1,5 @@
 import { type ReactNode } from "react"
+import Spinner from "./Spinner"
 
 type Tone = "success" | "danger" | "warning" | "info"
 
@@ -77,10 +78,7 @@ export default function NoticeMessage({
           >
             <span>{message}</span>
             {withSpinner && (
-              <span
-                className="inline-block h-4 w-4 rounded-full border border-current border-t-transparent animate-spin"
-                aria-hidden
-              />
+              <Spinner size="xs" className="text-current" ariaLabel="Loading" />
             )}
           </p>
 

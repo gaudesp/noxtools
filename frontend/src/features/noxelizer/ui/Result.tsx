@@ -9,10 +9,13 @@ export default function Result({ job }: Props) {
     <JobStatusGate
       job={job}
       onDone={() => {
-        const filename =
-          job.result?.video ||
-          job.output_files?.[0] ||
+        const outputs = job.result?.files?.filter((item) => item.role === "output") ?? []
+        const videoLink =
+          outputs.find((item) => item.file.type === "video") ??
+          outputs[0] ??
           null
+        const filename = videoLink?.file.name ?? null
+        const label = videoLink?.label || "Video"
 
         if (!filename) {
           return (
@@ -27,7 +30,7 @@ export default function Result({ job }: Props) {
         const url = getDownloadUrl(job.id, filename)
 
         return (
-          <FileBlock title="Video" href={url}>
+          <FileBlock title={label} href={url}>
             <VideoPlayer url={url} height={400} />
           </FileBlock>
         )

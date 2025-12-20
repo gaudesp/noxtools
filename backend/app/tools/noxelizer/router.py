@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 from sqlmodel import Session
 
 from app.db import get_session
@@ -35,7 +35,8 @@ def health() -> dict:
 
 @router.post("/jobs", response_model=JobsEnqueued)
 async def create_job(
-  files: list[UploadFile] = File(...),
+  files: list[UploadFile] = File(default=[]),
+  file_ids: list[str] | None = Form(default=None),
   fps: Optional[int] = Form(None),
   duration: Optional[float] = Form(None),
   final_hold: Optional[float] = Form(None),
@@ -44,6 +45,7 @@ async def create_job(
   """Create Noxelizer jobs."""
   payload = NoxelizerJobRequest(
     files=files,
+    file_ids=file_ids or [],
     fps=fps,
     duration=duration,
     final_hold=final_hold,
@@ -52,7 +54,12 @@ async def create_job(
   jobs = enqueue_noxelizer_jobs(params, job_service)
   return JobsEnqueued(
     jobs=[
-      JobEnqueued(job_id=job.id, filename=job.input_filename) for job in jobs
+      JobEnqueued(
+        job_id=job.id,
+        filename=job.input_filename,
+        duplicate_of=duplicate_of,
+      )
+      for job, duplicate_of in jobs
     ],
   )
 
@@ -65,7 +72,7 @@ def download_source(
     description="Image variant to return (e.g. thumb). Defaults to original.",
   ),
   job_service: JobService = Depends(get_job_service),
-) -> FileResponse:
+) -> Response:
   """Stream the uploaded image or one of its variants for a given job."""
   return download_noxelizer_source(job_id, job_service, variant=variant)
 
@@ -75,6 +82,6 @@ def download_output(
   job_id: str,
   filename: str,
   job_service: JobService = Depends(get_job_service),
-) -> FileResponse:
+) -> Response:
   """Download the generated output for a given job."""
   return download_noxelizer_output(job_id, filename, job_service)

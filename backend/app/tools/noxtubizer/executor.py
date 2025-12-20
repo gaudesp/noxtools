@@ -3,13 +3,20 @@
 from __future__ import annotations
 
 import json
+import tempfile
 from pathlib import Path
 from typing import Literal
 
 from app.errors import ExecutionError
 from app.jobs.model import Job
-from app.jobs.schemas import JobExecutionResult
-from app.utils.files import cleanup_directory, detect_new_file, snapshot_files
+from app.jobs.schemas import JobExecutionResult, JobOutputFile
+from app.utils.files import (
+  append_name_suffix,
+  cleanup_directory,
+  detect_new_file,
+  safe_rmtree,
+  snapshot_files,
+)
 from app.worker.cancellation import CancellationToken
 from app.worker.process import run_capture, run_process
 
@@ -44,9 +51,8 @@ class NoxtubizerExecutor:
     "240p": 240,
   }
 
-  def __init__(self, *, base_output: Path | None = None) -> None:
-    self.base_output = base_output or Path("media/noxtubizer/outputs")
-    self.base_output.mkdir(parents=True, exist_ok=True)
+  def __init__(self, *, work_root: Path | None = None) -> None:
+    self.work_root = work_root
 
   def execute(
     self,
@@ -62,65 +68,100 @@ class NoxtubizerExecutor:
     if not url:
       raise ExecutionError("A YouTube URL is required")
 
-    output_dir = self.base_output / job.id
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    meta = self._probe(url, cancel_token)
-    raw_title = meta.get("title") or job.input_filename or url
-    safe_title = self._sanitize(raw_title)
-
-    outputs: list[str] = []
-    result: dict = {
-      "mode": mode,
-      "source_title": raw_title,
-      "safe_title": safe_title,
-      "url": url,
-    }
-
-    audio_path = None
-    video_path = None
-
-    if mode in ("audio", "both"):
-      audio_path, audio_meta = self._process_audio(
-        output_dir,
-        url,
-        safe_title,
-        params,
-        cancel_token,
+    output_dir = Path(
+      tempfile.mkdtemp(
+        prefix="noxtubizer_",
+        dir=str(self.work_root) if self.work_root else None,
       )
-      outputs.append(audio_path.name)
-      result["audio"] = audio_meta
-
-    if mode in ("video", "both"):
-      video_path, video_meta = self._process_video(
-        output_dir,
-        url,
-        safe_title,
-        params,
-        cancel_token,
-      )
-      outputs.append(video_path.name)
-      result["video"] = video_meta
-
-    if mode == "both":
-      final_path, both_meta = self._merge_audio_video(
-        output_dir,
-        audio_path,
-        video_path,
-        safe_title,
-        params,
-        cancel_token,
-      )
-      outputs = [final_path.name]
-      result["both"] = both_meta
-
-    cleanup_directory(output_dir, outputs)
-
-    return JobExecutionResult(
-      output_path=output_dir,
-      output_files=outputs,
-      result=result,
     )
+
+    try:
+      meta = self._probe(url, cancel_token)
+      raw_title = meta.get("title") or job.input_filename or url
+      safe_title = self._sanitize(raw_title)
+
+      outputs: list[str] = []
+      output_files: list[JobOutputFile] = []
+      summary = {
+        "mode": mode,
+        "title": raw_title,
+        "url": url,
+      }
+
+      audio_path = None
+      video_path = None
+
+      if mode in ("audio", "both"):
+        audio_path, audio_meta = self._process_audio(
+          output_dir,
+          url,
+          safe_title,
+          params,
+          cancel_token,
+        )
+        outputs.append(audio_path.name)
+        output_files.append(
+          JobOutputFile(
+            path=audio_path,
+            type="audio",
+            name=audio_path.name,
+            format=audio_meta.get("format"),
+            quality=audio_meta.get("quality"),
+            label="Audio",
+          )
+        )
+
+      if mode in ("video", "both"):
+        video_path, video_meta = self._process_video(
+          output_dir,
+          url,
+          safe_title,
+          params,
+          cancel_token,
+        )
+        outputs.append(video_path.name)
+        output_files.append(
+          JobOutputFile(
+            path=video_path,
+            type="video",
+            name=video_path.name,
+            format=video_meta.get("format"),
+            quality=video_meta.get("quality"),
+            label="Video",
+          )
+        )
+
+      if mode == "both":
+        final_path, both_meta = self._merge_audio_video(
+          output_dir,
+          audio_path,
+          video_path,
+          safe_title,
+          params,
+          cancel_token,
+        )
+        outputs = [final_path.name]
+        output_files = [
+          JobOutputFile(
+            path=final_path,
+            type="video",
+            name=final_path.name,
+            format=both_meta.get("format"),
+            quality=params.get("video_quality"),
+            label="Both",
+          )
+        ]
+
+      cleanup_directory(output_dir, outputs)
+
+      return JobExecutionResult(
+        summary=summary,
+        output_files=output_files,
+        cleanup_paths=[output_dir],
+      )
+    except Exception:
+      safe_rmtree(output_dir)
+      raise
 
   def _process_audio(
     self,
@@ -150,7 +191,8 @@ class NoxtubizerExecutor:
     run_process(cmd, cancel_token=cancel_token)
 
     created = detect_new_file(output_dir, before, "Audio")
-    final = output_dir / f"[Audio] {title}.{fmt}"
+    final_name = append_name_suffix(f"{title}.{fmt}", "audio", strip_known=True)
+    final = output_dir / final_name
     created.rename(final)
 
     return final, {
@@ -184,7 +226,8 @@ class NoxtubizerExecutor:
     run_process(cmd, cancel_token=cancel_token)
 
     created = detect_new_file(output_dir, before, "Video")
-    final = output_dir / f"[Video] {title}.{fmt}"
+    final_name = append_name_suffix(f"{title}.{fmt}", "video", strip_known=True)
+    final = output_dir / final_name
 
     if created.suffix.lstrip(".") == fmt:
       created.rename(final)
@@ -216,7 +259,8 @@ class NoxtubizerExecutor:
     fmt = params.get("video_format", "mp4")
     audio_fmt = params.get("audio_format", "mp3")
 
-    final = output_dir / f"[Both] {title}.{fmt}"
+    final_name = append_name_suffix(f"{title}.{fmt}", "both", strip_known=True)
+    final = output_dir / final_name
 
     run_process([
       "ffmpeg", "-y",

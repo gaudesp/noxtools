@@ -3,6 +3,7 @@
 from app.jobs.cleanup import JobCleanupService
 from app.jobs.deletion import JobDeletionError, JobDeletionForbidden, JobDeletionService, JobNotFound
 from app.jobs.events import JobEvent, job_event_bus
+from app.jobs.file_links import JobFile, JobFileRole, JobFileService
 from app.jobs.lifecycle import JobAbortReason, JobLifecycleService
 from app.jobs.model import Job, JobStatus, JobTool
 from app.jobs.repository import JobRepository
@@ -21,6 +22,9 @@ __all__ = [
   "JobAbortReason",
   "JobLifecycleService",
   "JobCleanupService",
+  "JobFile",
+  "JobFileRole",
+  "JobFileService",
   "JobDeletionError",
   "JobDeletionForbidden",
   "JobDeletionService",

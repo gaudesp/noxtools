@@ -79,6 +79,11 @@ class Job(SQLModel, table=True):
     sa_column=Column(JSON),
     description="Tool-specific parameters.",
   )
+  signature: Optional[str] = Field(
+    default=None,
+    index=True,
+    description="Deterministic signature for deduplication.",
+  )
   result: dict[str, Any] = Field(
     default_factory=dict,
     sa_column=Column(JSON),

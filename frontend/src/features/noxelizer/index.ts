@@ -4,7 +4,7 @@ export {
   getDownloadUrl,
   getSourceUrl,
 } from "./api"
-export type { CreateRequest, CreateResponse, JobResult, NoxelizerJob } from "./api"
+export type { CreateRequest, CreateResponse, NoxelizerSummary, NoxelizerJob } from "./api"
 
 export { useCreateJob, useJobs } from "./model"
 

@@ -1,4 +1,4 @@
-import { type Job } from "@/entities/job"
+import { type Job, type JobResult } from "@/entities/job"
 
 export interface CreateRequest {
   url: string
@@ -12,20 +12,17 @@ export interface CreateRequest {
 export interface UploadItem {
   job_id: string
   filename?: string
+  duplicate_of?: string | null
 }
 
 export interface CreateResponse {
   jobs: UploadItem[]
 }
 
-export interface JobResult {
-  mode: Mode
-  source_title?: string
-  safe_title?: string
+export interface NoxtubizerSummary {
+  mode?: Mode
+  title?: string
   url?: string
-  audio?: AudioInfo
-  video?: VideoInfo
-  both?: BothInfo
 }
 
 export type Mode = "audio" | "video" | "both"
@@ -52,29 +49,4 @@ export type VideoQuality =
 
 export type VideoFormat = "mp4" | "mkv"
 
-export interface AudioInfo {
-  filename: string
-  format: string
-  quality: string
-  real_bitrate?: number
-}
-
-export interface VideoInfo {
-  filename: string
-  format: string
-  quality: string
-  has_audio: boolean
-  real_height?: number
-}
-
-export interface BothInfo {
-  filename: string
-  format: string
-  audio_format: string
-  audio_quality: string
-  has_audio: boolean
-  real_height?: number
-  real_bitrate?: number
-}
-
-export type NoxtubizerJob = Job<CreateRequest, JobResult>
+export type NoxtubizerJob = Job<CreateRequest, JobResult<NoxtubizerSummary>>

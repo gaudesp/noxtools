@@ -13,16 +13,16 @@ export default function Result({ job }: Props) {
     <JobStatusGate
       job={job}
       onDone={() => {
-        const result = job.result || {
+        const summary = job.result?.summary || {
           bpm: null,
           key: null,
           duration_label: "—",
         }
 
         const blocks = [
-          { label: "BPM", value: displayValue(result.bpm) },
-          { label: "KEY", value: displayValue(result.key) },
-          { label: "DURATION", value: displayValue(result.duration_label) },
+          { label: "BPM", value: displayValue(summary.bpm) },
+          { label: "KEY", value: displayValue(summary.key) },
+          { label: "DURATION", value: displayValue(summary.duration_label) },
         ]
 
         return (

@@ -1,9 +1,14 @@
+import Spinner from "../feedback/Spinner"
+
 type Props = {
   open: boolean
   title: string
   message?: string
   confirmLabel?: string
   cancelLabel?: string
+  confirmLoading?: boolean
+  confirmDisabled?: boolean
+  cancelDisabled?: boolean
   onCancel: () => void
   onConfirm: () => void
 }
@@ -14,6 +19,9 @@ export default function ConfirmModal({
   message,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
+  confirmLoading = false,
+  confirmDisabled = false,
+  cancelDisabled = false,
   onCancel,
   onConfirm,
 }: Props) {
@@ -48,18 +56,27 @@ export default function ConfirmModal({
         <div className="flex items-center justify-center gap-2">
           <button
             type="button"
-            className="rounded border border-slate-700 px-3 py-1 text-xs text-slate-200 transition hover:border-slate-500"
+            className="rounded border border-slate-700 px-3 py-1 text-xs text-slate-200 transition hover:border-slate-500 disabled:opacity-60 disabled:cursor-not-allowed"
             onClick={onCancel}
+            disabled={cancelDisabled}
           >
             {cancelLabel}
           </button>
 
           <button
             type="button"
-            className="rounded bg-rose-600 px-3 py-1 text-xs text-white transition hover:bg-rose-700"
+            className="rounded bg-rose-600 px-3 py-1 text-xs text-white transition hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed"
             onClick={onConfirm}
+            disabled={confirmLoading || confirmDisabled}
           >
-            {confirmLabel}
+            {confirmLoading ? (
+              <span className="inline-flex items-center gap-2">
+                <Spinner size="xs" className="text-white" ariaLabel="Loading" />
+                <span>{confirmLabel}</span>
+              </span>
+            ) : (
+              confirmLabel
+            )}
           </button>
         </div>
       </div>

@@ -2,71 +2,63 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from uuid import uuid4
-
 from app.errors import NotFoundError
+from app.jobs.file_links import JobFileRole, JobFileService
 from app.jobs.model import Job, JobTool
 from app.jobs.service import JobService
-from app.utils.images import image_variant_path
+from fastapi.responses import Response
+
+from app.utils.files import build_download_name
 from app.utils.http import file_response
-from app.utils.paths import ensure_tool_dirs
-from app.utils.uploads import persist_upload
+from app.utils.images import build_image_variant
 
 
-def enqueue_jobs(params: dict, job_service: JobService) -> list[Job]:
+def enqueue_jobs(params: dict, job_service: JobService) -> list[tuple[Job, str | None]]:
   """Create Noxelizer jobs from uploaded images and attach optional params."""
-  upload_base, _ = ensure_tool_dirs(JobTool.NOXELIZER)
-  jobs: list[Job] = []
-
-  files = params.get("files", [])
-  job_ids = [str(uuid4()) for _ in files]
-  job_params = {key: value for key, value in params.items() if key != "files"}
-  params_applied = False
-
-  for job_id, file in zip(job_ids, files):
-    dest = persist_upload(upload_base, job_id, file, variant="thumb")
-
-    job_params_for_job = job_params if job_params and not params_applied else None
-    if job_params_for_job:
-      params_applied = True
-
-    job = job_service.create_job(
-      tool=JobTool.NOXELIZER,
-      job_id=job_id,
-      input_filename=file.filename,
-      input_path=str(dest),
-      params=job_params_for_job,
-    )
-    jobs.append(job)
-
-  return jobs
+  files, file_ids, job_params = job_service.split_file_params(params)
+  inputs = job_service.prepare_file_inputs(
+    files=files,
+    file_ids=file_ids,
+    expected_type="image",
+    name_suffix="image",
+  )
+  return job_service.enqueue_jobs_for_inputs(
+    tool=JobTool.NOXELIZER,
+    inputs=inputs,
+    params=job_params,
+    params_once=True,
+  )
 
 
-def download_source(job_id: str, job_service: JobService, *, variant: str | None):
+def download_source(
+  job_id: str,
+  job_service: JobService,
+  *,
+  variant: str | None,
+) -> Response:
   """Return the uploaded source image (or variant) for a Noxelizer job."""
   job = job_service.get_job(job_id)
   if not job or job.tool != JobTool.NOXELIZER:
     raise NotFoundError("Job not found")
 
-  if not job.input_path:
+  file_links = JobFileService(job_service.repo.session)
+  input_file = file_links.get_primary_input(job_id)
+  if not input_file:
     raise NotFoundError("Source file not found")
 
-  original_path = Path(job.input_path)
-  path = original_path
-
-  if variant:
-    try:
-      variant_path = image_variant_path(original_path, variant=variant)
-    except KeyError:
-      variant_path = None
-    if variant_path and variant_path.exists() and variant_path.is_file():
-      path = variant_path
-
+  path = file_links.file_service.resolve_path(input_file)
   if not path.exists() or not path.is_file():
     raise NotFoundError("Source file not found")
 
-  return file_response(path)
+  if variant:
+    rendered = build_image_variant(path, variant=variant)
+    if rendered:
+      content, media_type = rendered
+      return Response(content=content, media_type=media_type)
+
+  label = file_links.get_label(job_id, input_file.id, JobFileRole.INPUT)
+  download_name = build_download_name(input_file.name, label)
+  return file_response(path, filename=download_name)
 
 
 def download_output(job_id: str, filename: str, job_service: JobService):
@@ -74,11 +66,15 @@ def download_output(job_id: str, filename: str, job_service: JobService):
   job = job_service.get_job(job_id)
   if not job:
     raise NotFoundError("Job not found")
-  if not job.output_path:
-    raise NotFoundError("Job outputs are not ready")
+  file_links = JobFileService(job_service.repo.session)
+  outputs = file_links.list_files(job_id, role=JobFileRole.OUTPUT)
+  for file, _role in outputs:
+    if file.name == filename:
+      path = file_links.file_service.resolve_path(file)
+      if not path.exists():
+        break
+      label = file_links.get_label(job_id, file.id, JobFileRole.OUTPUT)
+      download_name = build_download_name(file.name, label)
+      return file_response(path, filename=download_name)
 
-  path = Path(job.output_path) / filename
-  if not path.exists():
-    raise NotFoundError("Output file not found")
-
-  return file_response(path, filename=filename)
+  raise NotFoundError("Output file not found")

@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { cleanFileName } from "@/entities/file"
 import { getSourceUrl, type NoxelizerJob } from "../api"
 
 type Props = { job: NoxelizerJob }
@@ -9,7 +10,12 @@ export default function Preview({ job }: Props) {
     [job.id],
   )
 
-  const hasSource = Boolean(job.input_path)
+  const inputName =
+    job.input_filename ||
+    job.result?.files?.find((item) => item.role === "input")?.file.name ||
+    null
+  const displayName = cleanFileName(inputName)
+  const hasSource = Boolean(inputName)
 
   return (
     <div
@@ -19,7 +25,7 @@ export default function Preview({ job }: Props) {
       {hasSource ? (
         <img
           src={source}
-          alt={job.input_filename || "Original upload"}
+          alt={displayName || inputName || "Original upload"}
           className="w-full h-full object-cover"
           loading="lazy"
         />

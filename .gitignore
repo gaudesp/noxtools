@@ -14,8 +14,8 @@ dist/
 .idea/
 .vscode/
 
-# Media
-backend/media/
+# File storage
+backend/storage/
 
 # Database
 *.db

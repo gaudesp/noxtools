@@ -40,7 +40,12 @@ async def create_job(
   jobs = enqueue_noxtubizer_jobs(params, job_service)
   return JobsEnqueued(
     jobs=[
-      JobEnqueued(job_id=job.id, filename=job.input_filename) for job in jobs
+      JobEnqueued(
+        job_id=job.id,
+        filename=job.input_filename,
+        duplicate_of=duplicate_of,
+      )
+      for job, duplicate_of in jobs
     ],
   )
 

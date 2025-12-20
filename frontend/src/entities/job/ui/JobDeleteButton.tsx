@@ -38,6 +38,7 @@ export default function JobDeleteButton({ job, onDelete }: Props) {
         title="Delete job?"
         message="This will remove the job and its related files."
         confirmLabel={deleting ? "Deleting..." : "Delete"}
+        confirmLoading={deleting}
         onCancel={() => setOpen(false)}
         onConfirm={async () => {
           if (deleting) return

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import Spinner from "../feedback/Spinner"
 
 type Props = {
   onUpload: (files: File[]) => void
@@ -91,7 +92,15 @@ export default function Uploader({
           </>
         )}
 
-        {busy && <p className="text-sm text-neutral-300">{busyLabel}</p>}
+        {busy && (
+          <Spinner
+            size="sm"
+            label={busyLabel}
+            className="text-neutral-300"
+            labelClassName="text-sm"
+            ariaLabel={busyLabel}
+          />
+        )}
 
         {displayFiles.length > 0 && !busy && (
           <div className="mt-6 flex flex-wrap justify-center gap-3 max-w-full">

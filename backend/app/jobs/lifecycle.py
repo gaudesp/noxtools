@@ -4,15 +4,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 from typing import Optional
 
 from sqlmodel import Session, select
 
 from app.errors import ConflictError
 from app.jobs.cleanup import JobCleanupService
+from app.jobs.file_links import JobFileRole, JobFileService
 from app.jobs.model import Job, JobStatus
 from app.jobs.schemas import JobExecutionResult
 from app.jobs.service import JobService
+from app.utils.files import safe_rmtree
 
 
 class JobAbortReason(str, Enum):
@@ -59,6 +62,7 @@ class JobLifecycleService:
     self.session = session
     self.job_service = JobService(session)
     self.cleanup = JobCleanupService()
+    self.file_links = JobFileService(session)
 
   def mark_running(self, job_id: str, *, worker_id: str, attempt: int) -> Optional[Job]:
     """Mark a job as running and lock it to a worker."""
@@ -66,12 +70,43 @@ class JobLifecycleService:
 
   def complete(self, job_id: str, payload: JobExecutionResult) -> Optional[Job]:
     """Finalize a job as done with persisted outputs."""
-    return self.job_service.mark_completed(
-      job_id,
-      output_path=str(payload.output_path),
-      output_files=payload.output_files,
-      result=payload.result,
-    )
+    created_links: list[tuple[str, JobFileRole]] = []
+    output_names: list[str] = []
+
+    try:
+      for output in payload.output_files:
+        file = self.file_links.file_service.create_from_path(
+          output.path,
+          file_type=output.type,
+          name=output.name,
+          format=output.format,
+          quality=output.quality,
+        )
+        self.file_links.link(
+          job_id,
+          file.id,
+          JobFileRole.OUTPUT,
+          label=output.label,
+        )
+        created_links.append((file.id, JobFileRole.OUTPUT))
+        output_names.append(file.name)
+
+      result = self._build_result(job_id, payload.summary)
+      return self.job_service.mark_completed(
+        job_id,
+        output_path=None,
+        output_files=output_names,
+        result=result,
+      )
+    except Exception:
+      for file_id, role in created_links:
+        try:
+          self.file_links.unlink(job_id, file_id, role)
+        except Exception:
+          pass
+      raise
+    finally:
+      self._cleanup_paths(payload.cleanup_paths)
 
   def fail(self, job_id: str, message: str) -> Optional[Job]:
     """Mark a job as errored and clean outputs."""
@@ -165,3 +200,13 @@ class JobLifecycleService:
       self.cleanup.cleanup_job_files(job, keep_input=keep_input)
     except Exception:
       pass
+
+  def _cleanup_paths(self, paths: list[Path] | None) -> None:
+    for path in paths or []:
+      try:
+        safe_rmtree(path)
+      except Exception:
+        pass
+
+  def _build_result(self, job_id: str, summary: dict) -> dict:
+    return self.file_links.build_result_payload(job_id, summary)

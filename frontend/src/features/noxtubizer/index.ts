@@ -6,7 +6,7 @@ export {
 export type {
   CreateRequest,
   CreateResponse,
-  JobResult,
+  NoxtubizerSummary,
   NoxtubizerJob,
   Mode,
 } from "./api"

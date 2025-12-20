@@ -7,7 +7,7 @@ export {
 export type {
   CreateRequest,
   CreateResponse,
-  JobResult,
+  NoxsongizerSummary,
   NoxsongizerJob,
 } from "./api"
 
