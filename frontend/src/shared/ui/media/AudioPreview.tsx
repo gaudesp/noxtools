@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react"
+import Spinner from "../feedback/Spinner"
 
 const activeAudios = new Map<string, HTMLAudioElement>()
 
@@ -123,10 +124,7 @@ export default function AudioPreviewButton({ id, sourceUrl }: Props) {
       className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-50 hover:border-violet-400 transition disabled:opacity-60 disabled:cursor-not-allowed"
     >
       {isLoading ? (
-        <svg className="w-4 h-4 animate-spin text-slate-100" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-        </svg>
+        <Spinner size="sm" className="text-slate-100" ariaLabel="Loading preview" />
       ) : (
         <PlayPauseIcon playing={isPlaying} />
       )}

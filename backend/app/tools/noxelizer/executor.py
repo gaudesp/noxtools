@@ -13,8 +13,8 @@ import numpy.typing as npt
 
 from app.errors import ExecutionError, StorageError
 from app.jobs.model import Job
-from app.jobs.schemas import JobExecutionResult
-from app.utils.files import ensure_path, safe_unlink
+from app.jobs.schemas import JobExecutionResult, JobOutputFile
+from app.utils.files import append_name_suffix, ensure_path, safe_rmtree, safe_unlink, strip_known_suffix_from_stem
 from app.worker.cancellation import CancellationToken
 from app.worker.process import run_process
 
@@ -43,7 +43,7 @@ class NoxelizerExecutor:
     final_hold: float = 0.75,
     codec: str = "mp4v",
     suffix: str = ".mp4",
-    base_output: Path | None = None,
+    work_root: Path | None = None,
   ) -> None:
     self.fps = fps
     self.duration = duration
@@ -61,8 +61,7 @@ class NoxelizerExecutor:
       final_hold=self.final_hold,
     )
 
-    self.base_output = base_output or Path("media/noxelizer/outputs")
-    self.base_output.mkdir(parents=True, exist_ok=True)
+    self.work_root = work_root
 
   def execute(
     self,
@@ -83,44 +82,59 @@ class NoxelizerExecutor:
     )
     self._validate_input_file(input_file)
 
-    output_dir = self.base_output / job.id
-    output_dir.mkdir(parents=True, exist_ok=True)
-    output_name = self._build_output_name(input_file)
-    final_path = output_dir / output_name
-
-    tmp_path = self._create_temp_file(output_dir)
-
-    try:
-      frames_written = self._render_video(
-        input_file,
-        tmp_path,
-        fps=fps,
-        duration=duration,
-        final_hold=final_hold,
-        cancel_token=cancel_token,
+    output_dir = Path(
+      tempfile.mkdtemp(
+        prefix="noxelizer_",
+        dir=str(self.work_root) if self.work_root else None,
       )
-
-      if frames_written <= 0:
-        raise ExecutionError("No frames were written")
-
-      tmp_path.replace(final_path)
-
-    except Exception:
-      safe_unlink(tmp_path)
-      raise
-
-    return JobExecutionResult(
-      output_path=output_dir,
-      output_files=[output_name],
-      result={
-        "video": output_name,
-        "frames_written": frames_written,
-        "fps": fps,
-        "duration": duration,
-        "final_hold": final_hold,
-        "codec": self.codec,
-      },
     )
+    try:
+      output_name = self._build_output_name(input_file)
+      final_path = output_dir / output_name
+
+      tmp_path = self._create_temp_file(output_dir)
+
+      try:
+        frames_written = self._render_video(
+          input_file,
+          tmp_path,
+          fps=fps,
+          duration=duration,
+          final_hold=final_hold,
+          cancel_token=cancel_token,
+        )
+
+        if frames_written <= 0:
+          raise ExecutionError("No frames were written")
+
+        tmp_path.replace(final_path)
+
+      except Exception:
+        safe_unlink(tmp_path)
+        raise
+
+      return JobExecutionResult(
+        summary={
+          "frames": frames_written,
+          "fps": fps,
+          "duration": duration,
+          "hold": final_hold,
+          "codec": self.codec,
+        },
+        output_files=[
+          JobOutputFile(
+            path=final_path,
+            type="video",
+            name=output_name,
+            format=final_path.suffix.lstrip(".") or None,
+            label="Pixelate",
+          ),
+        ],
+        cleanup_paths=[output_dir],
+      )
+    except Exception:
+      safe_rmtree(output_dir)
+      raise
 
   def _render_video(
     self,
@@ -349,8 +363,8 @@ class NoxelizerExecutor:
       raise ExecutionError(f"Unsupported image extension: {path.suffix}")
 
   def _build_output_name(self, input_file: Path) -> str:
-    stem = input_file.stem or "noxelizer"
-    return f"[Pixelate] {stem}{self.suffix}"
+    stem = strip_known_suffix_from_stem(input_file.stem or "noxelizer") or "noxelizer"
+    return append_name_suffix(f"{stem}{self.suffix}", "pixelate", strip_known=True)
 
   def _normalize_suffix(self, suffix: str) -> str:
     return suffix if suffix.startswith(".") else f".{suffix}"

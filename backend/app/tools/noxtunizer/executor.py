@@ -5,13 +5,14 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Any, Dict
 
 from app.errors import ExecutionError
 from app.jobs.model import Job
 from app.jobs.schemas import JobExecutionResult
-from app.utils.files import ensure_path
+from app.utils.files import ensure_path, safe_unlink
 from app.worker.cancellation import CancellationToken
 from app.worker.process import run_process
 
@@ -30,15 +31,14 @@ class NoxtunizerExecutor:
     self,
     *,
     extractor_bin: str | None = None,
-    base_output: Path | None = None,
+    work_root: Path | None = None,
   ) -> None:
     self.extractor_bin = (
       extractor_bin
       or os.getenv("NOXTUNIZER_EXTRACTOR_BIN")
       or "/usr/local/bin/essentia_streaming_extractor_music"
     )
-    self.base_output = base_output or Path("media/noxtunizer/outputs")
-    self.base_output.mkdir(parents=True, exist_ok=True)
+    self.work_root = work_root
 
   def execute(
     self,
@@ -54,28 +54,33 @@ class NoxtunizerExecutor:
       missing_message="Input file is missing",
       not_found_message="Input file not found on disk",
     )
-    output_dir = self.base_output / job.id
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    output_json = output_dir / "essentia_output.json"
-
-    self._run_extractor(input_file, output_json, cancel_token=cancel_token)
-
-    if not output_json.exists():
-      raise ExecutionError("Essentia did not produce an output file")
+    tmp_handle = tempfile.NamedTemporaryFile(
+      prefix="noxtunizer_",
+      suffix=".json",
+      dir=str(self.work_root) if self.work_root else None,
+      delete=False,
+    )
+    output_json = Path(tmp_handle.name)
+    tmp_handle.close()
 
     try:
-      with output_json.open("r", encoding="utf-8") as fp:
-        payload = json.load(fp)
-    except Exception as exc:
-      raise ExecutionError("Failed to read Essentia output") from exc
+      self._run_extractor(input_file, output_json, cancel_token=cancel_token)
 
-    result = self._reduce_output(payload)
+      if not output_json.exists():
+        raise ExecutionError("Essentia did not produce an output file")
+
+      try:
+        with output_json.open("r", encoding="utf-8") as fp:
+          payload = json.load(fp)
+      except Exception as exc:
+        raise ExecutionError("Failed to read Essentia output") from exc
+
+      summary = self._reduce_output(payload)
+    finally:
+      safe_unlink(output_json)
 
     return JobExecutionResult(
-      output_path=output_dir,
-      output_files=[output_json.name],
-      result=result,
+      summary=summary,
     )
 
   def _run_extractor(
@@ -123,7 +128,7 @@ class NoxtunizerExecutor:
     return {
       "bpm": bpm_value,
       "key": key_value,
-      "duration_seconds": duration_seconds,
+      "duration": duration_seconds,
       "duration_label": self._format_duration(duration_seconds),
     }
 

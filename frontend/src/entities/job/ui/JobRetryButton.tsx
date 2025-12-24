@@ -1,6 +1,6 @@
 import { useState } from "react"
 import type { Job } from "../model/types"
-import { useNotifications } from "@/shared/ui"
+import { Spinner, useNotifications } from "@/shared/ui"
 
 type Props = {
   job: Job
@@ -36,7 +36,14 @@ export default function JobRetryButton({ job, onRetry }: Props) {
           : "border-sky-600 text-sky-100 hover:bg-sky-900/30"
       }`}
     >
-      {loading ? "Retrying..." : "Retry"}
+      {loading ? (
+        <span className="inline-flex items-center gap-2">
+          <Spinner size="xs" className="text-slate-400" ariaLabel="Retrying" />
+          <span>Retrying...</span>
+        </span>
+      ) : (
+        "Retry"
+      )}
     </button>
   )
 }

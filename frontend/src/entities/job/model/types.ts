@@ -1,3 +1,5 @@
+import type { JobFileLink } from "@/entities/file"
+
 export type JobStatus =
   | "pending"
   | "running"
@@ -11,7 +13,12 @@ export type JobTool =
   | "noxtubizer"
   | "noxtunizer"
 
-export interface Job<TParams = unknown, TResult = unknown> {
+export type JobResult<TSummary = Record<string, unknown>> = {
+  summary?: TSummary
+  files?: JobFileLink[]
+}
+
+export interface Job<TParams = unknown, TResult = JobResult> {
   id: string
   tool: JobTool
   status: JobStatus

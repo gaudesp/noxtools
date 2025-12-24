@@ -27,11 +27,17 @@ export default function Result({ job }: Props) {
     <JobStatusGate
       job={job}
       onDone={() => {
-        const stems = job.output_files || job.result?.stems || []
+        const outputs = job.result?.files?.filter((item) => item.role === "output") ?? []
 
         const orderedStems = STEM_ORDER.map((stemInfo) => {
-          const match = stems.find((stem) => isStemMatch(stem, stemInfo.type))
-          return match ? { ...stemInfo, filename: match } : null
+          const match = outputs.find((item) => {
+            const label = item.label?.toLowerCase()
+            return (
+              label === stemInfo.label.toLowerCase() ||
+              isStemMatch(item.file.name, stemInfo.type)
+            )
+          })
+          return match ? { ...stemInfo, filename: match.file.name } : null
         }).filter(Boolean) as Array<{
           type: StemType
           label: string

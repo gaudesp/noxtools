@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from mimetypes import guess_type
 from pathlib import Path
 from typing import Optional
 
@@ -19,12 +20,8 @@ IMAGE_VARIANTS: dict[str, dict[str, int | str]] = {
 }
 
 
-def image_variant_path(original: Path, *, variant: str) -> Path:
-  config = IMAGE_VARIANTS[variant]
-  return original.with_name(f"{original.stem}{config['suffix']}{config['extension']}")
-
-
-def create_image_variant(original: Path, *, variant: str) -> Optional[Path]:
+def build_image_variant(original: Path, *, variant: str) -> Optional[tuple[bytes, str]]:
+  """Build an image variant in-memory and return its bytes + media type."""
   try:
     if variant not in IMAGE_VARIANTS:
       return None
@@ -55,16 +52,16 @@ def create_image_variant(original: Path, *, variant: str) -> Optional[Path]:
       interpolation=cv2.INTER_AREA if scale < 1 else cv2.INTER_LINEAR,
     )
 
-    output_path = image_variant_path(original, variant=variant)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
+    extension = str(config["extension"])
     encode_params: list[int] = []
-    if str(config["extension"]) in {".jpg", ".jpeg"}:
+    if extension in {".jpg", ".jpeg"}:
       encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), int(config["jpeg_quality"])]
 
-    if not cv2.imwrite(str(output_path), resized, encode_params):
+    ok, buffer = cv2.imencode(extension, resized, encode_params)
+    if not ok:
       return None
 
-    return output_path
+    media_type = guess_type(f"file{extension}")[0] or "application/octet-stream"
+    return buffer.tobytes(), media_type
   except Exception:
     return None

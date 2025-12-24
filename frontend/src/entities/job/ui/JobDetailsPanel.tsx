@@ -4,7 +4,8 @@ import StatusBadge from "./StatusBadge"
 import JobActions from "./JobActions"
 import JobMetaTags from "./JobMetaTags"
 import JobDateTags from "./JobDateTag"
-import { Modal } from "@/shared/ui"
+import { cleanFileName } from "@/entities/file"
+import { CloseButton, Modal } from "@/shared/ui"
 
 type Props = {
   job: Job
@@ -57,7 +58,7 @@ export default function JobDetailsPanel({
                 {job.id}
               </p>
               <p className="truncate text-xs text-slate-400">
-                {job.input_filename || "Unnamed input"}
+                {cleanFileName(job.input_filename) || job.input_filename || "Unnamed input"}
               </p>
             </div>
           </div>
@@ -70,13 +71,7 @@ export default function JobDetailsPanel({
               onCancel={onCancelJob}
               onRetry={onRetryJob}
             />
-            <button
-              type="button"
-              className="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-slate-800"
-              onClick={onClose}
-            >
-              Close
-            </button>
+            <CloseButton onClick={onClose} />
           </div>
         </div>
       }

@@ -4,6 +4,7 @@ import type { SubmitResult } from "@/shared/lib"
 
 export const defaultForm: CreateRequest = {
   files: [],
+  file_ids: [],
 }
 
 export function useCreateJob() {
@@ -14,8 +15,14 @@ export function useCreateJob() {
     setSubmitting(true)
 
     try {
-      if (!form.files.length) {
-        return { status: "invalid", message: "Please upload at least one audio file." }
+      const hasFiles = Boolean(form.files?.length)
+      const hasFileIds = Boolean(form.file_ids?.length)
+
+      if (hasFiles && hasFileIds) {
+        return { status: "invalid", message: "Choose either upload or library selection." }
+      }
+      if (!hasFiles && !hasFileIds) {
+        return { status: "invalid", message: "Please upload or select at least one audio file." }
       }
 
       await createJob(form)

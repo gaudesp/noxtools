@@ -11,6 +11,7 @@ from uuid import uuid4
 from sqlmodel import Session, select
 
 from app.errors import ExecutionError
+from app.jobs.file_links import JobFileRole, JobFileService
 from app.jobs.lifecycle import JobAbortReason, JobLifecycleService
 from app.jobs.model import Job, JobStatus, JobTool, _utcnow
 from app.jobs.schemas import JobExecutionResult
@@ -174,7 +175,20 @@ class JobWorker:
         cancel_token.cancel()
 
       try:
-        result = executor(updated, service, cancel_token)
+        file_links = JobFileService(session)
+        job_for_exec = Job(**updated.model_dump())
+        inputs = file_links.list_files(job_id, role=JobFileRole.INPUT)
+        if len(inputs) > 1:
+          raise ExecutionError("Multiple input files are not supported")
+        if inputs:
+          input_file = inputs[0][0]
+          input_path = file_links.file_service.resolve_path(input_file)
+          if not input_path.exists():
+            raise ExecutionError("Input file not found on disk")
+          job_for_exec.input_path = str(input_path)
+          job_for_exec.input_filename = input_file.name
+
+        result = executor(job_for_exec, service, cancel_token)
         if not isinstance(result, JobExecutionResult):
           raise ExecutionError("Executor returned an invalid result payload")
         lifecycle.complete(job_id, result)

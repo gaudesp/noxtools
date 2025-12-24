@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.db import engine, get_session, init_db
 from app.errors import AppError
+from app.files import router as files_router
 from app.jobs import router as jobs_router
 from app.jobs.events import job_event_bus
 from app.jobs.lifecycle import JobAbortReason, JobLifecycleService
@@ -19,7 +20,6 @@ from app.tools.noxtubizer.executor import NoxtubizerExecutor
 from app.tools.noxtubizer import router as noxtubizer_router
 from app.tools.noxtunizer.executor import NoxtunizerExecutor
 from app.tools.noxtunizer import router as noxtunizer_router
-from app.utils.paths import output_base
 from app.worker import JobWorker
 
 app = FastAPI(title="Noxtools API")
@@ -46,22 +46,15 @@ app.include_router(noxsongizer_router.router)
 app.include_router(noxelizer_router.router)
 app.include_router(noxtubizer_router.router)
 app.include_router(noxtunizer_router.router)
+app.include_router(files_router.router)
 app.include_router(jobs_router.router)
 
 job_worker = JobWorker(engine)
 
-_noxsongizer_executor = NoxsongizerExecutor(
-  base_output=output_base(JobTool.NOXSONGIZER)
-)
-_noxelizer_executor = NoxelizerExecutor(
-  base_output=output_base(JobTool.NOXELIZER)
-)
-_noxtubizer_executor = NoxtubizerExecutor(
-  base_output=output_base(JobTool.NOXTUBIZER)
-)
-_noxtunizer_executor = NoxtunizerExecutor(
-  base_output=output_base(JobTool.NOXTUNIZER)
-)
+_noxsongizer_executor = NoxsongizerExecutor()
+_noxelizer_executor = NoxelizerExecutor()
+_noxtubizer_executor = NoxtubizerExecutor()
+_noxtunizer_executor = NoxtunizerExecutor()
 
 job_worker.register_executor(
   JobTool.NOXSONGIZER,

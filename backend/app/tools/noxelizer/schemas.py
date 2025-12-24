@@ -5,13 +5,14 @@ from __future__ import annotations
 from typing import List, Optional
 
 from fastapi import UploadFile
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class NoxelizerJobRequest(BaseModel):
   """Request payload for creating Noxelizer jobs."""
 
-  files: List[UploadFile]
+  files: List[UploadFile] = Field(default_factory=list)
+  file_ids: List[str] = Field(default_factory=list)
   fps: Optional[int] = None
   duration: Optional[float] = None
   final_hold: Optional[float] = None

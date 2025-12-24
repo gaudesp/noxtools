@@ -7,7 +7,8 @@ export async function createJob(
 ): Promise<CreateResponse> {
   const form = new FormData()
 
-  payload.files.forEach((file) => form.append("files", file))
+  payload.files?.forEach((file) => form.append("files", file))
+  payload.file_ids?.forEach((fileId) => form.append("file_ids", fileId))
 
   const res = await fetch(`${API_BASE_URL}/noxsongizer/jobs`, {
     method: "POST",

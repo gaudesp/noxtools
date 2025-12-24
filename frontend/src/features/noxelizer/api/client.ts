@@ -7,7 +7,8 @@ export async function createJob(
 ): Promise<CreateResponse> {
   const form = new FormData()
 
-  payload.files.forEach((file) => form.append("files", file))
+  payload.files?.forEach((file) => form.append("files", file))
+  payload.file_ids?.forEach((fileId) => form.append("file_ids", fileId))
 
   if (payload.fps !== undefined) form.append("fps", String(payload.fps))
   if (payload.duration !== undefined) form.append("duration", String(payload.duration))

@@ -8,6 +8,8 @@ from typing import Generator
 
 from sqlmodel import Session, SQLModel, create_engine
 
+from app.files.model import File  # noqa: F401
+from app.jobs.file_links import JobFile  # noqa: F401
 from app.jobs.model import Job  # noqa: F401
 
 

@@ -1,4 +1,4 @@
-import type { Job, JobTool } from "../model/types"
+import type { Job, JobTool, JobResult } from "../model/types"
 import { Tag } from "@/shared/ui"
 import JobDateTags from "./JobDateTag"
 
@@ -25,6 +25,12 @@ function formatNumber(value?: number | null): string | null {
   return Number(rounded).toLocaleString()
 }
 
+function formatMetaValue(value?: string | number | null): string | null {
+  if (value === null || value === undefined) return null
+  if (typeof value === "number") return formatNumber(value)
+  return value
+}
+
 function buildNoxsongizerTags(job: Job, accentClassName?: string, neutralClassName?: string): TagItem[] {
   return [{
     label: job.tool.toUpperCase(),
@@ -32,27 +38,29 @@ function buildNoxsongizerTags(job: Job, accentClassName?: string, neutralClassNa
   }]
 }
 
-type NoxelizerShape = Job & {
-  result?: {
-    frames_written?: number | null
-    fps?: number | null
-    duration?: number | null
-    final_hold?: number | null
-    codec?: string | null
-  }
-  params?: {
-    fps?: number | null
-    duration?: number | null
-    final_hold?: number | null
-  }
+type NoxelizerSummary = {
+  frames?: number | null
+  fps?: number | null
+  duration?: number | null
+  hold?: number | null
+  codec?: string | null
 }
 
+type NoxelizerParams = {
+  fps?: number | null
+  duration?: number | null
+  final_hold?: number | null
+}
+
+type NoxelizerShape = Job<NoxelizerParams, JobResult<NoxelizerSummary>>
+
 function buildNoxelizerTags(job: NoxelizerShape, accentClassName?: string, neutralClassName?: string): TagItem[] {
-  const frames = job.result?.frames_written
-  const fps = job.result?.fps ?? job.params?.fps
-  const duration = job.result?.duration ?? job.params?.duration
-  const finalHold = job.result?.final_hold ?? job.params?.final_hold
-  const codec = job.result?.codec
+  const summary = job.result?.summary
+  const frames = summary?.frames
+  const fps = summary?.fps ?? job.params?.fps
+  const duration = summary?.duration ?? job.params?.duration
+  const finalHold = summary?.hold ?? job.params?.final_hold
+  const codec = summary?.codec
 
   return [
     { label: job.tool.toUpperCase(), className: accentClassName ?? neutralClassName },
@@ -74,56 +82,44 @@ function buildNoxelizerTags(job: NoxelizerShape, accentClassName?: string, neutr
   ].filter(Boolean) as TagItem[]
 }
 
-type NoxtubizerShape = Job & {
-  params?: {
-    mode?: string | null
-    audio_quality?: string | null
-    audio_format?: string | null
-    video_quality?: string | null
-    video_format?: string | null
-  }
-  result?: {
-    mode?: string | null
-    audio?: { format?: string; quality?: string; real_bitrate?: number | null } | null
-    video?: { format?: string; quality?: string; real_height?: number | null } | null
-    both?: {
-      format?: string
-      audio_format?: string
-      audio_quality?: string
-      real_bitrate?: number | null
-      real_height?: number | null
-    } | null
-  }
+type NoxtubizerSummary = {
+  mode?: string | null
+  title?: string | null
+  url?: string | null
 }
 
+type NoxtubizerParams = {
+  mode?: string | null
+  audio_quality?: string | null
+  audio_format?: string | null
+  video_quality?: string | null
+  video_format?: string | null
+}
+
+type NoxtubizerShape = Job<NoxtubizerParams, JobResult<NoxtubizerSummary>>
+
 function buildNoxtubizerTags(job: NoxtubizerShape, accentClassName?: string, neutralClassName?: string): TagItem[] {
-  const mode = (job.result?.mode ?? job.params?.mode) || null
+  const summary = job.result?.summary
+  const mode = (summary?.mode ?? job.params?.mode) || null
+  const outputs = job.result?.files?.filter((item) => item.role === "output") ?? []
+  const audioOutput = outputs.find((item) => item.file.type === "audio")?.file
+  const videoOutput = outputs.find((item) => item.file.type === "video")?.file
+
   const audioFormat =
-    job.result?.audio?.format ??
-    job.result?.both?.audio_format ??
+    formatMetaValue(audioOutput?.format) ??
     job.params?.audio_format ??
     null
   const audioQuality =
-    job.result?.audio?.quality ??
-    job.result?.both?.audio_quality ??
+    formatMetaValue(audioOutput?.quality) ??
     job.params?.audio_quality ??
     null
   const videoFormat =
-    job.result?.video?.format ??
-    job.result?.both?.format ??
+    formatMetaValue(videoOutput?.format) ??
     job.params?.video_format ??
     null
   const videoQuality =
-    job.result?.video?.quality ??
+    formatMetaValue(videoOutput?.quality) ??
     job.params?.video_quality ??
-    null
-  const realBitrate =
-    job.result?.audio?.real_bitrate ??
-    job.result?.both?.real_bitrate ??
-    null
-  const realHeight =
-    job.result?.video?.real_height ??
-    job.result?.both?.real_height ??
     null
 
   const tags: Array<TagItem | null> = [
@@ -148,23 +144,6 @@ function buildNoxtubizerTags(job: NoxtubizerShape, accentClassName?: string, neu
         className: neutralClassName,
       })
     }
-  }
-
-  if (realBitrate !== null && realBitrate !== undefined) {
-    tags.push({
-      label: "Bitrate",
-      value: formatNumber(realBitrate) ?? undefined,
-      className: neutralClassName,
-    })
-  }
-
-  if (realHeight !== null && realHeight !== undefined) {
-    const formattedHeight = formatNumber(realHeight)
-    tags.push({
-      label: "Height",
-      value: formattedHeight ? `${formattedHeight}p` : undefined,
-      className: neutralClassName,
-    })
   }
 
   return tags.filter(Boolean) as TagItem[]

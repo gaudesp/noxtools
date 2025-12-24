@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { Spinner } from "@/shared/ui"
 import type { LayoutJobSummary, LayoutJobStatus } from "@/app/layout"
 
 type Props = {
@@ -48,7 +49,14 @@ export default function Footer({ jobs, loading }: Props) {
       </div>
 
       <span className="ml-auto text-xs text-slate-400">
-        {loading ? "Refreshing jobs…" : `Total jobs: ${jobs.length}`}
+        {loading ? (
+          <span className="inline-flex items-center gap-2">
+            <Spinner size="xs" className="text-slate-400" ariaLabel="Refreshing jobs" />
+            <span>Refreshing jobs…</span>
+          </span>
+        ) : (
+          `Total jobs: ${jobs.length}`
+        )}
       </span>
     </div>
   )

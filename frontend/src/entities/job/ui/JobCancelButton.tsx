@@ -30,6 +30,7 @@ export default function JobCancelButton({ job, onCancel }: Props) {
         title="Cancel job?"
         message="This will stop the job and discard its current outputs."
         confirmLabel={cancelling ? "Cancelling..." : "Cancel job"}
+        confirmLoading={cancelling}
         onCancel={() => setOpen(false)}
         onConfirm={async () => {
           if (cancelling) return

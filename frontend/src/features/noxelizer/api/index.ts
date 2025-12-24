@@ -1,2 +1,2 @@
 export { createJob, listJobs, getDownloadUrl, getSourceUrl } from "./client"
-export type { CreateRequest, CreateResponse, JobResult, NoxelizerJob } from "./types"
+export type { CreateRequest, CreateResponse, NoxelizerSummary, NoxelizerJob } from "./types"

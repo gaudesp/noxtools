@@ -2,7 +2,7 @@ export { createJob, listJobs, getDownloadUrl } from "./client"
 export type {
   CreateRequest,
   CreateResponse,
-  JobResult,
+  NoxtubizerSummary,
   NoxtubizerJob,
   Mode,
   AudioQuality,

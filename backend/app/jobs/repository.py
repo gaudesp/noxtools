@@ -92,6 +92,29 @@ class JobRepository:
     results = self.session.exec(stmt).all()
     return list(results)
 
+  def list_by_signature(
+    self,
+    signature: str,
+    *,
+    status: Optional[JobStatus] = None,
+  ) -> list[Job]:
+    """
+    Fetch jobs that share a deterministic signature.
+
+    Args:
+      signature: Signature string.
+      status: Optional status filter.
+
+    Returns:
+      A list of Job entities ordered by creation time (oldest first).
+    """
+    stmt = select(Job).where(Job.signature == signature)
+    if status:
+      stmt = stmt.where(Job.status == status)
+    stmt = stmt.order_by(Job.created_at.asc())
+    results = self.session.exec(stmt).all()
+    return list(results)
+
   def count(self, *, tool: Optional[JobTool] = None, status: Optional[JobStatus] = None) -> int:
     """
     Count jobs matching optional filters.
