@@ -10,6 +10,7 @@ from typing import Iterable
 import cv2
 import numpy as np
 import numpy.typing as npt
+from PIL import Image, ImageOps
 
 from app.errors import ExecutionError, StorageError
 from app.jobs.model import Job
@@ -32,6 +33,9 @@ class NoxelizerExecutor:
   """
 
   ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+  TARGET_WIDTH = 1920
+  TARGET_HEIGHT = 1080
+  TARGET_LONG_SIDE = max(TARGET_WIDTH, TARGET_HEIGHT)
 
   def __init__(
     self,
@@ -146,20 +150,24 @@ class NoxelizerExecutor:
     final_hold: float,
     cancel_token: CancellationToken | None,
   ) -> int:
-    image = cv2.imread(str(image_path))
-    if image is None:
-      raise ExecutionError("Unable to read input image")
+    image = self._load_image(image_path)
 
     height, width = image.shape[:2]
     if height == 0 or width == 0:
       raise ExecutionError("Invalid image dimensions")
+
+    canvas, rect = self._normalize_canvas(image)
+    x, y, w, h = rect
+    region = canvas[y:y + h, x:x + w]
 
     animated_frames = max(1, round(fps * duration))
     hold_frames = max(0, round(fps * final_hold))
 
     if self._has_ffmpeg():
       return self._render_with_ffmpeg(
-        image,
+        canvas,
+        region,
+        rect,
         output_path,
         animated_frames,
         hold_frames,
@@ -168,7 +176,9 @@ class NoxelizerExecutor:
       )
 
     return self._render_with_cv2(
-      image,
+      canvas,
+      region,
+      rect,
       output_path,
       animated_frames,
       hold_frames,
@@ -176,15 +186,60 @@ class NoxelizerExecutor:
       cancel_token=cancel_token,
     )
 
+  def _load_image(self, image_path: Path) -> Frame:
+    try:
+      with Image.open(str(image_path)) as pil_image:
+        pil_image = ImageOps.exif_transpose(pil_image)
+        pil_image = pil_image.convert("RGB")
+        rgb = np.array(pil_image)
+    except Exception as exc:
+      raise ExecutionError("Unable to read input image") from exc
+
+    if rgb.size == 0:
+      raise ExecutionError("Invalid image dimensions")
+
+    return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+
+  def _normalize_canvas(self, image: Frame) -> tuple[Frame, tuple[int, int, int, int]]:
+    target_w = self.TARGET_WIDTH
+    target_h = self.TARGET_HEIGHT
+
+    h, w = image.shape[:2]
+    scale = min(target_w / w, target_h / h)
+    resized_w = max(1, int(round(w * scale)))
+    resized_h = max(1, int(round(h * scale)))
+
+    resized = cv2.resize(
+      image,
+      (resized_w, resized_h),
+      interpolation=cv2.INTER_AREA if scale < 1 else cv2.INTER_LINEAR,
+    )
+
+    canvas = np.zeros((target_h, target_w, 3), dtype=np.uint8)
+    offset_x = (target_w - resized_w) // 2
+    offset_y = (target_h - resized_h) // 2
+    canvas[offset_y:offset_y + resized_h, offset_x:offset_x + resized_w] = resized
+    return canvas, (offset_x, offset_y, resized_w, resized_h)
+
   def _generate_frames(
     self,
-    image: Frame,
+    canvas: Frame,
+    region: Frame,
+    rect: tuple[int, int, int, int],
     count: int,
     *,
     cancel_token: CancellationToken | None,
   ) -> Iterable[Frame]:
+    x, y, w, h = rect
+    region_long = max(w, h)
+    size_start = self._scale_pixel_size(self.max_pix, region_long)
+    size_end = self._scale_pixel_size(self.min_pix, region_long)
+
     if count <= 1:
-      yield self._pixelate(image, self.min_pix)
+      size = self._clamp_pixel_size(size_end)
+      frame = canvas.copy()
+      frame[y:y + h, x:x + w] = self._pixelate(region, size)
+      yield frame
       return
 
     for idx in range(count):
@@ -192,10 +247,11 @@ class NoxelizerExecutor:
         cancel_token.raise_if_cancelled()
 
       progress = idx / (count - 1)
-      pixel = round(self.max_pix - (self.max_pix - self.min_pix) * progress)
-      pixel = max(self.min_pix, min(self.max_pix, pixel))
-
-      yield self._pixelate(image, pixel)
+      size = size_start + (size_end - size_start) * progress
+      size = self._clamp_pixel_size(size)
+      frame = canvas.copy()
+      frame[y:y + h, x:x + w] = self._pixelate(region, size)
+      yield frame
 
   def _pixelate(self, image: Frame, size: int) -> Frame:
     if size <= 1:
@@ -210,7 +266,9 @@ class NoxelizerExecutor:
 
   def _render_with_ffmpeg(
     self,
-    image: Frame,
+    canvas: Frame,
+    region: Frame,
+    rect: tuple[int, int, int, int],
     output_path: Path,
     animated_frames: int,
     hold_frames: int,
@@ -223,7 +281,7 @@ class NoxelizerExecutor:
 
     try:
       for idx, frame in enumerate(
-        self._generate_frames(image, animated_frames, cancel_token=cancel_token)
+        self._generate_frames(canvas, region, rect, animated_frames, cancel_token=cancel_token)
       ):
         path = frames_dir / f"frame_{idx:05d}.png"
         if not cv2.imwrite(str(path), frame):
@@ -234,7 +292,7 @@ class NoxelizerExecutor:
         if cancel_token:
           cancel_token.raise_if_cancelled()
         path = frames_dir / f"frame_{frames_written + i:05d}.png"
-        cv2.imwrite(str(path), image)
+        cv2.imwrite(str(path), canvas)
         frames_written += 1
 
       cmd = [
@@ -261,7 +319,9 @@ class NoxelizerExecutor:
 
   def _render_with_cv2(
     self,
-    image: Frame,
+    canvas: Frame,
+    region: Frame,
+    rect: tuple[int, int, int, int],
     output_path: Path,
     animated_frames: int,
     hold_frames: int,
@@ -274,7 +334,7 @@ class NoxelizerExecutor:
       str(output_path),
       fourcc,
       fps,
-      (image.shape[1], image.shape[0]),
+      (canvas.shape[1], canvas.shape[0]),
     )
 
     if not writer.isOpened():
@@ -282,18 +342,25 @@ class NoxelizerExecutor:
 
     frames_written = 0
     try:
-      for frame in self._generate_frames(image, animated_frames, cancel_token=cancel_token):
+      for frame in self._generate_frames(canvas, region, rect, animated_frames, cancel_token=cancel_token):
         writer.write(frame)
         frames_written += 1
 
       for _ in range(hold_frames):
-        writer.write(image)
+        writer.write(canvas)
         frames_written += 1
 
     finally:
       writer.release()
 
     return frames_written
+
+  def _scale_pixel_size(self, pixel_size: int, region_long: int) -> float:
+    pixel_size = max(1, pixel_size)
+    return max(1.0, float(pixel_size) * float(region_long) / float(self.TARGET_LONG_SIDE))
+
+  def _clamp_pixel_size(self, size: float) -> int:
+    return max(1, int(round(size)))
 
   def _resolve_options(self, params: dict) -> tuple[int, float, float]:
     fps = self._coerce_int(params.get("fps"), self.fps)
